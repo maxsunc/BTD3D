@@ -1,0 +1,53 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
+}
+
+project.ext.lwjglVersion = "3.3.1"
+project.ext.lwjglNatives = "natives-linux"
+project.ext.jomlVersion = "1.10.5"
+project.ext.jomlPrimVersion = "1.10.0"
+
+group 'me.ChristopherW'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+    implementation "org.joml:joml:${jomlVersion}"
+    implementation "org.joml:joml-primitives:${jomlPrimVersion}"
+    
+    implementation 'com.github.stephengold:Libbulletjme:18.6.1'
+
+    implementation 'io.github.spair:imgui-java-app:1.86.10'
+    implementation 'io.github.spair:imgui-java-lwjgl3:1.86.10'
+
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-assimp"
+    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-openal"
+    implementation "org.lwjgl:lwjgl-stb"
+    implementation "org.lwjgl:lwjgl-rpmalloc"
+    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-rpmalloc::$lwjglNatives"
+}
+
+jar {
+    manifest {
+        from './src/main/java/META-INF/MANIFEST.MF'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

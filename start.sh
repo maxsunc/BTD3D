@@ -1,0 +1,1 @@
+java -Djava.library.path="./natives/libs/" -Dorg.lwjgl.util.Debug=true -jar "game.jar" 
