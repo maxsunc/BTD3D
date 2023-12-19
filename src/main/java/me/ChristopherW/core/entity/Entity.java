@@ -31,12 +31,12 @@ public class Entity {
         this.enabled = true;
     }
 
-    public Entity(String name, Model model, Vector3f zero, Vector3f zero2, Vector3f vector3f) {
+    public Entity(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale) {
         this.name = name;
         this.model = model;
-        this.position = zero;
-        this.rotation = zero2;
-        this.scale = vector3f;
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
         this.isVisible = true;
         this.enabled = true;
     }

@@ -32,6 +32,7 @@ import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Texture;
+import me.ChristopherW.core.entity.primatives.Cube;
 import me.ChristopherW.core.sound.SoundListener;
 import me.ChristopherW.core.sound.SoundManager;
 import me.ChristopherW.core.sound.SoundSource;
@@ -105,6 +106,7 @@ public class Game implements ILogic {
         animations = new HashMap<>();
 
         // init static objects
+        entities.put("cube", new Cube("cube", new Vector3f(0,0,0), new Vector3f(0,0,0), new Vector3f(1,1,1)));
     }
 
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
@@ -203,6 +205,8 @@ public class Game implements ILogic {
         Matrix4f combinedMat = projMat.mul(viewMat);
         combinedMat = combinedMat.invert();
 
+
+        // depth (world mouse pos, shadows)
         Vector4f vec = new Vector4f();
         vec.x = (2.0f*((float)(x[0])/(window.getWidth())))-1.0f;
         vec.y = 1.0f-(2.0f*((float)(y[0])/(window.getHeight())));
