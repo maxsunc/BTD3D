@@ -57,7 +57,7 @@ public class GUIManager {
 
         // initialize screens
         screens.put("MainMenu", new MainMenu());
-        currentScreen = "MainMenu";
+        currentScreen = "";
 
         // call the start method for each screen
         for(IGUIScreen screen : screens.values()) {

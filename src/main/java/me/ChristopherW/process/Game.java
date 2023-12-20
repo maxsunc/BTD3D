@@ -2,15 +2,10 @@ package me.ChristopherW.process;
 
 import java.awt.Color;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 import org.joml.Matrix4f;
-import org.joml.Vector2d;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -18,6 +13,15 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
+
+import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.collision.shapes.Box2dShape;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.collision.shapes.MeshCollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.bullet.objects.PhysicsRigidBody;
 
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
@@ -30,9 +34,9 @@ import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
-import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.core.entity.primatives.Cube;
+import me.ChristopherW.core.entity.primatives.Plane;
+import me.ChristopherW.core.entity.primatives.Sphere;
 import me.ChristopherW.core.sound.SoundListener;
 import me.ChristopherW.core.sound.SoundManager;
 import me.ChristopherW.core.sound.SoundSource;
@@ -50,6 +54,7 @@ public class Game implements ILogic {
     public Map<String, Entity> entities;
     public Map<String, Animation> animations;
 
+    public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
@@ -67,6 +72,10 @@ public class Game implements ILogic {
         // create new camera
         camera = new Camera();
 
+        physicsSpace = new PhysicsSpace(PhysicsSpace.BroadphaseType.DBVT);
+        physicsSpace.getSolverInfo().setSplitImpulseEnabled(true);
+        physicsSpace.setGravity(new com.jme3.math.Vector3f(0, GlobalVariables.GRAVITY, 0));
+        
         // set setup the sound listener to be at the world origin and load the audio sounds
         soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
         loadSounds();   
@@ -106,7 +115,7 @@ public class Game implements ILogic {
         animations = new HashMap<>();
 
         // init static objects
-        entities.put("cube", new Cube("cube", new Vector3f(0,0,0), new Vector3f(0,0,0), new Vector3f(1,1,1)));
+        //entities.put("vase", new Entity(loader.loadModel("assets/models/vase.obj"), new Vector3f(0,0,0), new Vector3f(0,0,0), new Vector3f(1,1,1)));
     }
 
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
@@ -153,10 +162,10 @@ public class Game implements ILogic {
 
     float defaultRadius = 20f;
     float theta = 0.0f;
+    
     @Override
     public void update(float interval, MouseInput mouseInput) {
-        zoom = Utils.clamp(zoom, 0.25f, 2f);
-        rotY = Utils.clamp(rotY, 0, 90);
+
         float radius = defaultRadius * zoom;
 
         // orbit the camera around the active ball
@@ -171,6 +180,19 @@ public class Game implements ILogic {
         for (Animation animation : animations.values()) {
             animation.tick(interval);
         }
+
+        // for each entity in the world
+        // sync the visual rotation and positions with the physics rotations and positions
+        for(Entity entity : entities.values()) {
+            if(entity.getRigidBody() != null) {
+                entity.setPosition(Utils.convert(entity.getRigidBody().getPhysicsLocation(null)));
+                entity.setRotation(Utils.ToEulerAngles(Utils.convert(entity.getRigidBody().getPhysicsRotation(null))));
+            }
+        }
+
+        
+        // update the physics world
+        physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);
 
         // for each visible entity in the world, process its data before rendered
         for(Entity entity : entities.values()) {

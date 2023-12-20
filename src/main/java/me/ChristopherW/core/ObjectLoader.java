@@ -17,6 +17,8 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
+import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -37,19 +39,19 @@ public class ObjectLoader {
     private List<Integer> vbos = new ArrayList<>();
     private List<Integer> textures = new ArrayList<>();
 
-    // public IndexedMesh loadIndexedMesh(Model model, Vector3f scale) {
-    //     // create a new array of Vector3s the size of the amount of verticies the model has
-    //     com.jme3.math.Vector3f[] verticiesArr = new com.jme3.math.Vector3f[model.getVertices().length / 3];
+     public IndexedMesh loadIndexedMesh(Model model, Vector3f scale) {
+         // create a new array of Vector3s the size of the amount of verticies the model has
+         com.jme3.math.Vector3f[] verticiesArr = new com.jme3.math.Vector3f[model.getVertices().length / 3];
 
-    //     // move the data from the array of floats to the array of Vector3s
-    //     for(int i = 0; i < model.getVertices().length; i += 3) {
-    //         Vector3f vertex = new Vector3f(model.getVertices()[i], model.getVertices()[i + 1], model.getVertices()[i + 2]);
-    //         verticiesArr[i / 3] = new com.jme3.math.Vector3f(vertex.x * scale.x, vertex.y * scale.y, vertex.z * scale.z);
-    //     }
+         // move the data from the array of floats to the array of Vector3s
+         for(int i = 0; i < model.getVertices().length; i += 3) {
+             Vector3f vertex = new Vector3f(model.getVertices()[i], model.getVertices()[i + 1], model.getVertices()[i + 2]);
+             verticiesArr[i / 3] = new com.jme3.math.Vector3f(vertex.x * scale.x, vertex.y * scale.y, vertex.z * scale.z);
+         }
 
-    //     // pass the data into an IndexedMesh for the physics engine to register
-    //     return new IndexedMesh(verticiesArr, model.getIndices());
-    // }
+         // pass the data into an IndexedMesh for the physics engine to register
+         return new IndexedMesh(verticiesArr, model.getIndices());
+     }
 
     public int loadModel(float[] vertices, float[] textureCoords) {
         // create a new VAO and store it's id

@@ -8,11 +8,11 @@ public class GlobalVariables {
     public static final String ICON_PATH = "assets/textures/icons/icon.png";
     public static final Vector4f BG_COLOR = new Vector4f(0f, 0f,0f, 0f);
 
-    public static final float GRAVITY = -39.2f;
+    public static final float GRAVITY = -9.8f;
     public static boolean FULLSCREEN = false;
     public static int WIDTH = 1280, HEIGHT = 720;
-    public static float MAX_FRAMERATE = 120;
-    public static float FRAMERATE = 120;
+    public static float MAX_FRAMERATE = 60;
+    public static float FRAMERATE = 60;
     public static boolean SHOW_FPS = false;
     public static boolean VSYNC = false;
     public static int SHADOW_RES = 2048;

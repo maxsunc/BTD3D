@@ -3,7 +3,10 @@ package me.ChristopherW.core.utils;
 import me.ChristopherW.core.custom.UI.UIScreens.Resolution;
 
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
+
+import com.jme3.math.Quaternion;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -66,43 +69,25 @@ public class Utils {
     public static float GetColorDistance(Color a, Color b) {
         return (float) Math.sqrt(Math.pow(b.getRed() - a.getRed(),2) + Math.pow(b.getGreen() - a.getGreen(),2) + Math.pow(b.getBlue() - a.getBlue(),2));
     }
-    public static org.joml.Vector3f ToEulerAngles(org.joml.Quaternionf q) {
-        org.joml.Vector3f angles = new org.joml.Vector3f(0,0,0);
 
-        // roll (x-axis rotation)
-        double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
-        double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-        angles.x = (float) Math.atan2(sinr_cosp, cosr_cosp);
-
-        // pitch (y-axis rotation)
-        double sinp = Math.sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
-        double cosp = Math.sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
-        angles.y = (float) (2 * Math.atan2(sinp, cosp) - Math.PI / 2);
-
-        // yaw (z-axis rotation)
-        double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
-        double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-        angles.z = (float) Math.atan2(siny_cosp, cosy_cosp);
-
-        return angles;
+    public static Vector3f ToEulerAngles(Quaternionf q1) {
+        double sqw = q1.w*q1.w;
+        double sqx = q1.x*q1.x;
+        double sqy = q1.y*q1.y;
+        double sqz = q1.z*q1.z;
+        double heading = Math.atan2(2.0 * (q1.x*q1.y + q1.z*q1.w),(sqx - sqy - sqz + sqw));
+        double bank = Math.atan2(2.0 * (q1.y*q1.z + q1.x*q1.w),(-sqx - sqy + sqz + sqw));
+        double attitude = Math.asin(-2.0 * (q1.x*q1.z - q1.y*q1.w));
+        return new Vector3f((float)Math.toDegrees(bank), (float)Math.toDegrees(heading), (float)Math.toDegrees(attitude));
     }
 
     // algorithm to convert a Euler angle to a Quaternion angle
-    public static org.joml.Quaternionf ToQuaternion(org.joml.Vector3f vector) {
-        double cr = Math.cos(vector.x * 0.5);
-        double sr = Math.sin(vector.x * 0.5);
-        double cp = Math.cos(vector.y * 0.5);
-        double sp = Math.sin(vector.y * 0.5);
-        double cy = Math.cos(vector.z * 0.5);
-        double sy = Math.sin(vector.z * 0.5);
+    public static Quaternion ToQuaternion(org.joml.Vector3f vector) {
+        return new Quaternion().fromAngles((float)Math.toRadians(vector.x), (float)Math.toRadians(vector.y), (float)Math.toRadians(vector.z));
+    }
 
-        org.joml.Quaternionf q = new Quaternionf();
-        q.w = (float) (cr * cp * cy + sr * sp * sy);
-        q.x = (float) (sr * cp * cy - cr * sp * sy);
-        q.y = (float) (cr * sp * cy + sr * cp * sy);
-        q.z = (float) (cr * cp * sy - sr * sp * cy);
-
-        return q;
+    public static com.jme3.math.Quaternion ToQuaternion(com.jme3.math.Vector3f vector) {
+        return new Quaternion().fromAngles((float)Math.toRadians(vector.x), (float)Math.toRadians(vector.y), (float)Math.toRadians(vector.z));
     }
 
 
@@ -147,6 +132,18 @@ public class Utils {
 
     public static ByteBuffer allocBytes(int howmany) {
         return ByteBuffer.allocateDirect(howmany).order(ByteOrder.nativeOrder());
-     }
+    }
 
+    public static com.jme3.math.Vector3f convert(Vector3f in) {
+        return new com.jme3.math.Vector3f(in.x, in.y, in.z);
+    }
+    public static Vector3f convert(com.jme3.math.Vector3f in) {
+        return new Vector3f(in.x, in.y, in.z);
+    }
+    public static com.jme3.math.Quaternion convert(Quaternionf in) {
+        return new com.jme3.math.Quaternion(in.x, in.y, in.z, in.w);
+    }
+    public static Quaternionf convert(com.jme3.math.Quaternion in) {
+        return new Quaternionf(in.getX(), in.getY(), in.getZ(), in.getW());
+    }
 }

@@ -1,25 +1,23 @@
 package me.ChristopherW.core.entity;
 
+import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.objects.PhysicsRigidBody;
+import com.jme3.math.Quaternion;
+
+import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Utils;
+import me.ChristopherW.process.Game;
+
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Entity {
     private String name;
+    private PhysicsRigidBody rigidBody;
     private Model model;
     private Vector3f position, rotation, scale;
     private boolean isVisible;
     private boolean enabled;
-
-    public Entity(Entity source) {
-        this.name = source.name;
-        this.model = new Model(source.model, source.model.getMaterial().getTexture());
-        this.position = new Vector3f(source.position);
-        this.rotation = new Vector3f(source.rotation);
-        this.scale = new Vector3f(source.scale);
-        this.isVisible = source.isVisible;
-        this.enabled = source.enabled;
-    }
 
     public Entity(Model model, Vector3f position, Vector3f rotation, Vector3f scale) {
         this.name = "New Object";
@@ -29,6 +27,7 @@ public class Entity {
         this.scale = scale;
         this.isVisible = true;
         this.enabled = true;
+        this.rigidBody = null;
     }
 
     public Entity(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale) {
@@ -39,6 +38,7 @@ public class Entity {
         this.scale = scale;
         this.isVisible = true;
         this.enabled = true;
+        this.rigidBody = null;
     }
 
     public boolean isEnabled() {
@@ -50,8 +50,10 @@ public class Entity {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if(enabled) {
+            Game.physicsSpace.addCollisionObject(this.rigidBody);
             this.setVisible(true);
         } else {
+            Game.physicsSpace.removeCollisionObject(this.rigidBody);
             this.setVisible(false);
         }
     }
@@ -108,6 +110,8 @@ public class Entity {
         this.position.x += x;
         this.position.y += y;
         this.position.z += z;
+        if(this.rigidBody != null)
+            this.rigidBody.setPhysicsLocation(Utils.convert(position));
     }
     public void translate(Vector3f translation) {
         translate(translation.x, translation.y, translation.z);
@@ -116,6 +120,8 @@ public class Entity {
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
+        if(this.rigidBody != null)
+            this.rigidBody.setPhysicsLocation(Utils.convert(position));
     }
     public void setPosition(Vector3f position) {
         setPosition(position.x, position.y, position.z);
@@ -130,10 +136,17 @@ public class Entity {
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
+        if(this.rigidBody != null) {
+            Quaternion quat = new Quaternion();
+            quat.fromAngles((float) Math.toRadians(x), (float) Math.toRadians(y), (float) Math.toRadians(z));
+            this.rigidBody.setPhysicsRotation(quat);
+        }
+
+
     }
     public void setRotation(Vector3f rotation) {
-        setRotation(rotation.x, rotation.y, rotation.z);
-    }
+            setRotation(rotation.x, rotation.y, rotation.z);
+}
     public void setScale(float scale) {
         setScale(scale, scale, scale);
     }
@@ -168,6 +181,17 @@ public class Entity {
 
     public void setVisible(boolean visible) {
         isVisible = visible;
+    }
+
+    public PhysicsRigidBody getRigidBody() {
+        return rigidBody;
+    }
+
+    public void setRigidBody(PhysicsRigidBody rigidBody) {
+        this.rigidBody = rigidBody;
+        rigidBody.setPhysicsLocation(Utils.convert(this.getPosition()));
+        rigidBody.setPhysicsRotation(rigidBody.getPhysicsRotation(null).fromAngles(this.rotation.x, this.rotation.y, this.rotation.z));
+        Game.physicsSpace.addCollisionObject(rigidBody);
     }
 
     public String getName() {
