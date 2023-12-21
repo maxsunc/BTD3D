@@ -18,4 +18,7 @@ public class Sphere extends Entity {
     public Sphere(float radius) {
         super("New Sphere", new ObjectLoader().loadModel("assets/models/primatives/sphere.obj"), new Vector3f(0,0,0), new Vector3f(0,0,0), new Vector3f(2*radius,2*radius,2*radius));
     }
+    public Sphere(Vector3f position, float radius){
+        super("New Sphere", new ObjectLoader().loadModel("assets/models/primatives/sphere.obj"), position, new Vector3f(0,0,0), new Vector3f(2*radius,2*radius,2*radius));
+    }
 }

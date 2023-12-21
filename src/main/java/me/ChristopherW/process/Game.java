@@ -115,11 +115,14 @@ public class Game implements ILogic {
         animations = new HashMap<>();
 
         // init static objects
-        //entities.put("vase", new Entity(loader.loadModel("assets/models/vase.obj"), new Vector3f(0,0,0), new Vector3f(0,0,0), new Vector3f(1,1,1)));
+        entities.put("plane", new Plane(5f));
     }
 
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
-        
+        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS){
+            // spawn at position
+            entities.put("sphere", new Sphere(mouseWorldPos, 0.5f));
+        }
     }
 
     public void keyDown(long window, int key, int scancode, int action, int mods) {
@@ -165,6 +168,7 @@ public class Game implements ILogic {
     
     @Override
     public void update(float interval, MouseInput mouseInput) {
+        
 
         float radius = defaultRadius * zoom;
 

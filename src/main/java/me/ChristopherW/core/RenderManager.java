@@ -196,6 +196,7 @@ public class RenderManager {
 
         GL11.glViewport(0,0, window.getWidth(), window.getHeight());
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glClearColor(0,0,0,0);
         renderScene(camera);
         //renderQuad();
         // clear the entities array for that model for the next frame

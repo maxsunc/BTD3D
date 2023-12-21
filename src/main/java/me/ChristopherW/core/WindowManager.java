@@ -178,6 +178,8 @@ public class WindowManager {
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glEnable(GL43.GL_DEBUG_OUTPUT);
         GL11.glCullFace(GL11.GL_BACK);
+        GL11.glColorMask(true, true, true, true);
+        GL11.glDepthMask(true);
     }
 
     private void initImGui() {
