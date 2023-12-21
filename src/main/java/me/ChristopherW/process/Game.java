@@ -34,6 +34,7 @@ import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
+import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.entity.primatives.Plane;
 import me.ChristopherW.core.entity.primatives.Sphere;
@@ -58,6 +59,7 @@ public class Game implements ILogic {
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
+    private Model monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -115,15 +117,31 @@ public class Game implements ILogic {
         animations = new HashMap<>();
 
         // init static objects
-        //entities.put("vase", new Entity(loader.loadModel("assets/models/vase.obj"), new Vector3f(0,0,0), new Vector3f(0,0,0), new Vector3f(1,1,1)));
+        monkeyModel = loader.loadModel("assets/models/monkey.dae", new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_2.002.png")));
+
+        entities.put("map", new Entity(
+            loader.loadModel(
+                "assets/models/map.obj", 
+                new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_1.png"))), 
+            new Vector3f(0,0,0), 
+            new Vector3f(0,0,0), 
+            new Vector3f(0.1f,0.1f,0.1f)
+        ));
+
+         entities.put("map_1", new Plane(new Vector3f(0, -0.01f, 0), new Vector3f(), new Vector3f(100,1,100)));
     }
 
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
-        
+        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS) {
+            Entity newMonkey = new Entity(monkeyModel,  new Vector3f(mouseWorldPos.x,0,mouseWorldPos.z), new Vector3f(0,0,0), new Vector3f(0.1f, 0.1f, 0.1f));
+
+            entities.put("monkey" + i, newMonkey);
+            i++;
+        }
     }
 
+    int i = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
-        
     }
 
     float rotX = 45;

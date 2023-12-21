@@ -20,7 +20,7 @@ uniform mat4 lightSpaceMatrix;
 void main() {
     vec4 worldPos = transformationMatrix * vec4(position, 1.0);
     vec4 normalPos =  vec4(normal, 1.0);
-    lightVec = vec3(200, 200, 100);
+    lightVec = vec3(400, 400, 200);
     fragNormal = normalize(m3x3InvTrans * normalPos.xyz);
     fragPos = worldPos.xyz;
     fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);

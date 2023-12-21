@@ -6,7 +6,7 @@ import org.joml.Vector4f;
 public class GlobalVariables {
     public static final String TITLE = "Example Game";
     public static final String ICON_PATH = "assets/textures/icons/icon.png";
-    public static final Vector4f BG_COLOR = new Vector4f(0f, 0f,0f, 0f);
+    public static final Vector4f BG_COLOR = new Vector4f(0.2f, 0.2f,1f, 1f);
 
     public static final float GRAVITY = -9.8f;
     public static boolean FULLSCREEN = false;
@@ -15,7 +15,7 @@ public class GlobalVariables {
     public static float FRAMERATE = 60;
     public static boolean SHOW_FPS = false;
     public static boolean VSYNC = false;
-    public static int SHADOW_RES = 2048;
+    public static int SHADOW_RES = 4098;
     public static boolean SHADOW_FILTERING = true;
 
     public static final float FOV = (float) Math.toRadians(50);
