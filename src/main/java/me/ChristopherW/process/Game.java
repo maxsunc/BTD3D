@@ -34,6 +34,7 @@ import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
+import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.entity.primatives.Plane;
 import me.ChristopherW.core.entity.primatives.Sphere;
@@ -58,6 +59,7 @@ public class Game implements ILogic {
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
+    private Model monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -115,18 +117,39 @@ public class Game implements ILogic {
         animations = new HashMap<>();
 
         // init static objects
-        entities.put("plane", new Plane(5f));
+        monkeyModel = loader.loadModel("assets/models/monkey.dae", new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_2.002.png")));
+
+        entities.put("map", new Entity(
+            loader.loadModel(
+                "assets/models/map.obj", 
+                new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_1.png"))), 
+            new Vector3f(0,0,0), 
+            new Vector3f(0,0,0), 
+            new Vector3f(0.1f,0.1f,0.1f)
+        ));
+
+         entities.put("map_1", new Plane(new Vector3f(0, -0.01f, 0), new Vector3f(), new Vector3f(100,1,100)));
     }
 
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
-        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS){
-            // spawn at position
-            entities.put("sphere", new Sphere(mouseWorldPos, 0.5f));
+        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS) {
+            Vector3f spawnPos = new Vector3f(mouseWorldPos.x,0,mouseWorldPos.z);
+            Entity newMonkey = new Entity(monkeyModel,  spawnPos, new Vector3f(0,0,0), new Vector3f(0.1f, 0.1f, 0.1f));
+            if(entities.size() > 1)
+            System.out.println(entities.size());
+            // check postiion
+            for(int j = 0; j < entities.size()-2; j++){
+                if(spawnPos.distance(entities.get("monkey" + j).getPosition()) < 1f){
+                    return;
+                }
+            }
+            entities.put("monkey" + i, newMonkey);
+            i++;
         }
     }
 
+    int i = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
-        
     }
 
     float rotX = 45;

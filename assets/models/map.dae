@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 3.6.2 commit date:2023-08-16, commit time:16:43, hash:e53e55951e7a</authoring_tool>
+    </contributor>
+    <created>2023-12-21T10:32:59</created>
+    <modified>2023-12-21T10:32:59</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="MonkeyMeadowTerrainTexture-effect">
+      <profile_COMMON>
+        <newparam sid="DiffuseColor_Texture_1-surface">
+          <surface type="2D">
+            <init_from>DiffuseColor_Texture_1</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="DiffuseColor_Texture_1-sampler">
+          <sampler2D>
+            <source>DiffuseColor_Texture_1-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <texture texture="DiffuseColor_Texture_1-sampler" texcoord="UVSet0"/>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_images>
+    <image id="DiffuseColor_Texture_1" name="DiffuseColor_Texture_1">
+      <init_from>DiffuseColor_Texture_1.png</init_from>
+    </image>
+  </library_images>
+  <library_materials>
+    <material id="MonkeyMeadowTerrainTexture-material" name="MonkeyMeadowTerrainTexture">
+      <instance_effect url="#MonkeyMeadowTerrainTexture-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Scene_126-mesh" name="Scene.126">
+      <mesh>
+        <source id="Scene_126-mesh-positions">
+          <float_array id="Scene_126-mesh-positions-array" count="12">23501.53 1.77961e-5 -16624.27 23501.53 1.77961e-5 16624.27 -23501.53 1.77961e-5 -16624.27 -23501.53 1.77961e-5 16624.27</float_array>
+          <technique_common>
+            <accessor source="#Scene_126-mesh-positions-array" count="4" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Scene_126-mesh-normals">
+          <float_array id="Scene_126-mesh-normals-array" count="3">0 1 0</float_array>
+          <technique_common>
+            <accessor source="#Scene_126-mesh-normals-array" count="1" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Scene_126-mesh-map-0">
+          <float_array id="Scene_126-mesh-map-0-array" count="12">9.76562e-4 9.76562e-4 0.9990234 9.76562e-4 0.001568853 0.7052894 0.001568853 0.7052894 0.9990234 9.76562e-4 0.9984311 0.7052894</float_array>
+          <technique_common>
+            <accessor source="#Scene_126-mesh-map-0-array" count="6" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Scene_126-mesh-map-1">
+          <float_array id="Scene_126-mesh-map-1-array" count="12">0.9961542 0.00390625 0.00390625 0.00390625 0.9961543 0.7057926 0.9961543 0.7057926 0.00390625 0.00390625 0.003906369 0.7057926</float_array>
+          <technique_common>
+            <accessor source="#Scene_126-mesh-map-1-array" count="6" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Scene_126-mesh-vertices">
+          <input semantic="POSITION" source="#Scene_126-mesh-positions"/>
+        </vertices>
+        <triangles material="MonkeyMeadowTerrainTexture-material" count="2">
+          <input semantic="VERTEX" source="#Scene_126-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Scene_126-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Scene_126-mesh-map-0" offset="2" set="0"/>
+          <input semantic="TEXCOORD" source="#Scene_126-mesh-map-1" offset="2" set="1"/>
+          <p>0 0 0 2 0 1 1 0 2 1 0 3 2 0 4 3 0 5</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene"/>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

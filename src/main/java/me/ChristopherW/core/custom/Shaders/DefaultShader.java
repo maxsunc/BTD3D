@@ -57,7 +57,7 @@ public class DefaultShader extends ShaderManager implements IShader {
         this.setUniform("viewMatrix", Transformation.createViewMatrix(camera));
         this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING);
+        this.setUniform("shadowFiltering", 1);
         this.setUniform("material", entity.getModel().getMaterial());
     }
     
