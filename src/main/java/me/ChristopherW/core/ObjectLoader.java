@@ -2,6 +2,7 @@ package me.ChristopherW.core;
 
 //import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
 import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.entity.RiggedModel;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.utils.Utils;
 import me.ChristopherW.process.Game;
@@ -91,6 +92,39 @@ public class ObjectLoader {
     public Model loadModel(String modelPath) {
         // if no texture is provided, use the default texture
         return loadModel(modelPath, Game.defaultTexture);
+    }
+
+    public RiggedModel loadRiggedModel(String modelPath) {
+        // using LWJGL's ASSIMP module, we can extract the vertices, normals, texCoords, and indiies 
+        File file = new File(modelPath);
+        if (!file.exists()) {
+            throw new RuntimeException("Model path does not exist [" + modelPath + "]");
+        }
+        String modelDir = file.getParent();
+
+        AIScene aiScene = aiImportFile(modelPath, aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices |
+                aiProcess_Triangulate | aiProcess_FixInfacingNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights |
+                aiProcess_PreTransformVertices);
+        if (aiScene == null) {
+            throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
+        }
+        int numMeshes = aiScene.mNumMeshes();
+        PointerBuffer aiMeshes = aiScene.mMeshes();
+        for (int i = 0; i < numMeshes; i++) {
+            AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
+            float[] vertices = processVertices(aiMesh);
+            float[] normals = processNormals(aiMesh);
+            float[] textCoords = processTextCoords(aiMesh);
+            int[] indices = processIndices(aiMesh);
+
+            // Texture coordinates may not have been populated. We need at least the empty slots
+            if (textCoords.length == 0) {
+                int numElements = (vertices.length / 3) * 2;
+                textCoords = new float[numElements];
+            }
+            //return loadModel(vertices, textCoords, normals, indices, null, modelPath);
+        }
+        return null;
     }
 
     public Model loadModel(String modelPath, Texture texture) {
