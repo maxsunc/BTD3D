@@ -5,6 +5,7 @@ in vec3 fragNormal;
 in vec3 fragPos;
 in vec3 lightVec;
 in vec4 fragPosLightSpace;
+in float visibility;
 
 out vec4 fragColor;
 
@@ -15,9 +16,11 @@ struct Material {
 };
 
 uniform int shadowFiltering;
+uniform int showFog;
 uniform Material material;
 uniform sampler2D textureSampler;
 uniform sampler2D shadowMap;
+uniform vec4 skyColor; 
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -38,12 +41,15 @@ float ShadowCalculation(vec4 fragPosLightSpace)
             for(int y = -1; y <= 1; ++y)
             {
                 float pcfDepth = texture(shadowMap, lightCoords.xy + vec2(x, y) * texelSize).r; 
-                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.1;        
             }
         }
         shadow /= 9.0;
     } else {
         shadow = currentDepth - bias > closestDepth? 1.0 : 0.0; 
+    }
+    if(shadow == 0.0) {
+        shadow = 1.0;
     }
     return shadow;
 }
@@ -89,4 +95,7 @@ void main() {
     float shadow = ShadowCalculation(fragPosLightSpace); 
     vec4 result = textureColor * (ambientColor + ((1.0 - shadow) * (diffuseColor + specularColor)));
     fragColor = result;
+    if(showFog == 1) {
+        fragColor = mix(skyColor, fragColor, visibility);
+    }
 }

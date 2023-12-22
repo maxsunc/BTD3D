@@ -10,13 +10,15 @@ public class GlobalVariables {
 
     public static final float GRAVITY = -9.8f;
     public static boolean FULLSCREEN = false;
-    public static int WIDTH = 1280, HEIGHT = 720;
+    public static int WIDTH = 800, HEIGHT = 800;
     public static float MAX_FRAMERATE = 60;
     public static float FRAMERATE = 60;
     public static boolean SHOW_FPS = false;
     public static boolean VSYNC = false;
     public static int SHADOW_RES = 4098;
     public static boolean SHADOW_FILTERING = true;
+    public static boolean FOG = true;
+    public static boolean DEBUG_SHADOWS = false;
 
     public static final float FOV = (float) Math.toRadians(50);
     public static final float Z_NEAR = 0.01f;
