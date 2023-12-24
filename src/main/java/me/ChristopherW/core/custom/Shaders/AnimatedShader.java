@@ -1,5 +1,7 @@
 package me.ChristopherW.core.custom.Shaders;
 
+import java.util.Arrays;
+
 import org.joml.Matrix4f;
 
 import me.ChristopherW.core.Camera;
@@ -70,6 +72,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
         } else {
             m = a.getCurrentFrame().getJointMatrices();
         }
+        //System.out.println(Arrays.toString(a.getCurrentFrame().getJointMatrices()));
         this.setUniform("jointsMatrix", m);
         this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING ? 1 : 0);
         this.setUniform("material", entity.getModel().getMaterial());

@@ -129,8 +129,8 @@ public class ObjectLoader {
         storeDataInAttribList(0, 3, vertices);
         storeDataInAttribList(1, 2, textureCoords);
         storeDataInAttribList(2, 3, normals);
-        storeDataInAttribList(3, 3, jointIds);
-        storeDataInAttribList(4, 3, weights);
+        storeDataInAttribList(3, 4, jointIds);
+        storeDataInAttribList(4, 4, weights);
 
         // unbind the VAO
         unbind();
@@ -230,8 +230,6 @@ public class ObjectLoader {
             int maxFrames = calcAnimationMaxFrames(aiAnimation);
 
             List<AnimatedFrame> frames = new ArrayList<>();
-            System.out.println("Name: " + aiAnimation.mName().dataString());
-            System.out.println("Duration: " + aiAnimation.mDuration());
             Animation animation = new Animation(aiAnimation.mName().dataString(), frames, aiAnimation.mDuration());
             animations.put(animation.getName(), animation);
 
@@ -254,15 +252,16 @@ public class ObjectLoader {
         Matrix4f nodeGlobalTransform = new Matrix4f(parentTransformation).mul(nodeTransform);
 
         List<Bone> affectedBones = boneList.stream().filter(b -> b.getBoneName().equals(nodeName)).toList();
-        for (Bone bone: affectedBones) {
-            Matrix4f boneTransform = new Matrix4f(globalInverseTransform).mul(nodeGlobalTransform).mul(bone.getOffsetMatrix());
-            System.out.println(bone.getBoneId());
-            animatedFrame.getJointMatrices()[bone.getBoneId()] = boneTransform;
+        if(affectedBones.size() > 0) {
+
+            for (Bone bone: affectedBones) {
+                Matrix4f boneTransform = new Matrix4f(globalInverseTransform).mul(nodeGlobalTransform).mul(bone.getOffsetMatrix());
+                animatedFrame.getJointMatrices()[bone.getBoneId()] = boneTransform;
+            }
         }
 
         for (Node childNode : node.getChildren()) {
-            buildFrameMatrices(aiAnimation, boneList, animatedFrame, frame, childNode, nodeGlobalTransform,
-                    globalInverseTransform);
+            buildFrameMatrices(aiAnimation, boneList, animatedFrame, frame, childNode, nodeGlobalTransform, globalInverseTransform);
         }
     }
     private static AINodeAnim findAIAnimNode(AIAnimation aiAnimation, String nodeName) {

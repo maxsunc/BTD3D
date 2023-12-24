@@ -36,9 +36,6 @@ public class RiggedModel extends Model {
 
     public void play(String key) {
         this.currentAnimation = animations.get(key);
-        for(AnimatedFrame f : currentAnimation.getFrames()) {
-            System.out.println(Arrays.toString(f.getJointMatrices()));
-        }
     }
     public void play(Animation anim) {
         this.currentAnimation = anim;

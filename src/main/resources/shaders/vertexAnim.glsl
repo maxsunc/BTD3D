@@ -6,8 +6,8 @@ const int MAX_JOINTS = 150;
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 textureCoord;
 layout (location = 2) in vec3 normal;
-layout (location = 3) in ivec3 jointIndices;
-layout (location = 4) in vec3 jointWeights;
+layout (location = 3) in ivec4 jointIndices;
+layout (location = 4) in vec4 jointWeights;
 
 out vec3 lightVec;
 out vec2 fragTextureCoord;

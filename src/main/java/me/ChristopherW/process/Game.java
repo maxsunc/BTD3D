@@ -66,7 +66,7 @@ public class Game implements ILogic {
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    private RiggedModel monkeyModel;
+    private Model monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -124,10 +124,10 @@ public class Game implements ILogic {
         animations = new HashMap<>();
 
         // init static objects
-        monkeyModel = loader.loadRiggedModel("assets/models/model.dae", new Texture(loader.loadTexture("assets/models/diffuse.png")));
-        System.out.println("out: " + monkeyModel.getAnimations().values().size());
-        monkeyModel.setShader(new AnimatedShader("/shaders/vertexAnim.glsl", "/shaders/fragment.glsl"));
-        ((IShader) monkeyModel.getShader()).start();
+        monkeyModel = loader.loadModel("assets/models/monkey.dae", new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_2.png")));
+        //System.out.println("out: " + monkeyModel.getAnimations().values().size());
+        //monkeyModel.setShader(new AnimatedShader("/shaders/vertexAnim.glsl", "/shaders/fragment.glsl"));
+        //((IShader) monkeyModel.getShader()).start();
 
         entities.put("map", new Entity(
             loader.loadModel(
@@ -162,7 +162,7 @@ public class Game implements ILogic {
                 Entity newMonkey = new Entity(monkeyModel,  new Vector3f(mouseWorldPos.x,0,mouseWorldPos.z), new Vector3f(0,0,0), new Vector3f(0.1f, 0.1f, 0.1f));
 
                 entities.put("monkey" + i, newMonkey);
-                ((RiggedModel)newMonkey.getModel()).play("Armature");
+                //((RiggedModel)newMonkey.getModel()).play("Armature");
 
                 i++;
             }
@@ -184,8 +184,6 @@ public class Game implements ILogic {
                     for(Entity entity : entities.values()) {
                         if(entity.getModel() instanceof RiggedModel) {
                             ((RiggedModel)entity.getModel()).getCurrentAnimation().nextFrame();
-                            Matrix4f[] joints = ((RiggedModel)entity.getModel()).getCurrentAnimation().getCurrentFrame().getJointMatrices();
-                            System.out.println(Arrays.toString(joints));
                         }
                     }
                 }
