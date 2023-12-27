@@ -16,7 +16,7 @@ public class Camera {
         this.rotation = rot;
 
         Matrix4f lightProjection = new Matrix4f();
-        lightProjection.ortho(-20, 20, -20, 20, 5f, 150);
+        lightProjection.ortho(-20, 20, -20, 20, 5f, 100);
 
         Matrix4f lightView = new Matrix4f();
         lightView.lookAt(

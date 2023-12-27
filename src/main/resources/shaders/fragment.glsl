@@ -3,7 +3,6 @@
 in vec2 fragTextureCoord;
 in vec3 fragNormal;
 in vec3 fragPos;
-in vec3 lightVec;
 in vec4 fragPosLightSpace;
 in float visibility;
 
@@ -56,13 +55,15 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 
 void main() {
     vec3 lightColor = vec3(1,1,1);
+    vec3 lightCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    lightCoords = (lightCoords + 1.0) / 2.0;
 
     float ambientIntensity = 0.5;
     float specularIntensity = material.specular;
     float diffuseIntensity = 1;
 
     vec4 ambientColor = vec4(lightColor * ambientIntensity, 1.0);
-    vec3 lightDirection = normalize(lightVec - fragPos);
+    vec3 lightDirection = normalize(lightCoords - fragPos);
 
     vec3 normal = normalize(fragNormal);
 

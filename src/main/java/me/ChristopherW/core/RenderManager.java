@@ -1,5 +1,6 @@
 package me.ChristopherW.core;
 
+import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Shaders.DebugShader;
 import me.ChristopherW.core.custom.Shaders.DepthShader;
 import me.ChristopherW.core.entity.Entity;
@@ -103,7 +104,7 @@ public class RenderManager {
 
     public void renderSceneOrtho(Camera camera) {
         for(Model model : entities.keySet()) {
-            // bind the model's shader and set the projec   tionMatrix uniform data
+            // bind the model's shader and set the projectionMatrix uniform data
             depthShader.bind();
             
             // bind the model itself
@@ -112,7 +113,6 @@ public class RenderManager {
             // for each entity that uses that model
             List<Entity> entityList = entities.get(model);
             for(Entity entity : entityList) {
-                // prepare it to be rendered then draw the triangles to the viewBuffer
                 prepare((IShader)depthShader, entity, camera);
                 GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
             }

@@ -7,7 +7,7 @@ import org.joml.Matrix4f;
 import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.ShaderManager;
-import me.ChristopherW.core.custom.Animations.Animation;
+import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
@@ -45,7 +45,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
             this.createUniform("viewMatrix");
             this.createUniform("m3x3InvTrans");
             this.createUniform("lightSpaceMatrix");
-            this.createUniform("jointsMatrix");
+            this.createUniform("bones");
             this.createUniform("shadowFiltering");
             this.createUniform("skyColor");
             this.createUniform("showFog");
@@ -65,15 +65,12 @@ public class AnimatedShader extends ShaderManager implements IShader {
         this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
         RiggedModel rm = ((RiggedModel)entity.getModel());
-        Matrix4f[] m;
-        Animation a = rm.getCurrentAnimation();
-        if(a == null) {
-            m = rm.getAnimations().get(rm.getAnimations().keySet().toArray(new String[0])[0]).getCurrentFrame().getJointMatrices();
-        } else {
-            m = a.getCurrentFrame().getJointMatrices();
+        rm.updateAnimation(((AnimatedEntity)entity).getTick(0), 0);
+        Matrix4f[] m = new Matrix4f[50];
+        for(int i = 0; i < rm.getBones().length; i++) {
+            m[i] = rm.getBones()[i].getTransformation();
         }
-        //System.out.println(Arrays.toString(a.getCurrentFrame().getJointMatrices()));
-        this.setUniform("jointsMatrix", m);
+        this.setUniform("bones", m);
         this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING ? 1 : 0);
         this.setUniform("material", entity.getModel().getMaterial());
         this.setUniform("skyColor", GlobalVariables.BG_COLOR);

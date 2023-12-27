@@ -109,7 +109,8 @@ public class ShaderManager {
             int length = matrices != null ? matrices.length : 0;
             FloatBuffer fb = stack.mallocFloat(16 * length);
             for (int i = 0; i < length; i++) {
-                matrices[i].get(16 * i, fb);
+                if(matrices[i] != null)
+                    matrices[i].get(16 * i, fb);
             }
             GL20.glUniformMatrix4fv(uniforms.get(uniformName), false, fb);
         }

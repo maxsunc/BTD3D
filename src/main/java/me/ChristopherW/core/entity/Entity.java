@@ -60,7 +60,7 @@ public class Entity {
 
     public void localTranslate(float x, float y, float z) {
         if(z != 0) {
-            position.x += (float) Math.sin(Math.toRadians(rotation.y)) * -1.0f * z;
+            position.x += (float) Math.sin(Math.toRadians(rotation.y)) * z;
             position.z += (float) Math.cos(Math.toRadians(rotation.y)) * z;
         }
         if(x != 0) {

@@ -2,30 +2,35 @@ package me.ChristopherW.core.custom.Animations;
 
 import org.joml.Matrix4f;
 
-public class Bone {
+public class Bone
+{
+    private String name;
+    private final Matrix4f offsetMatrix;
+    private Matrix4f transformation;
 
-    private final int boneId;
-
-    private final String boneName;
-
-    private Matrix4f offsetMatrix;
-
-    public Bone(int boneId, String boneName, Matrix4f offsetMatrix) {
-        this.boneId = boneId;
-        this.boneName = boneName;
+    public Bone(String name, Matrix4f offsetMatrix)
+    {
+        this.name = name;
         this.offsetMatrix = offsetMatrix;
     }
 
-    public int getBoneId() {
-        return boneId;
+    public String getName()
+    {
+        return name;
     }
 
-    public String getBoneName() {
-        return boneName;
-    }
-
-    public Matrix4f getOffsetMatrix() {
+    public Matrix4f getOffsetMatrix()
+    {
         return offsetMatrix;
     }
 
+    public Matrix4f getTransformation()
+    {
+        return transformation;
+    }
+
+    void setTransformation(Matrix4f transformation)
+    {
+        this.transformation = transformation;
+    }
 }

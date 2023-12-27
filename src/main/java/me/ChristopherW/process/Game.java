@@ -34,7 +34,7 @@ import me.ChristopherW.core.MouseInput;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
-import me.ChristopherW.core.custom.Animations.Animation;
+import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.custom.UI.GUIManager;
@@ -60,13 +60,12 @@ public class Game implements ILogic {
     public HashMap<String, SoundSource> audioSources = new HashMap<>();
 
     public Map<String, Entity> entities;
-    public Map<String, Animation> animations;
 
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    private Model monkeyModel;
+    private RiggedModel monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -121,72 +120,26 @@ public class Game implements ILogic {
 
         // initialize entities map
         entities = new HashMap<>();
-        animations = new HashMap<>();
 
         // init static objects
-        monkeyModel = loader.loadModel("assets/models/monkey.dae", new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_2.png")));
-        //System.out.println("out: " + monkeyModel.getAnimations().values().size());
-        //monkeyModel.setShader(new AnimatedShader("/shaders/vertexAnim.glsl", "/shaders/fragment.glsl"));
-        //((IShader) monkeyModel.getShader()).start();
-
-        entities.put("map", new Entity(
-            loader.loadModel(
-                "assets/models/map.obj", 
-                new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_1.png"))), 
-            new Vector3f(0,0,0), 
-            new Vector3f(0,0,0), 
-            new Vector3f(0.1f,0.1f,0.1f)
+        entities.put("player",
+        new AnimatedEntity(
+            loader.loadRiggedModel("assets/models/model.dae", loader.createTexture("assets/models/diffuse.png")),
+            new Vector3f(0,-4,0), 
+            new Vector3f(0,0,0),
+            new Vector3f(1,1,1)
         ));
-
-        entities.put("map_1", new Plane(new Vector3f(50, -0.1f, 50), new Vector3f(), new Vector3f(50,1,50)));
-        entities.get("map_1").getModel().getMaterial().setTexture(new Texture(loader.loadTexture("assets/models/map_base.png")));
-        
-        entities.put("map_2", new Plane(new Vector3f(-50, -0.1f, 50), new Vector3f(), new Vector3f(50,1,50)));
-        entities.get("map_2").getModel().getMaterial().setTexture(new Texture(loader.loadTexture("assets/models/map_base.png")));
-        
-        entities.put("map_3", new Plane(new Vector3f(50, -0.1f, -50), new Vector3f(), new Vector3f(50,1,50)));
-        entities.get("map_3").getModel().getMaterial().setTexture(new Texture(loader.loadTexture("assets/models/map_base.png")));
-        
-        entities.put("map_4", new Plane(new Vector3f(-50, -0.1f, -50), new Vector3f(), new Vector3f(50,1,50)));
-        entities.get("map_4").getModel().getMaterial().setTexture(new Texture(loader.loadTexture("assets/models/map_base.png"))); 
     }
 
     int i = 0;
     Vector2d dMouse = new Vector2d();
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
-        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS) {
-            dMouse = new Vector2d(input.getCurrentPos());
-        }
-        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_RELEASE) {
-            if(dMouse.distance(input.getCurrentPos()) == 0) {
-                Entity newMonkey = new Entity(monkeyModel,  new Vector3f(mouseWorldPos.x,0,mouseWorldPos.z), new Vector3f(0,0,0), new Vector3f(0.1f, 0.1f, 0.1f));
-
-                entities.put("monkey" + i, newMonkey);
-                //((RiggedModel)newMonkey.getModel()).play("Armature");
-
-                i++;
-            }
-        }
+        
     }
 
+    int frameCounter = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
-        if(key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_PRESS) {
-            GlobalVariables.FOG = !GlobalVariables.FOG;
-        }
 
-                if(key == GLFW.GLFW_KEY_RIGHT_SHIFT && action == GLFW.GLFW_PRESS) {
-                    GlobalVariables.DEBUG_SHADOWS = true;
-                }
-                if(key == GLFW.GLFW_KEY_RIGHT_SHIFT && action == GLFW.GLFW_RELEASE) {
-                    GlobalVariables.DEBUG_SHADOWS = false;
-                }
-                if(key == GLFW.GLFW_KEY_ENTER && action == GLFW.GLFW_PRESS) {
-                    for(Entity entity : entities.values()) {
-                        if(entity.getModel() instanceof RiggedModel) {
-                            ((RiggedModel)entity.getModel()).getCurrentAnimation().nextFrame();
-                        }
-                    }
-                }
     }
 
     float rotX = 45;
@@ -201,9 +154,9 @@ public class Game implements ILogic {
                 return;
             rotX += input.getDisplVec().y * GlobalVariables.MOUSE_SENSITIVITY_X;
             rotY += input.getDisplVec().x * GlobalVariables.MOUSE_SENSITIVITY_X;
-            rotY = Utils.clamp(rotY, 0, 90);
+            rotY = Utils.clamp(rotY, -90, 90);
         }
-        zoom = Utils.clamp(zoom, 0, 2);
+        zoom = Utils.clamp(zoom, 0, 100);
 
         if(window.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
             rotX -= 1f;
@@ -226,6 +179,7 @@ public class Game implements ILogic {
 
     float defaultRadius = 20f;
     float theta = 0.0f;
+    double x = 0;
     
     @Override
     public void update(float interval, MouseInput mouseInput) {
@@ -244,10 +198,15 @@ public class Game implements ILogic {
 
         // for each entity in the world
         // sync the visual rotation and positions with the physics rotations and positions
-        for(Entity entity : entities.values()) {
+        for(int i = 0; i < entities.values().size(); i++) {
+            Entity entity = entities.values().toArray(new Entity[]{})[i];
             if(entity.getRigidBody() != null) {
                 entity.setPosition(Utils.convert(entity.getRigidBody().getPhysicsLocation(null)));
                 entity.setRotation(Utils.ToEulerAngles(Utils.convert(entity.getRigidBody().getPhysicsRotation(null))));
+            }
+            if(entity instanceof AnimatedEntity) {
+                AnimatedEntity animatedEntity = (AnimatedEntity)entity;
+                animatedEntity.tick(0, 1/60.0f);
             }
         }
 

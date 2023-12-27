@@ -43,6 +43,7 @@ import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.assimp.AIVectorKey;
 import org.lwjgl.assimp.AIVertexWeight;
+import org.lwjgl.assimp.Assimp;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -54,13 +55,8 @@ import org.lwjgl.system.MemoryStack;
 
 import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
 
-import me.ChristopherW.core.custom.Animations.AnimatedFrame;
-import me.ChristopherW.core.custom.Animations.Animation;
 import me.ChristopherW.core.custom.Animations.Bone;
-import me.ChristopherW.core.custom.Animations.Node;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
-import me.ChristopherW.core.custom.Animations.VertexWeight;
-//import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
 import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.utils.Utils;
@@ -120,208 +116,149 @@ public class ObjectLoader {
         return model;
     }
 
-    public RiggedModel loadRiggedModel(float[] vertices, float[] textureCoords, float[] normals, int[] indices, int[] jointIds, float[] weights, Texture texture, Map<String, Animation> animations, String path) {
-        // create a new VAO and store its id
-        int id = createVAO();
-
-        // store the vertices, texCoords, and normals in VBOs
-        storeInticiesBuffer(indices);
-        storeDataInAttribList(0, 3, vertices);
-        storeDataInAttribList(1, 2, textureCoords);
-        storeDataInAttribList(2, 3, normals);
-        storeDataInAttribList(3, 4, jointIds);
-        storeDataInAttribList(4, 4, weights);
-
-        // unbind the VAO
-        unbind();
-
-        // create a new model and store the VAO (with its VBOs) in it
-        RiggedModel model = new RiggedModel(id, indices.length, path);
-        model.setVertices(vertices);
-        model.setTextureCoords(textureCoords);
-        model.setNormals(normals);
-        model.setIndices(indices);
-        model.getMaterial().setTexture(texture);
-        model.setJointIds(jointIds);
-        model.setWeights(weights);
-        model.setAnimations(animations);
-
-        return model;
-    }
-
     public Model loadModel(String modelPath) {
         // if no texture is provided, use the default texture
         return loadModel(modelPath, Game.defaultTexture);
     }
 
-    public RiggedModel loadRiggedModel(String modelPath, Texture texture) {
-        // using LWJGL's ASSIMP module, we can extract the vertices, normals, texCoords, and indiies 
-        File file = new File(modelPath);
-        if (!file.exists()) {
-            throw new RuntimeException("Model path does not exist [" + modelPath + "]");
+    public RiggedModel loadRiggedModel(String fileName, Texture texture) {
+        AIScene scene = Assimp.aiImportFile(fileName,
+                Assimp.aiProcess_Triangulate |
+                        Assimp.aiProcess_GenSmoothNormals |
+                        Assimp.aiProcess_FlipUVs |
+                        Assimp.aiProcess_CalcTangentSpace |
+                        Assimp.aiProcess_JoinIdenticalVertices
+        );
+
+        assert scene != null;
+        assert scene.mNumMeshes() == 1;
+        assert scene.mNumAnimations() > 0;
+        AIMesh mesh = AIMesh.create(scene.mMeshes().get(0));
+
+        /*
+            position    3
+            tex         2
+            normal      3
+            tangent     3
+            bone_id     3
+            weights     3
+                        17
+        */
+        final int vertexSize = 17;
+        final int floatSize = 4;
+
+        float[] vertices = new float[mesh.mNumVertices() * vertexSize];
+
+        int i = 0;
+        for (int v = 0; v < mesh.mNumVertices(); v++)
+        {
+            AIVector3D position = mesh.mVertices().get(v);
+            AIVector3D tex = mesh.mTextureCoords(0).get(v);
+            AIVector3D normal = mesh.mNormals().get(v);
+            AIVector3D tangent = mesh.mTangents().get(v);
+
+            vertices[i++] = position.x();
+            vertices[i++] = position.y();
+            vertices[i++] = position.z();
+
+            vertices[i++] = tex.x();
+            vertices[i++] = tex.y();
+
+            vertices[i++] = normal.x();
+            vertices[i++] = normal.y();
+            vertices[i++] = normal.z();
+
+            vertices[i++] = tangent.x();
+            vertices[i++] = tangent.y();
+            vertices[i++] = tangent.z();
+
+            i += 6;
         }
-        String modelDir = file.getParent();
 
-        AIScene aiScene = aiImportFile(modelPath, aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices |
-                aiProcess_Triangulate | aiProcess_FixInfacingNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights);
-        if (aiScene == null) {
-            throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
+        int[] indices = new int[mesh.mNumFaces() * 3];
+
+        i = 0;
+        for (int f = 0; f < mesh.mNumFaces(); f++)
+        {
+            AIFace face = mesh.mFaces().get(f);
+
+            indices[i++] = (face.mIndices().get(0));
+            indices[i++] = (face.mIndices().get(1));
+            indices[i++] = (face.mIndices().get(2));
         }
 
+        final int offset = 11;
 
-        List<Bone> boneList = new ArrayList<>();
-        Node rootNode = buildNodesTree(aiScene.mRootNode(), null);
-        Matrix4f globalInverseTransformation = toMatrix(aiScene.mRootNode().mTransformation()).invert();
-        int numMeshes = aiScene.mNumMeshes();
-        PointerBuffer aiMeshes = aiScene.mMeshes();
-        for (int i = 0; i < numMeshes; i++) {
-            AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
-            float[] vertices = processVertices(aiMesh);
-            float[] normals = processNormals(aiMesh);
-            float[] textCoords = processTextCoords(aiMesh);
-            int[] indices = processIndices(aiMesh);
-            List<Integer> boneIdList = new ArrayList<>();
-            List<Float> weightList = new ArrayList<>();
-            processBones(aiMesh, boneList, boneIdList, weightList);
-            
-            int[] jointIds = new int[boneIdList.size()];
-            for(int b = 0; b < boneIdList.size(); b++) jointIds[b] = boneIdList.get(i);
-            float[] weights = new float[weightList.size()];
-            for(int b = 0; b < weightList.size(); b++) weights[b] = weightList.get(i);
+        for (int b = 0; b < mesh.mNumBones(); b++)
+        {
+            AIBone bone = AIBone.create(mesh.mBones().get(b));
 
-            // Texture coordinates may not have been populated. We need at least the empty slots
-            if (textCoords.length == 0) {
-                int numElements = (vertices.length / 3) * 2;
-                textCoords = new float[numElements];
-            }
+            for (int w = 0; w < bone.mNumWeights(); w++)
+            {
+                AIVertexWeight vw = bone.mWeights().get(w);
 
-            
-            Map<String, Animation> animations = processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
+                int access = vw.mVertexId() * vertexSize + offset;
 
-            RiggedModel model = loadRiggedModel(vertices, textCoords, normals, indices, jointIds, weights, texture, animations, modelPath);
-            return model;
-        }
-        return null;
-    }
-
-    private static Node buildNodesTree(AINode aiNode, Node parentNode) {
-        String nodeName = aiNode.mName().dataString();
-        Node node = new Node(nodeName, parentNode, toMatrix(aiNode.mTransformation()));
-
-        int numChildren = aiNode.mNumChildren();
-        PointerBuffer aiChildren = aiNode.mChildren();
-        for (int i = 0; i < numChildren; i++) {
-            AINode aiChildNode = AINode.create(aiChildren.get(i));
-            Node childNode = buildNodesTree(aiChildNode, node);
-            node.addChild(childNode);
-        }
-        return node;
-    }
-
-    private static Map<String, Animation> processAnimations(AIScene aiScene, List<Bone> boneList, Node rootNode, Matrix4f globalInverseTransformation) {
-        Map<String, Animation> animations = new HashMap<>();
-
-        // Process all animations
-        int numAnimations = aiScene.mNumAnimations();
-        System.out.println("in: " + numAnimations);
-        PointerBuffer aiAnimations = aiScene.mAnimations();
-        for (int i = 0; i < numAnimations; i++) {
-            AIAnimation aiAnimation = AIAnimation.create(aiAnimations.get(i));
-            int maxFrames = calcAnimationMaxFrames(aiAnimation);
-
-            List<AnimatedFrame> frames = new ArrayList<>();
-            Animation animation = new Animation(aiAnimation.mName().dataString(), frames, aiAnimation.mDuration());
-            animations.put(animation.getName(), animation);
-
-            for (int j = 0; j < maxFrames; j++) {
-                AnimatedFrame animatedFrame = new AnimatedFrame();
-                buildFrameMatrices(aiAnimation, boneList, animatedFrame, j, rootNode, rootNode.getNodeTransformation(), globalInverseTransformation);
-                frames.add(animatedFrame);
-            }
-        }
-        return animations;
-    }
-
-    private static void buildFrameMatrices(AIAnimation aiAnimation, List<Bone> boneList, AnimatedFrame animatedFrame, int frame, Node node, Matrix4f parentTransformation, Matrix4f globalInverseTransform) {
-        String nodeName = node.getName();
-        AINodeAnim aiNodeAnim = findAIAnimNode(aiAnimation, nodeName);
-        Matrix4f nodeTransform = node.getNodeTransformation();
-        if (aiNodeAnim != null) {
-            nodeTransform = buildNodeTransformationMatrix(aiNodeAnim, frame);
-        }
-        Matrix4f nodeGlobalTransform = new Matrix4f(parentTransformation).mul(nodeTransform);
-
-        List<Bone> affectedBones = boneList.stream().filter(b -> b.getBoneName().equals(nodeName)).toList();
-        if(affectedBones.size() > 0) {
-
-            for (Bone bone: affectedBones) {
-                Matrix4f boneTransform = new Matrix4f(globalInverseTransform).mul(nodeGlobalTransform).mul(bone.getOffsetMatrix());
-                animatedFrame.getJointMatrices()[bone.getBoneId()] = boneTransform;
+                for (int j = 0; j < 3; j++)
+                {
+                    if (vertices[access] == 0 && vertices[access + 3] == 0)
+                    {
+                        vertices[access] = b;
+                        vertices[access + 3] = vw.mWeight();
+                        break;
+                    } else
+                    {
+                        access++;
+                    }
+                }
             }
         }
 
-        for (Node childNode : node.getChildren()) {
-            buildFrameMatrices(aiAnimation, boneList, animatedFrame, frame, childNode, nodeGlobalTransform, globalInverseTransform);
-        }
-    }
-    private static AINodeAnim findAIAnimNode(AIAnimation aiAnimation, String nodeName) {
-        AINodeAnim result = null;
-        int numAnimNodes = aiAnimation.mNumChannels();
-        PointerBuffer aiChannels = aiAnimation.mChannels();
-        for (int i=0; i<numAnimNodes; i++) {
-            AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
-            if ( nodeName.equals(aiNodeAnim.mNodeName().dataString())) {
-                result = aiNodeAnim;
-                break;
-            }
-        }
-        return result;
-    }
+        Bone[] bones = new Bone[mesh.mNumBones()];
 
-    private static int calcAnimationMaxFrames(AIAnimation aiAnimation) {
-        int maxFrames = 0;
-        int numNodeAnims = aiAnimation.mNumChannels();
-        PointerBuffer aiChannels = aiAnimation.mChannels();
-        for (int i=0; i<numNodeAnims; i++) {
-            AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
-            int numFrames = Math.max(Math.max(aiNodeAnim.mNumPositionKeys(), aiNodeAnim.mNumScalingKeys()),
-                    aiNodeAnim.mNumRotationKeys());
-            maxFrames = Math.max(maxFrames, numFrames);
+        for (int b = 0; b < mesh.mNumBones(); b++)
+        {
+            AIBone bone = AIBone.create(mesh.mBones().get(b));
+            bones[b] = new Bone(bone.mName().dataString(), Utils.convertMatrix(bone.mOffsetMatrix()));
         }
 
-        return maxFrames;
-    }
+        AIAnimation[] animations = new AIAnimation[scene.mNumAnimations()];
+        for (int a = 0; a < animations.length; a++)
+            animations[a] = AIAnimation.create(scene.mAnimations().get(a));
 
-    private static Matrix4f buildNodeTransformationMatrix(AINodeAnim aiNodeAnim, int frame) {
-        AIVectorKey.Buffer positionKeys = aiNodeAnim.mPositionKeys();
-        AIVectorKey.Buffer scalingKeys = aiNodeAnim.mScalingKeys();
-        AIQuatKey.Buffer rotationKeys = aiNodeAnim.mRotationKeys();
+        
+        int vao = createVAO();
 
-        AIVectorKey aiVecKey;
-        AIVector3D vec;
+        int vbo = GL30.glGenBuffers();
+        vbos.add(vbo);
 
-        Matrix4f nodeTransform = new Matrix4f();
-        int numPositions = aiNodeAnim.mNumPositionKeys();
-        if (numPositions > 0) {
-            aiVecKey = positionKeys.get(Math.min(numPositions - 1, frame));
-            vec = aiVecKey.mValue();
-            nodeTransform.translate(vec.x(), vec.y(), vec.z());
-        }
-        int numRotations = aiNodeAnim.mNumRotationKeys();
-        if (numRotations > 0) {
-            AIQuatKey quatKey = rotationKeys.get(Math.min(numRotations - 1, frame));
-            AIQuaternion aiQuat = quatKey.mValue();
-            Quaternionf quat = new Quaternionf(aiQuat.x(), aiQuat.y(), aiQuat.z(), aiQuat.w());
-            nodeTransform.rotate(quat);
-        }
-        int numScalingKeys = aiNodeAnim.mNumScalingKeys();
-        if (numScalingKeys > 0) {
-            aiVecKey = scalingKeys.get(Math.min(numScalingKeys - 1, frame));
-            vec = aiVecKey.mValue();
-            nodeTransform.scale(vec.x(), vec.y(), vec.z());
-        }
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vbo);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vertices, GL30.GL_STATIC_DRAW);
+        GL30.glEnableVertexAttribArray(0);
+        GL30.glEnableVertexAttribArray(1);
+        GL30.glEnableVertexAttribArray(2);
+        GL30.glEnableVertexAttribArray(3);
+        GL30.glEnableVertexAttribArray(4);
+        GL30.glEnableVertexAttribArray(5);
+        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 0);
+        GL30.glVertexAttribPointer(1, 2, GL30.GL_FLOAT, false, vertexSize * floatSize, 12);
+        GL30.glVertexAttribPointer(2, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 20);
+        GL30.glVertexAttribPointer(3, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 32);
+        GL30.glVertexAttribPointer(4, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 44);
+        GL30.glVertexAttribPointer(5, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 56);
 
-        return nodeTransform;
+        int ibo = GL30.glGenBuffers();
+        GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, ibo);
+        GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, indices, GL30.GL_STATIC_DRAW);
+
+        GL30.glBindVertexArray(0);
+
+        RiggedModel model = new RiggedModel(vao, indices.length, texture);
+        model.setBones(bones);
+        model.setAnimations(animations);
+        model.setRoot(scene.mRootNode());
+
+        return model;
     }
 
     public Model loadModel(String modelPath, Texture texture) {
@@ -380,47 +317,6 @@ public class ObjectLoader {
             }
         }
         return indices.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    private static void processBones(AIMesh aiMesh, List<Bone> boneList, List<Integer> boneIds, List<Float> weights) {
-        Map<Integer, List<VertexWeight>> weightSet = new HashMap<>();
-        int numBones = aiMesh.mNumBones();
-        PointerBuffer aiBones = aiMesh.mBones();
-        for (int i = 0; i < numBones; i++) {
-            AIBone aiBone = AIBone.create(aiBones.get(i));
-            int id = boneList.size();
-            Bone bone = new Bone(id, aiBone.mName().dataString(), toMatrix(aiBone.mOffsetMatrix()));
-            boneList.add(bone);
-            int numWeights = aiBone.mNumWeights();
-            AIVertexWeight.Buffer aiWeights = aiBone.mWeights();
-            for (int j = 0; j < numWeights; j++) {
-                AIVertexWeight aiWeight = aiWeights.get(j);
-                VertexWeight vw = new VertexWeight(bone.getBoneId(), aiWeight.mVertexId(),
-                        aiWeight.mWeight());
-                List<VertexWeight> vertexWeightList = weightSet.get(vw.getVertexId());
-                if (vertexWeightList == null) {
-                    vertexWeightList = new ArrayList<>();
-                    weightSet.put(vw.getVertexId(), vertexWeightList);
-                }
-                vertexWeightList.add(vw);
-            }
-        }
-
-        int numVertices = aiMesh.mNumVertices();
-        for (int i = 0; i < numVertices; i++) {
-            List<VertexWeight> vertexWeightList = weightSet.get(i);
-            int size = vertexWeightList != null ? vertexWeightList.size() : 0;
-            for (int j = 0; j < 3; j++) {
-                if (j < size) {
-                    VertexWeight vw = vertexWeightList.get(j);
-                    weights.add(vw.getWeight());
-                    boneIds.add(vw.getBoneId());
-                } else {
-                    weights.add(0.0f);
-                    boneIds.add(0);
-                }
-            }
-        }
     }
 
     private static float[] processTextCoords(AIMesh aiMesh) {
@@ -620,5 +516,13 @@ public class ObjectLoader {
         result.m33(aiMatrix4x4.d4());
 
         return result;
+    }
+
+    public Texture createTexture(String file) {
+        try {
+            return new Texture(loadTexture(file));
+        } catch (Exception e) {
+        }
+        return null;
     }
 }
