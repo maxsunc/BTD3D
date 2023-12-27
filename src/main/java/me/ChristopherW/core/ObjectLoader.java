@@ -1,39 +1,66 @@
 package me.ChristopherW.core;
 
-//import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
-import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.core.entity.RiggedModel;
-import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.core.utils.Utils;
-import me.ChristopherW.process.Game;
+import static org.lwjgl.assimp.Assimp.aiImportFile;
+import static org.lwjgl.assimp.Assimp.aiProcess_CalcTangentSpace;
+import static org.lwjgl.assimp.Assimp.aiProcess_FixInfacingNormals;
+import static org.lwjgl.assimp.Assimp.aiProcess_GenSmoothNormals;
+import static org.lwjgl.assimp.Assimp.aiProcess_JoinIdenticalVertices;
+import static org.lwjgl.assimp.Assimp.aiProcess_LimitBoneWeights;
+import static org.lwjgl.assimp.Assimp.aiProcess_PreTransformVertices;
+import static org.lwjgl.assimp.Assimp.aiProcess_Triangulate;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
+
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.assimp.AIAnimation;
+import org.lwjgl.assimp.AIBone;
 import org.lwjgl.assimp.AIFace;
+import org.lwjgl.assimp.AIMaterial;
+import org.lwjgl.assimp.AIMatrix4x4;
 import org.lwjgl.assimp.AIMesh;
+import org.lwjgl.assimp.AINode;
+import org.lwjgl.assimp.AINodeAnim;
+import org.lwjgl.assimp.AIQuatKey;
+import org.lwjgl.assimp.AIQuaternion;
 import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIVector3D;
+import org.lwjgl.assimp.AIVectorKey;
+import org.lwjgl.assimp.AIVertexWeight;
+import org.lwjgl.assimp.Assimp;
 import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
 import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
-import static org.lwjgl.assimp.Assimp.*;
-import static org.lwjgl.assimp.Assimp.aiProcess_PreTransformVertices;
+import me.ChristopherW.core.custom.Animations.Bone;
+import me.ChristopherW.core.custom.Animations.RiggedModel;
+import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.entity.Texture;
+import me.ChristopherW.core.utils.Utils;
+import me.ChristopherW.process.Game;
 
 public class ObjectLoader {
     private List<Integer> vaos = new ArrayList<>();
@@ -94,37 +121,144 @@ public class ObjectLoader {
         return loadModel(modelPath, Game.defaultTexture);
     }
 
-    public RiggedModel loadRiggedModel(String modelPath) {
-        // using LWJGL's ASSIMP module, we can extract the vertices, normals, texCoords, and indiies 
-        File file = new File(modelPath);
-        if (!file.exists()) {
-            throw new RuntimeException("Model path does not exist [" + modelPath + "]");
-        }
-        String modelDir = file.getParent();
+    public RiggedModel loadRiggedModel(String fileName, Texture texture) {
+        AIScene scene = Assimp.aiImportFile(fileName,
+                Assimp.aiProcess_Triangulate |
+                        Assimp.aiProcess_GenSmoothNormals |
+                        Assimp.aiProcess_FlipUVs |
+                        Assimp.aiProcess_CalcTangentSpace |
+                        Assimp.aiProcess_JoinIdenticalVertices
+        );
 
-        AIScene aiScene = aiImportFile(modelPath, aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices |
-                aiProcess_Triangulate | aiProcess_FixInfacingNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights |
-                aiProcess_PreTransformVertices);
-        if (aiScene == null) {
-            throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
-        }
-        int numMeshes = aiScene.mNumMeshes();
-        PointerBuffer aiMeshes = aiScene.mMeshes();
-        for (int i = 0; i < numMeshes; i++) {
-            AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
-            float[] vertices = processVertices(aiMesh);
-            float[] normals = processNormals(aiMesh);
-            float[] textCoords = processTextCoords(aiMesh);
-            int[] indices = processIndices(aiMesh);
+        assert scene != null;
+        assert scene.mNumMeshes() == 1;
+        assert scene.mNumAnimations() > 0;
+        AIMesh mesh = AIMesh.create(scene.mMeshes().get(0));
 
-            // Texture coordinates may not have been populated. We need at least the empty slots
-            if (textCoords.length == 0) {
-                int numElements = (vertices.length / 3) * 2;
-                textCoords = new float[numElements];
+        /*
+            position    3
+            tex         2
+            normal      3
+            tangent     3
+            bone_id     3
+            weights     3
+                        17
+        */
+        final int vertexSize = 17;
+        final int floatSize = 4;
+
+        float[] vertices = new float[mesh.mNumVertices() * vertexSize];
+
+        int i = 0;
+        for (int v = 0; v < mesh.mNumVertices(); v++)
+        {
+            AIVector3D position = mesh.mVertices().get(v);
+            AIVector3D tex = mesh.mTextureCoords(0).get(v);
+            AIVector3D normal = mesh.mNormals().get(v);
+            AIVector3D tangent = mesh.mTangents().get(v);
+
+            vertices[i++] = position.x();
+            vertices[i++] = position.y();
+            vertices[i++] = position.z();
+
+            vertices[i++] = tex.x();
+            vertices[i++] = tex.y();
+
+            vertices[i++] = normal.x();
+            vertices[i++] = normal.y();
+            vertices[i++] = normal.z();
+
+            vertices[i++] = tangent.x();
+            vertices[i++] = tangent.y();
+            vertices[i++] = tangent.z();
+
+            i += 6;
+        }
+
+        int[] indices = new int[mesh.mNumFaces() * 3];
+
+        i = 0;
+        for (int f = 0; f < mesh.mNumFaces(); f++)
+        {
+            AIFace face = mesh.mFaces().get(f);
+
+            indices[i++] = (face.mIndices().get(0));
+            indices[i++] = (face.mIndices().get(1));
+            indices[i++] = (face.mIndices().get(2));
+        }
+
+        final int offset = 11;
+
+        for (int b = 0; b < mesh.mNumBones(); b++)
+        {
+            AIBone bone = AIBone.create(mesh.mBones().get(b));
+
+            for (int w = 0; w < bone.mNumWeights(); w++)
+            {
+                AIVertexWeight vw = bone.mWeights().get(w);
+
+                int access = vw.mVertexId() * vertexSize + offset;
+
+                for (int j = 0; j < 3; j++)
+                {
+                    if (vertices[access] == 0 && vertices[access + 3] == 0)
+                    {
+                        vertices[access] = b;
+                        vertices[access + 3] = vw.mWeight();
+                        break;
+                    } else
+                    {
+                        access++;
+                    }
+                }
             }
-            //return loadModel(vertices, textCoords, normals, indices, null, modelPath);
         }
-        return null;
+
+        Bone[] bones = new Bone[mesh.mNumBones()];
+
+        for (int b = 0; b < mesh.mNumBones(); b++)
+        {
+            AIBone bone = AIBone.create(mesh.mBones().get(b));
+            bones[b] = new Bone(bone.mName().dataString(), Utils.convertMatrix(bone.mOffsetMatrix()));
+        }
+
+        AIAnimation[] animations = new AIAnimation[scene.mNumAnimations()];
+        for (int a = 0; a < animations.length; a++)
+            animations[a] = AIAnimation.create(scene.mAnimations().get(a));
+
+        
+        int vao = createVAO();
+
+        int vbo = GL30.glGenBuffers();
+        vbos.add(vbo);
+
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, vbo);
+        GL30.glBufferData(GL30.GL_ARRAY_BUFFER, vertices, GL30.GL_STATIC_DRAW);
+        GL30.glEnableVertexAttribArray(0);
+        GL30.glEnableVertexAttribArray(1);
+        GL30.glEnableVertexAttribArray(2);
+        GL30.glEnableVertexAttribArray(3);
+        GL30.glEnableVertexAttribArray(4);
+        GL30.glEnableVertexAttribArray(5);
+        GL30.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 0);
+        GL30.glVertexAttribPointer(1, 2, GL30.GL_FLOAT, false, vertexSize * floatSize, 12);
+        GL30.glVertexAttribPointer(2, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 20);
+        GL30.glVertexAttribPointer(3, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 32);
+        GL30.glVertexAttribPointer(4, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 44);
+        GL30.glVertexAttribPointer(5, 3, GL30.GL_FLOAT, false, vertexSize * floatSize, 56);
+
+        int ibo = GL30.glGenBuffers();
+        GL30.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, ibo);
+        GL30.glBufferData(GL30.GL_ELEMENT_ARRAY_BUFFER, indices, GL30.GL_STATIC_DRAW);
+
+        GL30.glBindVertexArray(0);
+
+        RiggedModel model = new RiggedModel(vao, indices.length, texture);
+        model.setBones(bones);
+        model.setAnimations(animations);
+        model.setRoot(scene.mRootNode());
+
+        return model;
     }
 
     public Model loadModel(String modelPath, Texture texture) {
@@ -184,6 +318,7 @@ public class ObjectLoader {
         }
         return indices.stream().mapToInt(Integer::intValue).toArray();
     }
+
     private static float[] processTextCoords(AIMesh aiMesh) {
         AIVector3D.Buffer buffer = aiMesh.mTextureCoords(0);
         if (buffer == null) {
@@ -335,6 +470,16 @@ public class ObjectLoader {
         GL20.glVertexAttribPointer(attribNo, vertexCount, GL11.GL_FLOAT, false, 0, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
+    private void storeDataInAttribList(int attribNo, int vertexCount, int[] data) {
+        // store data into the VBO of the bound VAO
+        int vbo = GL15.glGenBuffers();
+        vbos.add(vbo);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        IntBuffer buffer = Utils.storeDataInIntBuffer(data);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
+        GL30.glVertexAttribIPointer(attribNo, vertexCount, GL11.GL_INT, 0, 0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+    }
 
     private void unbind() {
         // unbind VAO
@@ -349,5 +494,35 @@ public class ObjectLoader {
             GL30.glDeleteBuffers(vbo);
         for(int texture: textures)
             GL11.glDeleteTextures(texture);
+    }
+
+    private static Matrix4f toMatrix(AIMatrix4x4 aiMatrix4x4) {
+        Matrix4f result = new Matrix4f();
+        result.m00(aiMatrix4x4.a1());
+        result.m10(aiMatrix4x4.a2());
+        result.m20(aiMatrix4x4.a3());
+        result.m30(aiMatrix4x4.a4());
+        result.m01(aiMatrix4x4.b1());
+        result.m11(aiMatrix4x4.b2());
+        result.m21(aiMatrix4x4.b3());
+        result.m31(aiMatrix4x4.b4());
+        result.m02(aiMatrix4x4.c1());
+        result.m12(aiMatrix4x4.c2());
+        result.m22(aiMatrix4x4.c3());
+        result.m32(aiMatrix4x4.c4());
+        result.m03(aiMatrix4x4.d1());
+        result.m13(aiMatrix4x4.d2());
+        result.m23(aiMatrix4x4.d3());
+        result.m33(aiMatrix4x4.d4());
+
+        return result;
+    }
+
+    public Texture createTexture(String file) {
+        try {
+            return new Texture(loadTexture(file));
+        } catch (Exception e) {
+        }
+        return null;
     }
 }

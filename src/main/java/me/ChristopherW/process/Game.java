@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2d;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -25,13 +27,16 @@ import com.jme3.bullet.objects.PhysicsRigidBody;
 
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
-import me.ChristopherW.core.Animation;
 import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.ILogic;
+import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.MouseInput;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
+import me.ChristopherW.core.custom.Animations.AnimatedEntity;
+import me.ChristopherW.core.custom.Animations.RiggedModel;
+import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Model;
@@ -44,6 +49,8 @@ import me.ChristopherW.core.sound.SoundSource;
 import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Transformation;
 import me.ChristopherW.core.utils.Utils;
+import java.util.Arrays;
+
 
 public class Game implements ILogic {
     private final RenderManager renderer;
@@ -53,13 +60,12 @@ public class Game implements ILogic {
     public HashMap<String, SoundSource> audioSources = new HashMap<>();
 
     public Map<String, Entity> entities;
-    public Map<String, Animation> animations;
 
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    private Model monkeyModel;
+    private RiggedModel monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -114,34 +120,26 @@ public class Game implements ILogic {
 
         // initialize entities map
         entities = new HashMap<>();
-        animations = new HashMap<>();
 
         // init static objects
-        monkeyModel = loader.loadModel("assets/models/monkey.dae", new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_2.002.png")));
-
-        entities.put("map", new Entity(
-            loader.loadModel(
-                "assets/models/map.obj", 
-                new Texture(loader.loadTexture("assets/models/DiffuseColor_Texture_1.png"))), 
-            new Vector3f(0,0,0), 
-            new Vector3f(0,0,0), 
-            new Vector3f(0.1f,0.1f,0.1f)
+        entities.put("player",
+        new AnimatedEntity(
+            loader.loadRiggedModel("assets/models/model.dae", loader.createTexture("assets/models/diffuse.png")),
+            new Vector3f(0,-4,0), 
+            new Vector3f(0,0,0),
+            new Vector3f(1,1,1)
         ));
-
-         entities.put("map_1", new Plane(new Vector3f(0, -0.01f, 0), new Vector3f(), new Vector3f(100,1,100)));
-    }
-
-    public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
-        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS) {
-            Entity newMonkey = new Entity(monkeyModel,  new Vector3f(mouseWorldPos.x,0,mouseWorldPos.z), new Vector3f(0,0,0), new Vector3f(0.1f, 0.1f, 0.1f));
-
-            entities.put("monkey" + i, newMonkey);
-            i++;
-        }
     }
 
     int i = 0;
+    Vector2d dMouse = new Vector2d();
+    public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
+        
+    }
+
+    int frameCounter = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
+
     }
 
     float rotX = 45;
@@ -158,6 +156,7 @@ public class Game implements ILogic {
             rotY += input.getDisplVec().x * GlobalVariables.MOUSE_SENSITIVITY_X;
             rotY = Utils.clamp(rotY, -90, 90);
         }
+        zoom = Utils.clamp(zoom, 0, 100);
 
         if(window.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
             rotX -= 1f;
@@ -180,6 +179,7 @@ public class Game implements ILogic {
 
     float defaultRadius = 20f;
     float theta = 0.0f;
+    double x = 0;
     
     @Override
     public void update(float interval, MouseInput mouseInput) {
@@ -195,16 +195,18 @@ public class Game implements ILogic {
         camera.setPosition(orbitVec);
         camera.setRotation(rotY, rotX-90, camera.getRotation().z);
 
-        for (Animation animation : animations.values()) {
-            animation.tick(interval);
-        }
 
         // for each entity in the world
         // sync the visual rotation and positions with the physics rotations and positions
-        for(Entity entity : entities.values()) {
+        for(int i = 0; i < entities.values().size(); i++) {
+            Entity entity = entities.values().toArray(new Entity[]{})[i];
             if(entity.getRigidBody() != null) {
                 entity.setPosition(Utils.convert(entity.getRigidBody().getPhysicsLocation(null)));
                 entity.setRotation(Utils.ToEulerAngles(Utils.convert(entity.getRigidBody().getPhysicsRotation(null))));
+            }
+            if(entity instanceof AnimatedEntity) {
+                AnimatedEntity animatedEntity = (AnimatedEntity)entity;
+                animatedEntity.tick(0, 1/60.0f);
             }
         }
 

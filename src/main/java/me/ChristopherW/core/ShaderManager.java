@@ -9,6 +9,7 @@ import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,6 +103,18 @@ public class ShaderManager {
     public void setUniform(String uniformName, float value) {
         GL20.glUniform1f(uniforms.get(uniformName), value);
     }
+
+    public void setUniform(String uniformName, Matrix4f[] matrices) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            int length = matrices != null ? matrices.length : 0;
+            FloatBuffer fb = stack.mallocFloat(16 * length);
+            for (int i = 0; i < length; i++) {
+                if(matrices[i] != null)
+                    matrices[i].get(16 * i, fb);
+            }
+            GL20.glUniformMatrix4fv(uniforms.get(uniformName), false, fb);
+        }
+    } 
     public void setUniform(String uniformName, DirectionalLight light) {
         setUniform(uniformName + ".color", light.getColor());
         setUniform(uniformName + ".direction", light.getDirection());

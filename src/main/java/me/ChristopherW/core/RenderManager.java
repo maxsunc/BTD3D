@@ -1,5 +1,6 @@
 package me.ChristopherW.core;
 
+import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Shaders.DebugShader;
 import me.ChristopherW.core.custom.Shaders.DepthShader;
 import me.ChristopherW.core.entity.Entity;
@@ -10,6 +11,7 @@ import me.ChristopherW.process.Launcher;
 
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
@@ -42,8 +44,13 @@ public class RenderManager {
         GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_DEPTH_COMPONENT, GlobalVariables.SHADOW_RES, GlobalVariables.SHADOW_RES, 0, GL30.GL_DEPTH_COMPONENT, GL30.GL_FLOAT, MemoryUtil.NULL);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
-        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_REPEAT); 
-        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_REPEAT); 
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_BORDER); 
+        GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_BORDER); 
+        //float[] borderColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float[] borderColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        FloatBuffer borderColorBuffer = BufferUtils.createFloatBuffer(4);
+        borderColorBuffer.put(borderColor).flip();
+        GL30.glTexParameterfv(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_BORDER_COLOR, borderColorBuffer);
 
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, depthFBO);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_TEXTURE_2D, depthMap, 0);
@@ -97,7 +104,7 @@ public class RenderManager {
 
     public void renderSceneOrtho(Camera camera) {
         for(Model model : entities.keySet()) {
-            // bind the model's shader and set the projec   tionMatrix uniform data
+            // bind the model's shader and set the projectionMatrix uniform data
             depthShader.bind();
             
             // bind the model itself
@@ -106,7 +113,6 @@ public class RenderManager {
             // for each entity that uses that model
             List<Entity> entityList = entities.get(model);
             for(Entity entity : entityList) {
-                // prepare it to be rendered then draw the triangles to the viewBuffer
                 prepare((IShader)depthShader, entity, camera);
                 GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
             }
@@ -163,7 +169,7 @@ public class RenderManager {
     public void renderScene(Camera camera) {
         // for each model in the entities 
         for(Model model : entities.keySet()) {
-            // bind the model's shader and set the projec   tionMatrix uniform data
+            // bind the model's shader and set the projectionMatrix uniform data
             model.getShader().bind();
             model.getShader().setUniform("projectionMatrix", window.updateProjectionMatrix());
             
@@ -196,8 +202,10 @@ public class RenderManager {
 
         GL11.glViewport(0,0, window.getWidth(), window.getHeight());
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-        renderScene(camera);
-        //renderQuad();
+        if(GlobalVariables.DEBUG_SHADOWS)
+            renderQuad();
+        else
+            renderScene(camera);
         // clear the entities array for that model for the next frame
         entities.clear();
     }

@@ -62,6 +62,12 @@ public class Model {
         this.material = material;
         init();
     }
+    public Model(Model model) {
+        this.id = model.getId();
+        this.vertexCount = model.getVertexCount();
+        this.material = new Material(model.getMaterial());
+        init();
+    }
 
     public Model(Model model, Texture texture) {
         this.id = model.getId();
