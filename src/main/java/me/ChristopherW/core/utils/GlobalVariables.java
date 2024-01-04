@@ -6,7 +6,7 @@ import org.joml.Vector4f;
 public class GlobalVariables {
     public static final String TITLE = "Example Game";
     public static final String ICON_PATH = "assets/textures/icons/icon.png";
-    public static final Vector4f BG_COLOR = new Vector4f(1f, 1f,1f, 1f);
+    public static final Vector4f BG_COLOR = new Vector4f(0f, 0f,0f, 0f);
 
     public static final float GRAVITY = -9.8f;
     public static boolean FULLSCREEN = false;

@@ -13,12 +13,12 @@ import java.util.HashMap;
 
 public class AnimatedEntity extends Entity {
 
-    public AnimatedEntity(RiggedModel model, Vector3f position, Vector3f rotation, Vector3f scale) {
+    public AnimatedEntity(Model model, Vector3f position, Vector3f rotation, Vector3f scale) {
         super(model, position, rotation, scale);
     }
     
 
-    public AnimatedEntity(String name, RiggedModel model, Vector3f position, Vector3f rotation, Vector3f scale) {
+    public AnimatedEntity(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale) {
         super(name, model, position, rotation, scale);
     }
 

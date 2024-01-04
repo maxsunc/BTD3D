@@ -8,9 +8,10 @@ import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.ShaderManager;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
-import me.ChristopherW.core.custom.Animations.RiggedModel;
+import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
+import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Transformation;
 
@@ -56,7 +57,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
     }
 
     @Override
-    public void prepare(Entity entity, Camera camera) {
+    public void prepare(Entity entity, Mesh mesh, Camera camera) {
         this.setUniform("textureSampler", 0);
         this.setUniform("shadowMap", 1);
         Matrix4f modelMatrix = Transformation.createTransformationMatrix(entity);
@@ -64,7 +65,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
         this.setUniform("viewMatrix", Transformation.createViewMatrix(camera));
         this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        RiggedModel rm = ((RiggedModel)entity.getModel());
+        RiggedMesh rm = (RiggedMesh)mesh;
         rm.updateAnimation(((AnimatedEntity)entity).getTick(0), 0);
         Matrix4f[] m = new Matrix4f[50];
         for(int i = 0; i < rm.getBones().length; i++) {
@@ -72,7 +73,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
         }
         this.setUniform("bones", m);
         this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING ? 1 : 0);
-        this.setUniform("material", entity.getModel().getMaterial());
+        this.setUniform("material", mesh.getMaterial());
         this.setUniform("skyColor", GlobalVariables.BG_COLOR);
         this.setUniform("showFog", GlobalVariables.FOG ? 1 : 0);
     }

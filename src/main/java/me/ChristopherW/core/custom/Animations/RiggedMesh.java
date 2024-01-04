@@ -3,6 +3,7 @@ package me.ChristopherW.core.custom.Animations;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.entity.Material;
+import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.utils.Utils;
@@ -18,13 +19,13 @@ import org.lwjgl.assimp.AINodeAnim;
 import org.lwjgl.assimp.AIQuaternion;
 import org.lwjgl.assimp.AIVector3D;
 
-public class RiggedModel extends Model {
+public class RiggedMesh extends Mesh {
     private Bone[] bones;
     private float[] weights;
     private AINode root;
     private AIAnimation[] animations;
 
-    public RiggedModel(int id, int vertexCount) {
+    public RiggedMesh(int id, int vertexCount) {
         super(id, vertexCount);
         try {      
             AnimatedShader shader = new AnimatedShader("/shaders/animation.vs", "/shaders/animation.fs");
@@ -34,7 +35,7 @@ public class RiggedModel extends Model {
             e.printStackTrace();
         }
     }
-    public RiggedModel(int id, int vertexCount, Texture texture) {
+    public RiggedMesh(int id, int vertexCount, Texture texture) {
         super(id, vertexCount, texture);
         try {      
             AnimatedShader shader = new AnimatedShader("/shaders/animation.vs", "/shaders/animation.fs");
@@ -44,7 +45,7 @@ public class RiggedModel extends Model {
             e.printStackTrace();
         }
     }
-    public RiggedModel(int id, int vertexCount, String path) {
+    public RiggedMesh(int id, int vertexCount, String path) {
         super(id, vertexCount, path);
         try {      
             AnimatedShader shader = new AnimatedShader("/shaders/animation.vs", "/shaders/animation.fs");
@@ -54,7 +55,7 @@ public class RiggedModel extends Model {
             e.printStackTrace();
         }
     }
-    public RiggedModel(RiggedModel model) {
+    public RiggedMesh(RiggedMesh model) {
         super(model);
         try {      
             AnimatedShader shader = new AnimatedShader("/shaders/animation.vs", "/shaders/animation.fs");

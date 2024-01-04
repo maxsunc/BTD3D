@@ -1,5 +1,14 @@
 package me.ChristopherW.core;
 
+import static org.lwjgl.assimp.Assimp.AI_MATKEY_COLOR_AMBIENT;
+import static org.lwjgl.assimp.Assimp.AI_MATKEY_COLOR_DIFFUSE;
+import static org.lwjgl.assimp.Assimp.AI_MATKEY_COLOR_SPECULAR;
+import static org.lwjgl.assimp.Assimp.AI_MATKEY_SHININESS;
+import static org.lwjgl.assimp.Assimp.AI_MATKEY_SPECULAR_FACTOR;
+import static org.lwjgl.assimp.Assimp.aiGetMaterialColor;
+import static org.lwjgl.assimp.Assimp.aiGetMaterialFloatArray;
+import static org.lwjgl.assimp.Assimp.aiGetMaterialProperty;
+import static org.lwjgl.assimp.Assimp.aiGetMaterialTexture;
 import static org.lwjgl.assimp.Assimp.aiImportFile;
 import static org.lwjgl.assimp.Assimp.aiProcess_CalcTangentSpace;
 import static org.lwjgl.assimp.Assimp.aiProcess_FixInfacingNormals;
@@ -8,6 +17,10 @@ import static org.lwjgl.assimp.Assimp.aiProcess_JoinIdenticalVertices;
 import static org.lwjgl.assimp.Assimp.aiProcess_LimitBoneWeights;
 import static org.lwjgl.assimp.Assimp.aiProcess_PreTransformVertices;
 import static org.lwjgl.assimp.Assimp.aiProcess_Triangulate;
+import static org.lwjgl.assimp.Assimp.aiTextureType_DIFFUSE;
+import static org.lwjgl.assimp.Assimp.aiTextureType_NONE;
+import static org.lwjgl.assimp.Assimp.aiTextureType_SHININESS;
+import static org.lwjgl.assimp.Assimp.aiTextureType_SPECULAR;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -28,11 +41,15 @@ import javax.imageio.ImageIO;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.AIAnimation;
 import org.lwjgl.assimp.AIBone;
+import org.lwjgl.assimp.AIColor4D;
 import org.lwjgl.assimp.AIFace;
 import org.lwjgl.assimp.AIMaterial;
+import org.lwjgl.assimp.AIMaterialProperty;
 import org.lwjgl.assimp.AIMatrix4x4;
 import org.lwjgl.assimp.AIMesh;
 import org.lwjgl.assimp.AINode;
@@ -40,6 +57,7 @@ import org.lwjgl.assimp.AINodeAnim;
 import org.lwjgl.assimp.AIQuatKey;
 import org.lwjgl.assimp.AIQuaternion;
 import org.lwjgl.assimp.AIScene;
+import org.lwjgl.assimp.AIString;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.assimp.AIVectorKey;
 import org.lwjgl.assimp.AIVertexWeight;
@@ -56,7 +74,9 @@ import org.lwjgl.system.MemoryStack;
 import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
 
 import me.ChristopherW.core.custom.Animations.Bone;
-import me.ChristopherW.core.custom.Animations.RiggedModel;
+import me.ChristopherW.core.custom.Animations.RiggedMesh;
+import me.ChristopherW.core.entity.Material;
+import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.utils.Utils;
@@ -67,21 +87,21 @@ public class ObjectLoader {
     private List<Integer> vbos = new ArrayList<>();
     private List<Integer> textures = new ArrayList<>();
 
-     public IndexedMesh loadIndexedMesh(Model model, Vector3f scale) {
+     public IndexedMesh loadIndexedMesh(Mesh mesh, Vector3f scale) {
          // create a new array of Vector3s the size of the amount of verticies the model has
-         com.jme3.math.Vector3f[] verticiesArr = new com.jme3.math.Vector3f[model.getVertices().length / 3];
+         com.jme3.math.Vector3f[] verticiesArr = new com.jme3.math.Vector3f[mesh.getVertices().length / 3];
 
          // move the data from the array of floats to the array of Vector3s
-         for(int i = 0; i < model.getVertices().length; i += 3) {
-             Vector3f vertex = new Vector3f(model.getVertices()[i], model.getVertices()[i + 1], model.getVertices()[i + 2]);
+         for(int i = 0; i < mesh.getVertices().length; i += 3) {
+             Vector3f vertex = new Vector3f(mesh.getVertices()[i], mesh.getVertices()[i + 1], mesh.getVertices()[i + 2]);
              verticiesArr[i / 3] = new com.jme3.math.Vector3f(vertex.x * scale.x, vertex.y * scale.y, vertex.z * scale.z);
          }
 
          // pass the data into an IndexedMesh for the physics engine to register
-         return new IndexedMesh(verticiesArr, model.getIndices());
+         return new IndexedMesh(verticiesArr, mesh.getIndices());
      }
 
-    public int loadModel(float[] vertices, float[] textureCoords) {
+    public int loadMesh(float[] vertices, float[] textureCoords) {
         // create a new VAO and store it's id
         int id = createVAO();
 
@@ -93,7 +113,7 @@ public class ObjectLoader {
         unbind();
         return id;
     }
-    public Model loadModel(float[] vertices, float[] textureCoords, float[] normals, int[] indices, Texture texture, String path) {
+    public Mesh loadMesh(float[] vertices, float[] textureCoords, float[] normals, int[] indices, Texture texture, String path) {
         // create a new VAO and store its id
         int id = createVAO();
 
@@ -107,21 +127,16 @@ public class ObjectLoader {
         unbind();
 
         // create a new model and store the VAO (with its VBOs) in it
-        Model model = new Model(id, indices.length, path);
-        model.setVertices(vertices);
-        model.setTextureCoords(textureCoords);
-        model.setNormals(normals);
-        model.setIndices(indices);
-        model.getMaterial().setTexture(texture);
-        return model;
+        Mesh mesh = new Mesh(id, indices.length, path);
+        mesh.setVertices(vertices);
+        mesh.setTextureCoords(textureCoords);
+        mesh.setNormals(normals);
+        mesh.setIndices(indices);
+        mesh.getMaterial().setTexture(texture);
+        return mesh;
     }
 
-    public Model loadModel(String modelPath) {
-        // if no texture is provided, use the default texture
-        return loadModel(modelPath, Game.defaultTexture);
-    }
-
-    public RiggedModel loadRiggedModel(String fileName, Texture texture) {
+    public RiggedMesh loadRiggedModel(String fileName, Texture texture) {
         AIScene scene = Assimp.aiImportFile(fileName,
                 Assimp.aiProcess_Triangulate |
                         Assimp.aiProcess_GenSmoothNormals |
@@ -253,7 +268,7 @@ public class ObjectLoader {
 
         GL30.glBindVertexArray(0);
 
-        RiggedModel model = new RiggedModel(vao, indices.length, texture);
+        RiggedMesh model = new RiggedMesh(vao, indices.length, texture);
         model.setBones(bones);
         model.setAnimations(animations);
         model.setRoot(scene.mRootNode());
@@ -261,7 +276,7 @@ public class ObjectLoader {
         return model;
     }
 
-    public Model loadModel(String modelPath, Texture texture) {
+    public Model loadModel(String modelPath) {
         // using LWJGL's ASSIMP module, we can extract the vertices, normals, texCoords, and indiies 
         File file = new File(modelPath);
         if (!file.exists()) {
@@ -277,6 +292,20 @@ public class ObjectLoader {
         }
         int numMeshes = aiScene.mNumMeshes();
         PointerBuffer aiMeshes = aiScene.mMeshes();
+
+        int numMaterials = aiScene.mNumMaterials();
+        PointerBuffer aiMaterials = aiScene.mMaterials();
+        List<Material> materials = new ArrayList<>();
+        for (int i = 0; i < numMaterials; i++) {
+            AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
+            try {
+                processMaterial(aiMaterial, materials, "assets/textures/materials/");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        HashMap<String, Mesh> meshes = new HashMap<>();
         for (int i = 0; i < numMeshes; i++) {
             AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
             float[] vertices = processVertices(aiMesh);
@@ -289,9 +318,15 @@ public class ObjectLoader {
                 int numElements = (vertices.length / 3) * 2;
                 textCoords = new float[numElements];
             }
-            return loadModel(vertices, textCoords, normals, indices, texture, modelPath);
+
+            Material material = materials.get(aiMesh.mMaterialIndex());
+            Mesh mesh = loadMesh(vertices, textCoords, normals, indices, material.getTexture(), modelPath);
+            meshes.put(aiMesh.mName().dataString(), mesh);
         }
-        return null;
+
+        Model model = new Model();
+        model.setMeshs(meshes);
+        return model;
     }
     private static float[] processNormals(AIMesh aiMesh) {
         AIVector3D.Buffer buffer = aiMesh.mNormals();
@@ -305,6 +340,20 @@ public class ObjectLoader {
         }
         return data;
     }
+
+    private void processMaterial(AIMaterial aiMaterial, List<Material> materials, String texturesDir) throws Exception {
+        AIString path = AIString.calloc();
+        aiGetMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, 0, path, (IntBuffer) null, null, null, null, null, null);
+        String textPath = path.dataString();
+        Texture texture = null;
+        if (textPath != null && textPath.length() > 0) {
+            texture = this.createTexture(texturesDir + "/" + textPath);
+        }
+
+        Material material = new Material(texture);
+        materials.add(material);
+    }
+
     private static int[] processIndices(AIMesh aiMesh) {
         List<Integer> indices = new ArrayList<>();
         int numFaces = aiMesh.mNumFaces();

@@ -1,15 +1,17 @@
 package me.ChristopherW.core;
 
-import me.ChristopherW.core.custom.Animations.RiggedModel;
+import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Shaders.DebugShader;
 import me.ChristopherW.core.custom.Shaders.DepthShader;
 import me.ChristopherW.core.entity.Entity;
+import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
@@ -27,7 +29,7 @@ import java.util.Map;
 public class RenderManager {
     private final WindowManager window;
     public Matrix4f viewMatrix;
-    private Map<Model, List<Entity>> entities = new HashMap<>();
+    private Map<Mesh, List<Entity>> entities = new HashMap<>();
     private int depthFBO;
     private int depthMap;
     private DepthShader depthShader;
@@ -70,16 +72,16 @@ public class RenderManager {
         }
     }
 
-    public void bind(Model model) {
-        GL30.glBindVertexArray(model.getId());
+    public void bind(Mesh mesh) {
+        GL30.glBindVertexArray(mesh.getId());
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
         GL13.glActiveTexture(GL13.GL_TEXTURE0 + 0);
 
         // bind the texture that the model has
-        if(model.getMaterial().hasTexture()) {
-            GL11.glBindTexture(GL30.GL_TEXTURE_2D, model.getMaterial().getTexture().getId());
+        if(mesh.getMaterial().hasTexture()) {
+            GL11.glBindTexture(GL30.GL_TEXTURE_2D, mesh.getMaterial().getTexture().getId());
         } 
         // or use the default texture if none specified
         else {
@@ -97,24 +99,24 @@ public class RenderManager {
         GL30.glBindVertexArray(0);
     }
 
-    public void prepare(IShader shader, Entity entity, Camera camera) {
+    public void prepare(IShader shader, Entity entity, Mesh mesh, Camera camera) {
         // set all the uniform variables to pass to the shader
-        shader.prepare(entity, camera);
+        shader.prepare(entity, mesh, camera);
     }
 
     public void renderSceneOrtho(Camera camera) {
-        for(Model model : entities.keySet()) {
+        for(Mesh mesh : entities.keySet()) {
             // bind the model's shader and set the projectionMatrix uniform data
             depthShader.bind();
             
             // bind the model itself
-            bind(model);
+            bind(mesh);
 
-            // for each entity that uses that model
-            List<Entity> entityList = entities.get(model);
+            // for each entity that uses that mesh
+            List<Entity> entityList = entities.get(mesh);
             for(Entity entity : entityList) {
-                prepare((IShader)depthShader, entity, camera);
-                GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+                prepare((IShader)depthShader, entity, mesh, camera);
+                GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
             }
             
             // unbind the model
@@ -168,27 +170,27 @@ public class RenderManager {
 
     public void renderScene(Camera camera) {
         // for each model in the entities 
-        for(Model model : entities.keySet()) {
+        for(Mesh mesh : entities.keySet()) {
             // bind the model's shader and set the projectionMatrix uniform data
-            model.getShader().bind();
-            model.getShader().setUniform("projectionMatrix", window.updateProjectionMatrix());
+            mesh.getShader().bind();
+            mesh.getShader().setUniform("projectionMatrix", window.updateProjectionMatrix());
             
-            // bind the model itself
-            bind(model);
+            // bind the mesh itself
+            bind(mesh);
 
             // for each entity that uses that model
-            List<Entity> entityList = entities.get(model);
+            List<Entity> entityList = entities.get(mesh);
             for(Entity entity : entityList) {
                 // prepare it to be rendered then draw the triangles to the viewBuffer
-                prepare((IShader) model.getShader(), entity, camera);
-                GL11.glDrawElements(GL11.GL_TRIANGLES, entity.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+                prepare((IShader) mesh.getShader(), entity, mesh, camera);
+                GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
             }
             
             // unbind the model
             unbind();
 
             // unbind the shader
-            model.getShader().unbind();
+            mesh.getShader().unbind();
         }
     }
 
@@ -217,14 +219,16 @@ public class RenderManager {
         else {
             List<Entity> newEntityList = new ArrayList<>();
             newEntityList.add(entity);
-            entities.put(entity.getModel(), newEntityList);
+            for(Mesh mesh : entity.getModel().getMeshs().values()) {
+                entities.put(mesh, newEntityList);
+            }
         }
     }
 
     public void cleanup() {
         // clean up the memory of all the models
-        for(Model model : entities.keySet()) {
-            model.getShader().cleanup();
+        for(Mesh mesh : entities.keySet()) {
+            mesh.getShader().cleanup();
         }
     }
 }

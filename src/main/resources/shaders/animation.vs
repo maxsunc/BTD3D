@@ -9,7 +9,6 @@ layout (location = 3) in vec3 tangent;
 layout (location = 4) in vec3 bone_id;
 layout (location = 5) in vec3 weight;
 
-out vec3 lightVec;
 out vec2 fragTextureCoord;
 out vec3 fragNormal;
 out vec3 fragPos;

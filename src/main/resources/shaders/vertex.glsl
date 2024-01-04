@@ -4,7 +4,6 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 textureCoord;
 layout (location = 2) in vec3 normal;
 
-out vec3 lightVec;
 out vec2 fragTextureCoord;
 out vec3 fragNormal;
 out vec3 fragPos;
@@ -22,15 +21,11 @@ const float density = 0.01;
 const float gradient = 10;
 
 void main() {
-
-
     vec4 worldPos = transformationMatrix * vec4(position, 1.0);
     vec4 positionRelativeToCamera = viewMatrix * worldPos;
 
-
     vec4 normalPos =  vec4(normal, 1.0);
-    lightVec = vec3(400, 400, 200);
-    fragNormal = normalize(m3x3InvTrans * normalPos.xyz);
+    fragNormal = m3x3InvTrans * normalPos.xyz;
     fragPos = worldPos.xyz;
     fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);
     fragTextureCoord = textureCoord;

@@ -35,7 +35,7 @@ import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
-import me.ChristopherW.core.custom.Animations.RiggedModel;
+import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
@@ -65,7 +65,7 @@ public class Game implements ILogic {
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    private RiggedModel monkeyModel;
+    private RiggedMesh monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -122,13 +122,14 @@ public class Game implements ILogic {
         entities = new HashMap<>();
 
         // init static objects
-        entities.put("player",
-        new AnimatedEntity(
-            loader.loadRiggedModel("assets/models/model.dae", loader.createTexture("assets/models/diffuse.png")),
-            new Vector3f(0,-4,0), 
-            new Vector3f(0,0,0),
+        Model cubeSphere = loader.loadModel("assets/models/cubesphere.dae");
+        Entity entity = new Entity(
+            cubeSphere, 
+            new Vector3f(), 
+            new Vector3f(), 
             new Vector3f(1,1,1)
-        ));
+        );
+        entities.put("cubesphere", entity);
     }
 
     int i = 0;
