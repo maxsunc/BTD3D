@@ -67,7 +67,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
         RiggedMesh rm = (RiggedMesh)mesh;
         rm.updateAnimation(((AnimatedEntity)entity).getTick(0), 0);
-        Matrix4f[] m = new Matrix4f[50];
+        Matrix4f[] m = new Matrix4f[GlobalVariables.MAX_BONES];
         for(int i = 0; i < rm.getBones().length; i++) {
             m[i] = rm.getBones()[i].getTransformation();
         }

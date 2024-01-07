@@ -7,6 +7,7 @@ import me.ChristopherW.core.ShaderManager;
 import me.ChristopherW.core.custom.Shaders.DefaultShader;
 
 public class Mesh {
+    public static int MAX_WEIGHTS = 4;
     private String path = "generated";
     private int id;
     private int vertexCount;

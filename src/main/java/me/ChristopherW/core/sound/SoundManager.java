@@ -50,6 +50,23 @@ public class SoundManager {
         this.soundSourceMap.put(name, soundSource);
     }
 
+    public SoundSource createSound(String name, String path, Vector3f position, boolean loop, boolean relative, float gain) {
+        SoundBuffer buffer;
+        try {
+            buffer = new SoundBuffer(path);
+            this.addSoundBuffer(buffer);
+            SoundSource source = new SoundSource(loop, relative);
+            source.setPosition(position);
+            source.setBuffer(buffer.getBufferId());
+            addSoundSource(name, source);
+            source.setGain(gain);
+            return source;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public void cleanup() {
         soundSourceMap.values().forEach(SoundSource::cleanup);
         soundSourceMap.clear();

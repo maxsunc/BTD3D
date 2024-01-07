@@ -1,11 +1,11 @@
 package me.ChristopherW.core;
 
+import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Shaders.DebugShader;
 import me.ChristopherW.core.custom.Shaders.DepthShader;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Mesh;
-import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
@@ -77,6 +77,11 @@ public class RenderManager {
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
+        if(mesh instanceof RiggedMesh) {
+            GL20.glEnableVertexAttribArray(3);
+            GL20.glEnableVertexAttribArray(4);
+            GL20.glEnableVertexAttribArray(5);
+        }
         GL13.glActiveTexture(GL13.GL_TEXTURE0 + 0);
 
         // bind the texture that the model has
@@ -96,6 +101,9 @@ public class RenderManager {
         GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
         GL20.glDisableVertexAttribArray(2);
+        GL20.glDisableVertexAttribArray(3);
+        GL20.glDisableVertexAttribArray(4);
+        GL20.glDisableVertexAttribArray(5);
         GL30.glBindVertexArray(0);
     }
 
@@ -219,7 +227,7 @@ public class RenderManager {
         else {
             List<Entity> newEntityList = new ArrayList<>();
             newEntityList.add(entity);
-            for(Mesh mesh : entity.getModel().getMeshs().values()) {
+            for(Mesh mesh : entity.getModel().getMeshes().values()) {
                 entities.put(mesh, newEntityList);
             }
         }

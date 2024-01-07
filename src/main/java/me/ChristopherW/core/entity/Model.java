@@ -4,11 +4,14 @@ import java.util.HashMap;
 
 public class Model {
     private String name;
-    private HashMap<String, Mesh> meshs = new HashMap<>();
+    private HashMap<String, Mesh> meshes = new HashMap<>();
 
 
+    public Mesh setMesh(String key, Mesh mesh) {
+        return this.meshes.put(key, mesh);
+    }
     public Mesh getMesh(String key) {
-        return meshs.get(key);
+        return meshes.get(key);
     }
     public String getName() {
         return name;
@@ -16,12 +19,10 @@ public class Model {
     public void setName(String name) {
         this.name = name;
     }
-    public HashMap<String, Mesh> getMeshs() {
-        return meshs;
+    public HashMap<String, Mesh> getMeshes() {
+        return meshes;
     }
-    public void setMeshs(HashMap<String, Mesh> meshs) {
-        this.meshs = meshs;
+    public void setMeshs(HashMap<String, Mesh> meshes) {
+        this.meshes = meshes;
     }
-
-    
 }

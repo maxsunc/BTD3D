@@ -15,7 +15,7 @@ public class GlobalVariables {
     public static float FRAMERATE = 60;
     public static boolean SHOW_FPS = false;
     public static boolean VSYNC = false;
-    public static int SHADOW_RES = 0;
+    public static int SHADOW_RES = 2048;
     public static boolean SHADOW_FILTERING = true;
     public static boolean FOG = false;
     public static boolean DEBUG_SHADOWS = false;
@@ -31,4 +31,6 @@ public class GlobalVariables {
     public static final Vector3f AMBIENT_LIGHT = new Vector3f(0.3f ,0.3f, 0.3f);
     public static final float SPECULAR_POWER = 10f;
     public static final long NANOSECOND = 1000000000L;
+
+    public static final int MAX_BONES = 150;
 }

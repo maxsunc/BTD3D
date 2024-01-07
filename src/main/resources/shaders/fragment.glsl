@@ -58,7 +58,7 @@ void main() {
     vec3 lightCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     lightCoords = (lightCoords + 1.0) / 2.0;
 
-    float ambientIntensity = 0.5;
+    float ambientIntensity = 0.75;
     float specularIntensity = material.specular;
     float diffuseIntensity = 1;
 

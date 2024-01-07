@@ -4,7 +4,6 @@ import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Mesh;
-import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.utils.Utils;
 
