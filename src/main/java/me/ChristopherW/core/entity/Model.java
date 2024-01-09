@@ -25,4 +25,13 @@ public class Model {
     public void setMeshs(HashMap<String, Mesh> meshes) {
         this.meshes = meshes;
     }
+
+    public static Model copy(Model model) {
+        Model newModel = new Model();
+        newModel.setName(model.getName());
+        for(String key : model.getMeshes().keySet()) {
+            newModel.getMeshes().put(key, new Mesh(model.getMesh(key)));
+        }
+        return newModel;
+    }
 }

@@ -46,6 +46,7 @@ import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Texture;
+import me.ChristopherW.core.entity.primatives.Cube;
 import me.ChristopherW.core.entity.primatives.Plane;
 import me.ChristopherW.core.entity.primatives.Sphere;
 import me.ChristopherW.core.sound.SoundListener;
@@ -70,7 +71,6 @@ public class Game implements ILogic {
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    private RiggedMesh monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -117,6 +117,7 @@ public class Game implements ILogic {
     }
 
 
+    RiggedModel monkeyModel;
     @Override
     public void init() throws Exception {
 
@@ -133,24 +134,44 @@ public class Game implements ILogic {
         Entity map = new Entity(mapModel, 
             new Vector3f(), 
             new Vector3f(), 
-            new Vector3f(0.5f,0.5f,0.5f)
+            new Vector3f(1f,1f,1f)
         );
         entities.put("map", map);
+
+        monkeyModel = loader.loadRiggedModel("assets/models/monkey.fbx");
 
         audioSources.get("jazz").play();
     }
 
     int i = 0;
     Vector2d dMouse = new Vector2d();
+    int monkeyCounter = 0;
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
-        
+        if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            if(action == GLFW.GLFW_PRESS) {
+                dMouse = new Vector2d(input.getCurrentPos());
+            } else if (action == GLFW.GLFW_RELEASE) {
+                if(dMouse.distance(input.getCurrentPos()) < 5f) {
+                    AnimatedEntity monkey = new AnimatedEntity(RiggedModel.copy(monkeyModel), 
+                        mouseWorldPos, 
+                        new Vector3f(), 
+                        new Vector3f(0.1f,0.1f,0.1f)
+                    );
+                    monkey.setAnimationId(0);
+                    monkeyCounter++;
+                    entities.put("monkey" + monkeyCounter, monkey);
+                }
+            }
+        }
     }
 
     int frameCounter = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
-        if(key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_PRESS) {
-            AnimatedEntity animatedEntity = (AnimatedEntity)entities.get("character");
-            animatedEntity.nextFrame();
+        if(key == GLFW.GLFW_KEY_SPACE) {
+            if(action == GLFW.GLFW_PRESS)
+                GlobalVariables.DEBUG_SHADOWS = true;
+            if(action == GLFW.GLFW_RELEASE)
+                GlobalVariables.DEBUG_SHADOWS = false;
         }
     }
 

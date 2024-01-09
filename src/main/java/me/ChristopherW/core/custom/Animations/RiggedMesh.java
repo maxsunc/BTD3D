@@ -74,6 +74,7 @@ public class RiggedMesh extends Mesh {
         this.bones = model.bones;
         this.weights = model.weights;
         this.animationList = model.animationList;
+        this.animationData = model.animationData;
     }
     
     public Bone[] getBones() {

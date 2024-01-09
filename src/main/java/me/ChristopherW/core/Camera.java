@@ -2,6 +2,8 @@ package me.ChristopherW.core;
 
 import org.joml.Vector3f;
 
+import me.ChristopherW.core.utils.GlobalVariables;
+
 import org.joml.Matrix4f;
 
 public class Camera {
@@ -20,7 +22,7 @@ public class Camera {
 
         Matrix4f lightView = new Matrix4f();
         lightView.lookAt(
-            new Vector3f(25, 25, 25),
+            GlobalVariables.SUN_POS,
             new Vector3f(0.0f, 0.0f, 0.0f),
             new Vector3f(0.0f, 1.0f, 0.0f)
         );

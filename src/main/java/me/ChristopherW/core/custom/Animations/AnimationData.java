@@ -22,6 +22,10 @@ public class AnimationData {
         currentFrameIdx = 0;
         this.currentAnimation = currentAnimation;
     }
+    public AnimationData(AnimationData in) {
+        this.currentFrameIdx = in.currentFrameIdx;
+        this.currentAnimation = in.currentAnimation;
+    }
 
     public RiggedMesh.Animation getCurrentAnimation() {
         return currentAnimation;

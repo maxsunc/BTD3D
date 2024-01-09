@@ -21,6 +21,7 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
@@ -158,6 +159,7 @@ public class ObjectLoader {
         if (!file.exists()) {
             throw new RuntimeException("Model path does not exist [" + fileName + "]");
         }
+
         if (aiScene == null) {
             throw new RuntimeException("Error loading model [fileName: " + fileName + "]");
         }
@@ -180,6 +182,9 @@ public class ObjectLoader {
         HashMap<String, RiggedMesh> meshes = new HashMap<>();
         for (int i = 0; i < numMeshes; i++) {
             AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
+
+            System.out.println("[ObjectLoader] Loading Mesh: " + aiMesh.mName().dataString() + " (" +fileName+")");
+
             float[] vertices = processVertices(aiMesh);
             float[] textCoords = processTextCoords(aiMesh);
             float[] normals = processNormals(aiMesh);
@@ -248,6 +253,9 @@ public class ObjectLoader {
         HashMap<String, Mesh> meshes = new HashMap<>();
         for (int i = 0; i < numMeshes; i++) {
             AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
+            
+            System.out.println("[ObjectLoader] Loading Mesh: " + aiMesh.mName().dataString() + " (" +modelPath+")");
+
             float[] vertices = processVertices(aiMesh);
             float[] normals = processNormals(aiMesh);
             float[] textCoords = processTextCoords(aiMesh);
@@ -260,7 +268,6 @@ public class ObjectLoader {
             }
 
             Material material = materials.get(aiMesh.mMaterialIndex());
-            System.out.println("material null: " + (material.getTexture() == null));
             Mesh mesh = loadMesh(vertices, textCoords, normals, indices, material.getTexture(), modelPath);
 
             String suffix = "";
@@ -481,7 +488,11 @@ public class ObjectLoader {
         AIString path = AIString.calloc();
         aiGetMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, 0, path, (IntBuffer) null, null, null, null, null, null);
         String textPath = path.dataString();
-        System.out.println(textPath);
+        if(textPath.contains("\\")) {
+            String[] parts = textPath.split(Pattern.quote(File.separator));
+            textPath = parts[parts.length - 1];
+        }
+        System.out.println("[ObjectLoader] Loading Texture: " + textPath);
         Texture texture = null;
         if (textPath != null && textPath.length() > 0) {
             texture = this.createTexture(texturesDir + "/" + textPath);

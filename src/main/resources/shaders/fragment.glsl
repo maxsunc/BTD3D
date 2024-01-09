@@ -20,6 +20,7 @@ uniform Material material;
 uniform sampler2D textureSampler;
 uniform sampler2D shadowMap;
 uniform vec4 skyColor; 
+uniform vec3 sunPos;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -55,8 +56,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 
 void main() {
     vec3 lightColor = vec3(1,1,1);
-    vec3 lightCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    lightCoords = (lightCoords + 1.0) / 2.0;
+    vec3 lightCoords = sunPos;
 
     float ambientIntensity = 0.75;
     float specularIntensity = material.specular;

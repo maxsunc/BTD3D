@@ -46,10 +46,12 @@ public class AnimatedShader extends ShaderManager implements IShader {
             this.createUniform("projectionMatrix");
             this.createUniform("viewMatrix");
             this.createUniform("lightSpaceMatrix");
+            this.createUniform("m3x3InvTrans");
             this.createUniform("bones");
             this.createUniform("shadowFiltering");
             this.createUniform("skyColor");
             this.createUniform("showFog");
+            this.createUniform("sunPos");
             this.createMaterialUniform("material");
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,6 +65,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
         Matrix4f modelMatrix = Transformation.createTransformationMatrix(entity);
         this.setUniform("transformationMatrix", modelMatrix);
         this.setUniform("viewMatrix", Transformation.createViewMatrix(camera));
+        this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
         if (!(entity instanceof AnimatedEntity)) {
             this.setUniform("bones", AnimationData.DEFAULT_BONES_MATRICES);
@@ -74,5 +77,6 @@ public class AnimatedShader extends ShaderManager implements IShader {
         this.setUniform("material", mesh.getMaterial());
         this.setUniform("skyColor", GlobalVariables.BG_COLOR);
         this.setUniform("showFog", GlobalVariables.FOG ? 1 : 0);
+        this.setUniform("sunPos", GlobalVariables.SUN_POS);
     }
 }

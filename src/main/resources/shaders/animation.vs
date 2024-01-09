@@ -19,6 +19,7 @@ uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 lightProjection;
+uniform mat3 m3x3InvTrans;
 uniform mat4 lightSpaceMatrix;
 uniform mat4 bones[MAX_BONE];
 
@@ -26,45 +27,20 @@ const float density = 0.01;
 const float gradient = 10;
 
 void main() {
-    vec4 initPos = vec4(0, 0, 0, 0);
-    vec4 initNormal = vec4(0, 0, 0, 0);
-    vec4 initTangent = vec4(0, 0, 0, 0);
+    vec4 normalizedWeight = normalize(weights);
+    mat4 boneTransformation = bones[uint(bone_id.x)] * normalizedWeight.x + bones[uint(bone_id.y)] * normalizedWeight.y + bones[uint(bone_id.z)] * normalizedWeight.z + bones[uint(bone_id.w)] * normalizedWeight.w;
+    vec4 totalPosition = boneTransformation * vec4(position, 1.0);
+    vec4 worldPos = transformationMatrix * totalPosition;
+    vec4 positionRelativeToCamera = viewMatrix * worldPos;
 
-    int count = 0;
-    for (int i = 0; i < 4; i++) {
-        float weight = weights[i];
-        if (weight > 0) {
-            count++;
-            int boneIndex = bone_id[i];
-            vec4 tmpPos = bones[boneIndex] * vec4(position, 1.0);
-            initPos += weight * tmpPos;
-
-            vec4 tmpNormal = bones[boneIndex] * vec4(normal, 0.0);
-            initNormal += weight * tmpNormal;
-
-            vec4 tmpTangent = bones[boneIndex] * vec4(tangent, 0.0);
-            initTangent += weight * tmpTangent;
-        }
-    }
-    if (count == 0) {
-        initPos = vec4(position, 1.0);
-        initNormal = vec4(normal, 0.0);
-        initTangent = vec4(tangent, 0.0);
-    }
-
-
-    //mat4 boneTransformation = bones[uint(bone_id.x)] * normalizedWeight.x + bones[uint(bone_id.y)] * normalizedWeight.y + bones[uint(bone_id.z)] * normalizedWeight.z + bones[uint(bone_id.w)] * normalizedWeight.w;
-    //vec4 totalPosition = boneTransformation * vec4(position, 1.0);
-    mat4 modelViewMatrix = viewMatrix * transformationMatrix;
-    vec4 mvPosition = modelViewMatrix * initPos;
-
-    fragNormal = normalize(modelViewMatrix * initNormal).xyz;
-    fragPos = mvPosition.xyz;
-    fragPosLightSpace = lightSpaceMatrix * mvPosition;
+    vec4 normalPos =  vec4(normal, 1.0);
+    fragNormal = m3x3InvTrans * normalPos.xyz;
+    fragPos = worldPos.xyz;
+    fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);
     fragTextureCoord = textureCoord;
-    gl_Position = projectionMatrix * mvPosition;
+    gl_Position = projectionMatrix * positionRelativeToCamera;
 
-    float distance = length(mvPosition.xyz);
+    float distance = length(positionRelativeToCamera.xyz);
     visibility = exp(-pow((distance*density), gradient));
     visibility = clamp(visibility, 0.0, 1.0);
 }

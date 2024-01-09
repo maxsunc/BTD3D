@@ -44,6 +44,7 @@ public class DefaultShader extends ShaderManager implements IShader {
             this.createUniform("lightSpaceMatrix");
             this.createUniform("shadowFiltering");
             this.createUniform("skyColor");
+            this.createUniform("sunPos");
             this.createUniform("showFog");
             this.createMaterialUniform("material");
         } catch (Exception e) {
@@ -64,5 +65,6 @@ public class DefaultShader extends ShaderManager implements IShader {
         this.setUniform("material", mesh.getMaterial());
         this.setUniform("skyColor", GlobalVariables.BG_COLOR);
         this.setUniform("showFog", GlobalVariables.FOG ? 1 : 0);
+        this.setUniform("sunPos", GlobalVariables.SUN_POS);
     }
 }
