@@ -4,6 +4,7 @@ import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.ShaderManager;
 import me.ChristopherW.core.entity.Entity;
+import me.ChristopherW.core.entity.Mesh;
 
 public class DebugShader extends ShaderManager implements IShader {
 
@@ -24,7 +25,7 @@ public class DebugShader extends ShaderManager implements IShader {
     }
 
     @Override
-    public void prepare(Entity entity, Camera camera) {
+    public void prepare(Entity entity, Mesh mesh, Camera camera) {
         this.setUniform("depthMap", 1);
     }
     

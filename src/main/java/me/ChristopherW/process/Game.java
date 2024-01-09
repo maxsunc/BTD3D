@@ -1,5 +1,7 @@
 package me.ChristopherW.process;
 
+import static org.lwjgl.assimp.Assimp.aiComponent_ANIMATIONS;
+
 import java.awt.Color;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
@@ -35,11 +37,14 @@ import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
+import me.ChristopherW.core.custom.Animations.Bone;
+import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
-import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.entity.primatives.Plane;
 import me.ChristopherW.core.entity.primatives.Sphere;
@@ -65,7 +70,7 @@ public class Game implements ILogic {
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    private RiggedModel monkeyModel;
+    private RiggedMesh monkeyModel;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -86,7 +91,7 @@ public class Game implements ILogic {
         
         // set setup the sound listener to be at the world origin and load the audio sounds
         soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
-        loadSounds();   
+        loadSounds();
     }
 
     void loadSounds() {
@@ -94,7 +99,7 @@ public class Game implements ILogic {
             // load the sound file to a buffer, then create a new audio source at the world origin with the buffer attached
             // store that sound source to a map of sounds
             // repeat this for each sound file
-            /*SoundBuffer golfHit1Buffer = new SoundBuffer("assets/sounds/golfHit1.ogg");
+            /*SoundBuffer griddyBuffer = new SoundBuffer("assets/sounds/griddy.ogg");
             soundManager.addSoundBuffer(golfHit1Buffer);
             SoundSource golfHit1Source = new SoundSource(false, false);
             golfHit1Source.setPosition(new Vector3f(0,0,0));
@@ -103,6 +108,8 @@ public class Game implements ILogic {
             soundManager.addSoundSource("golfHit1", golfHit1Source);*/
 
             //golfHit1Source.setGain( 0.4f);
+            SoundSource griddy = soundManager.createSound("griddy", "assets/sounds/workout.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("griddy", griddy);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,13 +129,26 @@ public class Game implements ILogic {
         entities = new HashMap<>();
 
         // init static objects
-        entities.put("player",
-        new AnimatedEntity(
-            loader.loadRiggedModel("assets/models/model.dae", loader.createTexture("assets/models/diffuse.png")),
-            new Vector3f(0,-4,0), 
-            new Vector3f(0,0,0),
+        RiggedModel monkey = loader.loadRiggedModel("assets/models/jonesy.dae");
+        AnimatedEntity entity = new AnimatedEntity(
+            monkey, 
+            new Vector3f(-2.5f,-5,0), 
+            new Vector3f(), 
+            new Vector3f(10,10,10)
+        );
+        entity.setAnimationId(0);
+
+        entities.put("character", entity);
+        Model monkey2 = loader.loadModel("assets/models/model.dae");
+        Entity entity2 = new Entity(
+            monkey2, 
+            new Vector3f(5,-5,0), 
+            new Vector3f(), 
             new Vector3f(1,1,1)
-        ));
+        );
+        entities.put("character2", entity2);
+
+        entities.put("ground", new Plane("ground", new Vector3f(0,-5f,0),new Vector3f(),new Vector3f(25,1,25)));
     }
 
     int i = 0;
@@ -139,7 +159,10 @@ public class Game implements ILogic {
 
     int frameCounter = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
-
+        if(key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_PRESS) {
+            AnimatedEntity animatedEntity = (AnimatedEntity)entities.get("character");
+            animatedEntity.nextFrame();
+        }
     }
 
     float rotX = 45;
@@ -206,7 +229,7 @@ public class Game implements ILogic {
             }
             if(entity instanceof AnimatedEntity) {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
-                animatedEntity.tick(0, 1/60.0f);
+                animatedEntity.nextFrame();
             }
         }
 
@@ -224,6 +247,8 @@ public class Game implements ILogic {
             return;
     } 
 
+    
+    FloatBuffer depthBuffer = BufferUtils.createFloatBuffer(1920*1080);
     @Override
     public void render() throws Exception {
         // if the window was resized, update the OpenGL viewport to match
@@ -238,43 +263,47 @@ public class Game implements ILogic {
         // render to the OpenGL viewport from the perspective of the camera
         renderer.render(camera);
 
-        double[] x = new double[1];
-        double[] y = new double[1];
-        GLFW.glfwGetCursorPos(window.getWindow(), x, y);
-
-        Matrix4f projMat = window.getProjectionMatrix();
-        Matrix4f viewMat = Transformation.createViewMatrix(camera);
-        Matrix4f combinedMat = projMat.mul(viewMat);
-        combinedMat = combinedMat.invert();
-
-
-        // depth (world mouse pos, shadows)
-        Vector4f vec = new Vector4f();
-        vec.x = (2.0f*((float)(x[0])/(window.getWidth())))-1.0f;
-        vec.y = 1.0f-(2.0f*((float)(y[0])/(window.getHeight())));
-
-        FloatBuffer depthBuffer = BufferUtils.createFloatBuffer(1920*1080);
-        int framebufferStatus = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
-        if (framebufferStatus != GL30.GL_FRAMEBUFFER_COMPLETE) {
-            System.err.println("Framebuffer is not complete: " + framebufferStatus);
-        }
-        int xPos = (int)x[0];
-        int yPos = window.getHeight() - (int)y[0];
-        GL11.glReadPixels(xPos, yPos, 1, 1, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, depthBuffer);
-        float depth = depthBuffer.get();
-    
-        vec.z = 2.0f * depth - 1.0f;
-        vec.w = 1.0f;
         
-        Vector4f pos = vec.mul(combinedMat);
-        pos.w = 1.0f/pos.w;
+        try {
+            double[] x = new double[1];
+            double[] y = new double[1];
+            GLFW.glfwGetCursorPos(window.getWindow(), x, y);
 
-        pos.x *= pos.w;
-        pos.y *= pos.w;
-        pos.z *= pos.w;
+            Matrix4f projMat = window.getProjectionMatrix();
+            Matrix4f viewMat = Transformation.createViewMatrix(camera);
+            Matrix4f combinedMat = projMat.mul(viewMat);
+            combinedMat = combinedMat.invert();
 
-        mouseWorldPos = new Vector3f(pos.x, pos.y, pos.z);
+            // depth (world mouse pos, shadows)
+            Vector4f vec = new Vector4f();
+            vec.x = (2.0f*((float)(x[0])/(window.getWidth())))-1.0f;
+            vec.y = 1.0f-(2.0f*((float)(y[0])/(window.getHeight())));
 
+            
+            int framebufferStatus = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
+            if (framebufferStatus != GL30.GL_FRAMEBUFFER_COMPLETE) {
+                System.err.println("Framebuffer is not complete: " + framebufferStatus);
+            }
+            int xPos = (int)x[0];
+            int yPos = window.getHeight() - (int)y[0];
+            GL11.glReadPixels(xPos, yPos, 1, 1, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, depthBuffer);
+            float depth = depthBuffer.get();
+        
+            vec.z = 2.0f * depth - 1.0f;
+            vec.w = 1.0f;
+            
+            Vector4f pos = vec.mul(combinedMat);
+            pos.w = 1.0f/pos.w;
+
+            pos.x *= pos.w;
+            pos.y *= pos.w;
+            pos.z *= pos.w;
+
+            mouseWorldPos = new Vector3f(pos.x, pos.y, pos.z);
+        } catch(OutOfMemoryError e) {
+            System.out.println("Error. Out of Memory. Skipping depth check");
+        }
+ 
         // update the render of the ImGui frame
         window.imGuiGlfw.newFrame();
         ImGui.newFrame();
