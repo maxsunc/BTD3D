@@ -108,8 +108,8 @@ public class Game implements ILogic {
             soundManager.addSoundSource("golfHit1", golfHit1Source);*/
 
             //golfHit1Source.setGain( 0.4f);
-            SoundSource griddy = soundManager.createSound("griddy", "assets/sounds/workout.ogg", new Vector3f(0,0,0), true, false, 0.4f);
-            audioSources.put("griddy", griddy);
+            SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("jazz", jazz);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -129,26 +129,15 @@ public class Game implements ILogic {
         entities = new HashMap<>();
 
         // init static objects
-        RiggedModel monkey = loader.loadRiggedModel("assets/models/workitout.dae");
-        AnimatedEntity entity = new AnimatedEntity(
-            monkey, 
-            new Vector3f(-2.5f,-5,0), 
+        Model mapModel = loader.loadModel("assets/models/map.dae");
+        Entity map = new Entity(mapModel, 
             new Vector3f(), 
-            new Vector3f(10,10,10)
-        );
-        entity.setAnimationId(0);
-
-        entities.put("character", entity);
-        Model monkey2 = loader.loadModel("assets/models/model.dae");
-        Entity entity2 = new Entity(
-            monkey2, 
-            new Vector3f(5,-5,0), 
             new Vector3f(), 
-            new Vector3f(1,1,1)
+            new Vector3f(0.5f,0.5f,0.5f)
         );
-        entities.put("character2", entity2);
+        entities.put("map", map);
 
-        entities.put("ground", new Plane("ground", new Vector3f(0,-5f,0),new Vector3f(),new Vector3f(25,1,25)));
+        audioSources.get("jazz").play();
     }
 
     int i = 0;
