@@ -7,6 +7,7 @@ import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.ShaderManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
+import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Transformation;
 
@@ -42,6 +43,8 @@ public class DefaultShader extends ShaderManager implements IShader {
             this.createUniform("m3x3InvTrans");
             this.createUniform("lightSpaceMatrix");
             this.createUniform("shadowFiltering");
+            this.createUniform("skyColor");
+            this.createUniform("showFog");
             this.createMaterialUniform("material");
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,7 +52,7 @@ public class DefaultShader extends ShaderManager implements IShader {
     }
 
     @Override
-    public void prepare(Entity entity, Camera camera) {
+    public void prepare(Entity entity, Mesh mesh, Camera camera) {
         this.setUniform("textureSampler", 0);
         this.setUniform("shadowMap", 1);
         Matrix4f modelMatrix = Transformation.createTransformationMatrix(entity);
@@ -57,8 +60,9 @@ public class DefaultShader extends ShaderManager implements IShader {
         this.setUniform("viewMatrix", Transformation.createViewMatrix(camera));
         this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        this.setUniform("shadowFiltering", 1);
-        this.setUniform("material", entity.getModel().getMaterial());
+        this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING ? 1 : 0);
+        this.setUniform("material", mesh.getMaterial());
+        this.setUniform("skyColor", GlobalVariables.BG_COLOR);
+        this.setUniform("showFog", GlobalVariables.FOG ? 1 : 0);
     }
-    
 }

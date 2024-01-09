@@ -2,8 +2,10 @@ package me.ChristopherW.core.utils;
 
 import me.ChristopherW.core.custom.UI.UIScreens.Resolution;
 
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.assimp.AIMatrix4x4;
 import org.lwjgl.system.MemoryUtil;
 
 import com.jme3.math.Quaternion;
@@ -23,6 +25,18 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Utils {
+    public static float[] listFloatToArray(List<Float> list) {
+        int size = list != null ? list.size() : 0;
+        float[] floatArr = new float[size];
+        for (int i = 0; i < size; i++) {
+            floatArr[i] = list.get(i);
+        }
+        return floatArr;
+    }
+
+    public static int[] listIntToArray(List<Integer> list) {
+        return list.stream().mapToInt((Integer v) -> v).toArray();
+    }
     public static FloatBuffer storeDataInFloatBuffer(float[] data) {
         FloatBuffer buffer = MemoryUtil.memAllocFloat(data.length);
         buffer.put(data).flip();
@@ -145,5 +159,35 @@ public class Utils {
     }
     public static Quaternionf convert(com.jme3.math.Quaternion in) {
         return new Quaternionf(in.getX(), in.getY(), in.getZ(), in.getW());
+    }
+    public static Matrix4f convertMatrix(AIMatrix4x4 assimp)
+    {
+        return new Matrix4f(
+                assimp.a1(), assimp.b1(), assimp.c1(), assimp.d1(),
+                assimp.a2(), assimp.b2(), assimp.c2(), assimp.d2(),
+                assimp.a3(), assimp.b3(), assimp.c3(), assimp.d3(),
+                assimp.a4(), assimp.b4(), assimp.c4(), assimp.d4()
+        );
+    }
+
+    public static Matrix4f multiplyMatrices(Matrix4f... sequence)
+    {
+        Matrix4f res = new Matrix4f();
+
+        for (Matrix4f m : sequence)
+            res.mul(m);
+
+
+        return res;
+    }
+
+    public static Quaternionf slerp(Quaternionf start, Quaternionf end, float alpha)
+    {
+        Quaternionf a = new Quaternionf(start);
+        Quaternionf b = new Quaternionf(end);
+
+        a.slerp(b, alpha);
+
+        return a;
     }
 }

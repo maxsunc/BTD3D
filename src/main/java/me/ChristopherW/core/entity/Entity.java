@@ -1,14 +1,11 @@
 package me.ChristopherW.core.entity;
 
-import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Quaternion;
 
-import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Utils;
 import me.ChristopherW.process.Game;
 
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Entity {
@@ -60,7 +57,7 @@ public class Entity {
 
     public void localTranslate(float x, float y, float z) {
         if(z != 0) {
-            position.x += (float) Math.sin(Math.toRadians(rotation.y)) * -1.0f * z;
+            position.x += (float) Math.sin(Math.toRadians(rotation.y)) * z;
             position.z += (float) Math.cos(Math.toRadians(rotation.y)) * z;
         }
         if(x != 0) {
