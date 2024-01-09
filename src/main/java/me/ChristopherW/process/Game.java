@@ -129,13 +129,15 @@ public class Game implements ILogic {
         entities = new HashMap<>();
 
         // init static objects
-        RiggedModel monkey = loader.loadRiggedModel("assets/models/workitout.dae");
+        RiggedModel monkey = loader.loadRiggedModel("assets/models/jonesy.dae");
         AnimatedEntity entity = new AnimatedEntity(
             monkey, 
             new Vector3f(-2.5f,-5,0), 
             new Vector3f(), 
             new Vector3f(10,10,10)
         );
+        entity.setAnimationId(0);
+
         entities.put("character", entity);
         Model monkey2 = loader.loadModel("assets/models/model.dae");
         Entity entity2 = new Entity(
@@ -159,13 +161,7 @@ public class Game implements ILogic {
     public void keyDown(long window, int key, int scancode, int action, int mods) {
         if(key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_PRESS) {
             AnimatedEntity animatedEntity = (AnimatedEntity)entities.get("character");
-            animatedEntity.tick(0, 1/60.0f);
-            for(Mesh mesh : animatedEntity.getModel().getMeshes().values()) {
-                RiggedMesh rm = (RiggedMesh)mesh;
-                for(Bone b : rm.getBones()) {
-                    System.out.println(b.getTransformation());
-                }
-            }
+            animatedEntity.nextFrame();
         }
     }
 
@@ -233,7 +229,7 @@ public class Game implements ILogic {
             }
             if(entity instanceof AnimatedEntity) {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
-                animatedEntity.tick(0, 1/60.0f);
+                animatedEntity.nextFrame();
             }
         }
 

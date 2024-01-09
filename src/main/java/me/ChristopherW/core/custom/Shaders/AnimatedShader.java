@@ -8,6 +8,7 @@ import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.ShaderManager;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
+import me.ChristopherW.core.custom.Animations.AnimationData;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
@@ -44,7 +45,6 @@ public class AnimatedShader extends ShaderManager implements IShader {
             this.createUniform("transformationMatrix");
             this.createUniform("projectionMatrix");
             this.createUniform("viewMatrix");
-            this.createUniform("m3x3InvTrans");
             this.createUniform("lightSpaceMatrix");
             this.createUniform("bones");
             this.createUniform("shadowFiltering");
@@ -63,15 +63,13 @@ public class AnimatedShader extends ShaderManager implements IShader {
         Matrix4f modelMatrix = Transformation.createTransformationMatrix(entity);
         this.setUniform("transformationMatrix", modelMatrix);
         this.setUniform("viewMatrix", Transformation.createViewMatrix(camera));
-        this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        RiggedMesh rm = (RiggedMesh)mesh;
-        rm.updateAnimation(((AnimatedEntity)entity).getTick(0), 0);
-        Matrix4f[] m = new Matrix4f[GlobalVariables.MAX_BONES];
-        for(int i = 0; i < rm.getBones().length; i++) {
-            m[i] = rm.getBones()[i].getTransformation();
+        if (!(entity instanceof AnimatedEntity)) {
+            this.setUniform("bones", AnimationData.DEFAULT_BONES_MATRICES);
+        } else {
+            AnimatedEntity ae = (AnimatedEntity)entity;
+            this.setUniform("bones", ae.getCurrentFrame((RiggedMesh)mesh).boneMatrices());
         }
-        this.setUniform("bones", m);
         this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING ? 1 : 0);
         this.setUniform("material", mesh.getMaterial());
         this.setUniform("skyColor", GlobalVariables.BG_COLOR);

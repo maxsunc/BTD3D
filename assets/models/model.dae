@@ -5,11 +5,32 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.1.2 commit date:2022-03-31, commit time:17:40, hash:cc66d1020c3b</authoring_tool>
     </contributor>
-    <created>2024-01-07T13:55:04</created>
-    <modified>2024-01-07T13:55:04</modified>
+    <created>2024-01-07T23:50:38</created>
+    <modified>2024-01-07T23:50:38</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
+  <library_cameras>
+    <camera id="Camera-camera" name="Camera.002">
+      <optics>
+        <technique_common>
+          <perspective>
+            <xfov sid="xfov">49.13434</xfov>
+            <aspect_ratio>1.777778</aspect_ratio>
+            <znear sid="znear">0.1</znear>
+            <zfar sid="zfar">100</zfar>
+          </perspective>
+        </technique_common>
+      </optics>
+      <extra>
+        <technique profile="blender">
+          <shiftx sid="shiftx" type="float">0</shiftx>
+          <shifty sid="shifty" type="float">0</shifty>
+          <dof_distance sid="dof_distance" type="float">10</dof_distance>
+        </technique>
+      </extra>
+    </camera>
+  </library_cameras>
   <library_effects>
     <effect id="Material_003-effect">
       <profile_COMMON>
@@ -753,6 +774,10 @@
             </bind_material>
           </instance_controller>
         </node>
+      </node>
+      <node id="Camera" name="Camera" type="NODE">
+        <matrix sid="transform">0.8921313 -0.1333038 0.4316618 10.47735 0.449408 0.1641523 -0.8781153 -20.45861 0.04619788 0.9773863 0.2063532 11.95875 0 0 0 1</matrix>
+        <instance_camera url="#Camera-camera"/>
       </node>
     </visual_scene>
   </library_visual_scenes>

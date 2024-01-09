@@ -25,6 +25,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.AIAnimation;
@@ -33,9 +34,14 @@ import org.lwjgl.assimp.AIFace;
 import org.lwjgl.assimp.AIMaterial;
 import org.lwjgl.assimp.AIMatrix4x4;
 import org.lwjgl.assimp.AIMesh;
+import org.lwjgl.assimp.AINode;
+import org.lwjgl.assimp.AINodeAnim;
+import org.lwjgl.assimp.AIQuatKey;
+import org.lwjgl.assimp.AIQuaternion;
 import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIString;
 import org.lwjgl.assimp.AIVector3D;
+import org.lwjgl.assimp.AIVectorKey;
 import org.lwjgl.assimp.AIVertexWeight;
 import org.lwjgl.assimp.Assimp;
 import org.lwjgl.glfw.GLFWImage;
@@ -50,12 +56,14 @@ import org.lwjgl.system.MemoryStack;
 import com.jme3.bullet.collision.shapes.infos.IndexedMesh;
 
 import me.ChristopherW.core.custom.Animations.Bone;
+import me.ChristopherW.core.custom.Animations.Node;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
+import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Utils;
 import me.ChristopherW.process.Game;
 
@@ -65,6 +73,7 @@ public class ObjectLoader {
     private List<Integer> vaos = new ArrayList<>();
     private List<Integer> vbos = new ArrayList<>();
     private List<Integer> textures = new ArrayList<>();
+    private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
      public IndexedMesh loadIndexedMesh(Mesh mesh, Vector3f scale) {
          // create a new array of Vector3s the size of the amount of verticies the model has
@@ -166,9 +175,6 @@ public class ObjectLoader {
                 e.printStackTrace();
             }
         }
-        AIAnimation[] animations = new AIAnimation[aiScene.mNumAnimations()];
-        for (int a = 0; a < animations.length; a++)
-            animations[a] = AIAnimation.create(aiScene.mAnimations().get(a));
 
         List<Bone> boneList = new ArrayList<>();
         HashMap<String, RiggedMesh> meshes = new HashMap<>();
@@ -187,10 +193,17 @@ public class ObjectLoader {
                 textCoords = new float[numElements];
             }
 
+            List<RiggedMesh.Animation> animations = new ArrayList<>();
+            int numAnimations = aiScene.mNumAnimations();
+            if (numAnimations > 0) {
+                Node rootNode = buildNodesTree(aiScene.mRootNode(), null);
+                Matrix4f globalInverseTransformation = toMatrix(aiScene.mRootNode().mTransformation()).invert();
+                animations = processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
+            }
+
             Material material = materials.get(aiMesh.mMaterialIndex());
             RiggedMesh mesh = loadRiggedMesh(vertices, textCoords, normals, tangents, indices, animMeshData.weights, animMeshData.boneIds, boneList.toArray(new Bone[]{}), material.getTexture(), fileName);
             mesh.setAnimations(animations);
-            mesh.setRoot(aiScene.mRootNode());
             String suffix = "";
             while(meshes.containsKey(aiMesh.mName().dataString() + suffix)) {
                 suffix += "(Clone)";
@@ -261,6 +274,131 @@ public class ObjectLoader {
         model.setMeshs(meshes);
         return model;
     }
+
+    private static List<RiggedMesh.Animation> processAnimations(AIScene aiScene, List<Bone> boneList,
+                                                           Node rootNode, Matrix4f globalInverseTransformation) {
+        List<RiggedMesh.Animation> animations = new ArrayList<>();
+
+        // Process all animations
+        int numAnimations = aiScene.mNumAnimations();
+        PointerBuffer aiAnimations = aiScene.mAnimations();
+        for (int i = 0; i < numAnimations; i++) {
+            AIAnimation aiAnimation = AIAnimation.create(aiAnimations.get(i));
+            int maxFrames = calcAnimationMaxFrames(aiAnimation);
+
+            List<RiggedMesh.AnimatedFrame> frames = new ArrayList<>();
+            RiggedMesh.Animation animation = new RiggedMesh.Animation(aiAnimation.mName().dataString(), aiAnimation.mDuration(), frames);
+            animations.add(animation);
+
+            for (int j = 0; j < maxFrames; j++) {
+                Matrix4f[] boneMatrices = new Matrix4f[GlobalVariables.MAX_BONES];
+                Arrays.fill(boneMatrices, IDENTITY_MATRIX);
+                RiggedMesh.AnimatedFrame animatedFrame = new RiggedMesh.AnimatedFrame(boneMatrices);
+                buildFrameMatrices(aiAnimation, boneList, animatedFrame, j, rootNode,
+                        rootNode.getNodeTransformation(), globalInverseTransformation);
+                frames.add(animatedFrame);
+            }
+        }
+        return animations;
+    }
+    
+    private static int calcAnimationMaxFrames(AIAnimation aiAnimation) {
+        int maxFrames = 0;
+        int numNodeAnims = aiAnimation.mNumChannels();
+        PointerBuffer aiChannels = aiAnimation.mChannels();
+        for (int i = 0; i < numNodeAnims; i++) {
+            AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
+            int numFrames = Math.max(Math.max(aiNodeAnim.mNumPositionKeys(), aiNodeAnim.mNumScalingKeys()),
+                    aiNodeAnim.mNumRotationKeys());
+            maxFrames = Math.max(maxFrames, numFrames);
+        }
+
+        return maxFrames;
+    }
+
+    private static Matrix4f buildNodeTransformationMatrix(AINodeAnim aiNodeAnim, int frame) {
+        AIVectorKey.Buffer positionKeys = aiNodeAnim.mPositionKeys();
+        AIVectorKey.Buffer scalingKeys = aiNodeAnim.mScalingKeys();
+        AIQuatKey.Buffer rotationKeys = aiNodeAnim.mRotationKeys();
+
+        AIVectorKey aiVecKey;
+        AIVector3D vec;
+
+        Matrix4f nodeTransform = new Matrix4f();
+        int numPositions = aiNodeAnim.mNumPositionKeys();
+        if (numPositions > 0) {
+            aiVecKey = positionKeys.get(Math.min(numPositions - 1, frame));
+            vec = aiVecKey.mValue();
+            nodeTransform.translate(vec.x(), vec.y(), vec.z());
+        }
+        int numRotations = aiNodeAnim.mNumRotationKeys();
+        if (numRotations > 0) {
+            AIQuatKey quatKey = rotationKeys.get(Math.min(numRotations - 1, frame));
+            AIQuaternion aiQuat = quatKey.mValue();
+            Quaternionf quat = new Quaternionf(aiQuat.x(), aiQuat.y(), aiQuat.z(), aiQuat.w());
+            nodeTransform.rotate(quat);
+        }
+        int numScalingKeys = aiNodeAnim.mNumScalingKeys();
+        if (numScalingKeys > 0) {
+            aiVecKey = scalingKeys.get(Math.min(numScalingKeys - 1, frame));
+            vec = aiVecKey.mValue();
+            nodeTransform.scale(vec.x(), vec.y(), vec.z());
+        }
+
+        return nodeTransform;
+    }
+
+    private static void buildFrameMatrices(AIAnimation aiAnimation, List<Bone> boneList, RiggedMesh.AnimatedFrame animatedFrame,
+                                           int frame, Node node, Matrix4f parentTransformation, Matrix4f globalInverseTransform) {
+        String nodeName = node.getName();
+        AINodeAnim aiNodeAnim = findAIAnimNode(aiAnimation, nodeName);
+        Matrix4f nodeTransform = node.getNodeTransformation();
+        if (aiNodeAnim != null) {
+            nodeTransform = buildNodeTransformationMatrix(aiNodeAnim, frame);
+        }
+        Matrix4f nodeGlobalTransform = new Matrix4f(parentTransformation).mul(nodeTransform);
+
+        List<Bone> affectedBones = boneList.stream().filter(b -> b.getName().equals(nodeName)).toList();
+        for (Bone bone : affectedBones) {
+            Matrix4f boneTransform = new Matrix4f(globalInverseTransform).mul(nodeGlobalTransform).
+                    mul(bone.getOffsetMatrix());
+            animatedFrame.boneMatrices()[bone.boneId()] = boneTransform;
+        }
+
+        for (Node childNode : node.getChildren()) {
+            buildFrameMatrices(aiAnimation, boneList, animatedFrame, frame, childNode, nodeGlobalTransform,
+                    globalInverseTransform);
+        }
+    }
+    
+    private static AINodeAnim findAIAnimNode(AIAnimation aiAnimation, String nodeName) {
+        AINodeAnim result = null;
+        int numAnimNodes = aiAnimation.mNumChannels();
+        PointerBuffer aiChannels = aiAnimation.mChannels();
+        for (int i = 0; i < numAnimNodes; i++) {
+            AINodeAnim aiNodeAnim = AINodeAnim.create(aiChannels.get(i));
+            if (nodeName.equals(aiNodeAnim.mNodeName().dataString())) {
+                result = aiNodeAnim;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private static Node buildNodesTree(AINode aiNode, Node parentNode) {
+        String nodeName = aiNode.mName().dataString();
+        Node node = new Node(nodeName, parentNode, toMatrix(aiNode.mTransformation()));
+
+        int numChildren = aiNode.mNumChildren();
+        PointerBuffer aiChildren = aiNode.mChildren();
+        for (int i = 0; i < numChildren; i++) {
+            AINode aiChildNode = AINode.create(aiChildren.get(i));
+            Node childNode = buildNodesTree(aiChildNode, node);
+            node.addChild(childNode);
+        }
+        return node;
+    }
+
     private static float[] processNormals(AIMesh aiMesh) {
         AIVector3D.Buffer buffer = aiMesh.mNormals();
         float[] data = new float[buffer.remaining() * 3];
