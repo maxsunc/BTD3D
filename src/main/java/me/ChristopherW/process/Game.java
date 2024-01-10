@@ -37,6 +37,7 @@ import me.ChristopherW.core.MouseInput;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
+import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.Bone;
 import me.ChristopherW.core.entity.Model;
@@ -58,6 +59,7 @@ import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Transformation;
 import me.ChristopherW.core.utils.Utils;
 import java.util.Arrays;
+import java.util.ArrayList;
 
 
 public class Game implements ILogic {
@@ -66,13 +68,13 @@ public class Game implements ILogic {
     private final WindowManager window;
     private final SoundManager soundManager;
     public HashMap<String, SoundSource> audioSources = new HashMap<>();
-
     public Map<String, Entity> entities;
 
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
+    private ArrayList<Bloon> bloons = new ArrayList<Bloon>();
 
     public Game() throws Exception {
         // create new instances for these things
@@ -143,13 +145,19 @@ public class Game implements ILogic {
 
         Model dartModel = loader.loadModel("assets/models/dart.fbx");
         Model bloonModel = loader.loadModel("assets/models/bloon.dae");
-        bloonModel.setAllMaterials(new Material(1.0f, 1, loader.createTextureColor(Color.RED)));
-        Entity bloon = new Entity(bloonModel, 
+        bloonModel.setAllMaterials(new Material(0f, 2, loader.createTextureColor(Color.RED)));
+        Bloon bloon = new Bloon("bloon",bloonModel, 
             new Vector3f(0, 5, 0), 
             new Vector3f(), 
-            new Vector3f(0.5f)
+            new Vector3f(0.5f)  
         );
-        entities.put("bloon", bloon);
+        bloons.add(bloon);
+
+        int bloonCounter = 0;
+        for(Bloon b : bloons) {
+            bloonCounter++;
+            entities.put("bloon" + bloonCounter, b);
+        }
 
 
         monkeyModel = loader.loadRiggedModel("assets/models/monkey.fbx");
@@ -274,7 +282,7 @@ public class Game implements ILogic {
                 }
                 animatedEntity.tick((double)interval);
 
-                animatedEntity.lookAtY(mouseWorldPos);
+                animatedEntity.lookAtY(bloons.get(0).getPosition());
             }
         }
 
