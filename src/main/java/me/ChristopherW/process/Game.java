@@ -107,11 +107,17 @@ public class Game implements ILogic {
             // load the sound file to a buffer, then create a new audio source at the world origin with the buffer attached
             // store that sound source to a map of sounds
             // repeat this for each sound file
-            SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), true, false, 0.4f);
-            audioSources.put(jazz.getName(), jazz);
+            /*SoundBuffer griddyBuffer = new SoundBuffer("assets/sounds/griddy.ogg");
+            soundManager.addSoundBuffer(golfHit1Buffer);
+            SoundSource golfHit1Source = new SoundSource(false, false);
+            golfHit1Source.setPosition(new Vector3f(0,0,0));
+            golfHit1Source.setBuffer(golfHit1Buffer.getBufferId());
+            audioSources.put("golfHit1", golfHit1Source);
+            soundManager.addSoundSource("golfHit1", golfHit1Source);*/
 
-            SoundSource towerPlace = soundManager.createSound("tower_place", "assets/sounds/tower_place.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(towerPlace.getName(), towerPlace);
+            //golfHit1Source.setGain( 0.4f);
+            SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("jazz", jazz);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -199,8 +205,6 @@ public class Game implements ILogic {
                     monkey.setAnimationId(0);
                     monkeyCounter++;
                     entities.put("monkey" + monkeyCounter, monkey);
-
-                    audioSources.get("tower_place").play();
                 }
             }
         }
@@ -307,7 +311,8 @@ public class Game implements ILogic {
                 }
                 animatedEntity.tick((double)interval);
 
-                animatedEntity.lookAtY(bloons.get(0).getPosition());
+                if(bloons.size()>0)
+                    animatedEntity.lookAtY(bloons.get(0).getPosition());
             }
         }
         
