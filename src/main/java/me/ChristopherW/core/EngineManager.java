@@ -11,7 +11,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 public class EngineManager {
     public static final long NANOSECOND = 1000000000L;
 
-    private static int fps;
+    private static int fps = (int) GlobalVariables.FRAMERATE;
     private static float frametime;
 
     private boolean isRunning;

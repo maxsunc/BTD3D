@@ -9,13 +9,13 @@ public class GlobalVariables {
     public static final Vector4f BG_COLOR = new Vector4f(168f/255f, 255/255f, 249/255f, 0f);
 
     public static final float GRAVITY = -9.8f;
-    public static boolean FULLSCREEN = true;
-    public static int WIDTH = 800, HEIGHT = 800;
+    public static boolean FULLSCREEN = false;
+    public static int WIDTH = 1280, HEIGHT = 720;
     public static float MAX_FRAMERATE = 180;
     public static float FRAMERATE = 180;
     public static boolean SHOW_FPS = false;
     public static boolean VSYNC = false;
-    public static int SHADOW_RES = 4098;
+    public static int SHADOW_RES = 2048;
     public static boolean SHADOW_FILTERING = true;
     public static boolean FOG = false;
     public static boolean DEBUG_SHADOWS = false;

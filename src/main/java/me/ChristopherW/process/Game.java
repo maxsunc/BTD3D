@@ -213,7 +213,7 @@ public class Game implements ILogic {
         if(window.isKeyPressed(GLFW.GLFW_KEY_D)) {
             panVec.add(cameraPos.getRight().mul(moveSpeed));
         }
-        Vector3f normalized = panVec.normalize().mul(moveSpeed);
+        Vector3f normalized = panVec.normalize().mul(moveSpeed * (180/EngineManager.getFps()));
         cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
     }
 
