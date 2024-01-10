@@ -4,13 +4,16 @@ import org.joml.Vector3f;
 import org.lwjgl.openal.AL10;
 
 public class SoundSource {
+    private String name;
     private int id;
 
-    public SoundSource(boolean loop, boolean relative) {
+    public SoundSource(String name, boolean loop, boolean relative) {
+        this.name = name;
         this.id = AL10.alGenSources();
         AL10.alSourcei(id, AL10.AL_LOOPING, loop ? AL10.AL_TRUE : AL10.AL_FALSE);
         AL10.alSourcei(id, AL10.AL_SOURCE_RELATIVE, relative ? AL10.AL_TRUE : AL10.AL_FALSE);
     }
+    
 
     public void cleanup() {
         stop();
@@ -48,5 +51,25 @@ public class SoundSource {
 
     public void stop() {
         AL10.alSourceStop(id);
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public int getId() {
+        return id;
+    }
+
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
