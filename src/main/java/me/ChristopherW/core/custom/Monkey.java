@@ -2,19 +2,19 @@ package me.ChristopherW.core.custom;
 
 import org.joml.Vector3f;
 
-import me.ChristopherW.core.entity.Entity;
-import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.custom.Animations.AnimatedEntity;
+import me.ChristopherW.core.custom.Animations.RiggedModel;
 
-public class Monkey extends Entity{
+public class Monkey extends AnimatedEntity{
     private int range;
     private float rate;
     private float speed;
-    private int tick;
+    private float tick;
     
-    public Monkey(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale, int range, float rate, float speed, int tick){
+    public Monkey(String name, RiggedModel model, Vector3f position, Vector3f rotation, Vector3f scale, int range, float rate, float speed, float tick){
         super(name, model, position, rotation, scale);
         this.range = range;
-        this.speed = speed;
+        this.rate = rate;
         this.tick = tick;
         this.speed = speed;
     }
@@ -43,11 +43,14 @@ public class Monkey extends Entity{
         this.speed = speed;
     }
 
-    public int getTick() {
+    public float getTick() {
         return tick;
     }
 
-    public void setTick(int tick) {
+    public void addTick(float tick) {
+        this.tick += tick;
+    }
+    public void setTick(float tick) {
         this.tick = tick;
     }
 

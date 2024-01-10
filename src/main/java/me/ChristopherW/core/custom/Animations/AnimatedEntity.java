@@ -15,7 +15,6 @@ import java.util.HashMap;
 
 public class AnimatedEntity extends Entity {
 
-
     public AnimatedEntity(RiggedModel model, Vector3f position, Vector3f rotation, Vector3f scale) {
         super(model, position, rotation, scale);
     }
@@ -58,6 +57,15 @@ public class AnimatedEntity extends Entity {
         }
 
         return null;
+    }
+
+    public int getAnimationCount() {
+        for(Mesh mesh : this.getModel().getMeshes().values()) {
+            RiggedMesh rm = (RiggedMesh)mesh;
+            int animationCount = rm.getAnimationList().size();
+            return animationCount;
+        }
+        return -1;
     }
 
     public int getCurrentFrameIdx() {

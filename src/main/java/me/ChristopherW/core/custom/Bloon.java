@@ -10,6 +10,7 @@ public class Bloon extends Entity{
     private BloonType type;
     private int health;
     private int nodeIndex;
+    private Vector3f currentHeading;
     
 
 
@@ -17,6 +18,8 @@ public class Bloon extends Entity{
         super(name, model, position, rotation, scale);
         nodeIndex = 0;
     }
+
+    
 
 
     public float getSpeed() {
@@ -48,8 +51,13 @@ public class Bloon extends Entity{
         this.health = health;
     }
     
-    public void damage(int amount){
-        
+    public boolean damage(int amount){
+        this.health -= amount;
+
+        if(this.health <= 0) {
+            return true;
+        }
+        return false;
     }
 
 
@@ -64,6 +72,27 @@ public class Bloon extends Entity{
             return;
         }
         nodeIndex++;
+    }
+
+
+
+
+    public void setNodeIndex(int nodeIndex) {
+        this.nodeIndex = nodeIndex;
+    }
+
+
+
+
+    public Vector3f getCurrentHeading() {
+        return currentHeading;
+    }
+
+
+
+
+    public void setCurrentHeading(Vector3f currentHeading) {
+        this.currentHeading = currentHeading;
     }
 
 }
