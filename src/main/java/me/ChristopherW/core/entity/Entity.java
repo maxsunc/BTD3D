@@ -49,10 +49,12 @@ public class Entity {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if(enabled) {
-            Game.physicsSpace.addCollisionObject(this.rigidBody);
+            if(rigidBody != null)
+                Game.physicsSpace.addCollisionObject(this.rigidBody);
             this.setVisible(true);
         } else {
-            Game.physicsSpace.removeCollisionObject(this.rigidBody);
+            if(rigidBody != null)
+                Game.physicsSpace.removeCollisionObject(this.rigidBody);
             this.setVisible(false);
         }
     }

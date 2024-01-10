@@ -60,7 +60,8 @@ import me.ChristopherW.core.utils.Transformation;
 import me.ChristopherW.core.utils.Utils;
 import java.util.Arrays;
 import java.util.ArrayList;
-
+import java.util.Scanner;
+import java.io.File;
 
 public class Game implements ILogic {
     private final RenderManager renderer;
@@ -69,12 +70,15 @@ public class Game implements ILogic {
     private final SoundManager soundManager;
     public HashMap<String, SoundSource> audioSources = new HashMap<>();
     public Map<String, Entity> entities;
+    
 
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
     private ArrayList<Bloon> bloons = new ArrayList<Bloon>();
+    private Model bloonModel;
+    private Vector3f[] bloonNodes;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -144,25 +148,44 @@ public class Game implements ILogic {
         entities.put("map", map);
 
         Model dartModel = loader.loadModel("assets/models/dart.fbx");
-        Model bloonModel = loader.loadModel("assets/models/bloon.dae");
+        bloonModel = loader.loadModel("assets/models/bloon.dae");
         bloonModel.setAllMaterials(new Material(0f, 2, loader.createTextureColor(Color.RED)));
-        Bloon bloon = new Bloon("bloon",bloonModel, 
+        Bloon bloon = new Bloon("bloon",Model.copy(bloonModel), 
             new Vector3f(0, 5, 0), 
             new Vector3f(), 
             new Vector3f(0.5f)  
         );
         bloons.add(bloon);
+        
+        bloonModel.setAllMaterials(new Material(0f, 2, loader.createTextureColor(Color.BLUE)));
 
-        int bloonCounter = 0;
-        for(Bloon b : bloons) {
-            bloonCounter++;
-            entities.put("bloon" + bloonCounter, b);
+
+
+
+        // load can map.txt node positions
+        Scanner scanner = new Scanner(new File("assets/map.txt"));
+        bloonNodes = new Vector3f[scanner.nextInt()];
+        // clear the enter key
+        scanner.nextLine();
+        for(int i = 0; i < bloonNodes.length; i++){
+            String[] splitLine = scanner.nextLine().split(" ");
+            bloonNodes[i] = new Vector3f(Float.parseFloat(splitLine[0]), 1, -Float.parseFloat(splitLine[1]));
         }
 
+        for(Bloon b : bloons) {
+            bloonCounter++;
+            b.setPosition(bloonNodes[0]);
+            entities.put("bloon" + bloonCounter, b);
+            b.setName("bloon" + bloonCounter);
+        }
+        
 
         monkeyModel = loader.loadRiggedModel("assets/models/monkey.fbx");
 
         audioSources.get("jazz").play();
+
+
+
     }
 
     int i = 0;
@@ -188,13 +211,19 @@ public class Game implements ILogic {
     }
 
     int frameCounter = 0;
+    int bloonCounter = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
         if(key == GLFW.GLFW_KEY_SPACE) {
             if(action == GLFW.GLFW_PRESS) {
-                GlobalVariables.DEBUG_SHADOWS = true;
-            }
-            if(action == GLFW.GLFW_RELEASE) {
-                GlobalVariables.DEBUG_SHADOWS = false;
+                Bloon b = new Bloon("bloon", Model.copy(bloonModel), 
+                    new Vector3f(bloonNodes[0]), 
+                    new Vector3f(), 
+                    new Vector3f(0.5f)
+                );
+                bloons.add(b);
+                bloonCounter++;
+                entities.put("bloon" + bloonCounter, b);
+                b.setName("bloon" + bloonCounter);
             }
         }
     }
@@ -285,7 +314,34 @@ public class Game implements ILogic {
                 animatedEntity.lookAtY(bloons.get(0).getPosition());
             }
         }
+        
+        for(int i = 0; i < bloons.size(); i++){
+            Bloon bloon = bloons.get(i);
 
+            // check if the bloon met the nodePosition
+            
+            Vector3f nodePos = bloonNodes[bloon.getNodeIndex()];
+            // compare the positions
+          //  System.out.println("node: "+ nodePos);
+        //    System.out.println("Bloon" + bloon.getPosition());
+            if(bloon.getPosition().distance(nodePos) <= 0.1f){
+                // look at the next node
+                bloon.incremenNodeIndex();
+                nodePos = bloonNodes[bloon.getNodeIndex()];
+            }
+            
+            if(bloon.isEnabled() == false) {
+                entities.remove(bloon.getName());
+                bloons.remove(i);
+            }
+
+            Vector3f difference = new Vector3f();
+            nodePos.sub(bloon.getPosition(), difference);
+            // move it towards the node pos
+            difference.normalize();
+           // bloon.setPosition(nodePos);
+           bloon.translate(difference.mul(0.15f));
+        }
         
         // update the physics world
         physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);

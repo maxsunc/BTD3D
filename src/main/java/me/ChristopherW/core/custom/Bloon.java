@@ -9,10 +9,13 @@ public class Bloon extends Entity{
     private float speed;
     private BloonType type;
     private int health;
+    private int nodeIndex;
+    
 
 
     public Bloon(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
         super(name, model, position, rotation, scale);
+        nodeIndex = 0;
     }
 
 
@@ -47,6 +50,20 @@ public class Bloon extends Entity{
     
     public void damage(int amount){
         
+    }
+
+
+    public int getNodeIndex() {
+        return nodeIndex;
+    }
+
+
+    public void incremenNodeIndex(){
+        if(nodeIndex >= 45){
+            this.setEnabled(false);
+            return;
+        }
+        nodeIndex++;
     }
 
 }
