@@ -55,7 +55,7 @@ public class SoundManager {
         try {
             buffer = new SoundBuffer(path);
             this.addSoundBuffer(buffer);
-            SoundSource source = new SoundSource(loop, relative);
+            SoundSource source = new SoundSource(name, loop, relative);
             source.setPosition(position);
             source.setBuffer(buffer.getBufferId());
             addSoundSource(name, source);
