@@ -30,7 +30,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     lightCoords = (lightCoords + 1.0) / 2.0;
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
     float closestDepth = texture(shadowMap, lightCoords.xy).r;
-    float currentDepth = lightCoords.z;
+    float currentDepth = min(lightCoords.z, 1.0);
     // check whether current frag pos is in shadow
     float bias = 0.005;
     float shadow = 0.0;
@@ -46,10 +46,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
         }
         shadow /= 9.0;
     } else {
-        shadow = currentDepth - bias > closestDepth? 1.0 : 0.0; 
-    }
-    if(shadow == 0.0) {
-        shadow = 1.0;
+        shadow = (currentDepth - bias > closestDepth) ? 1.0 : 0.1; 
     }
     return shadow;
 }
@@ -58,7 +55,7 @@ void main() {
     vec3 lightColor = vec3(1,1,1);
     vec3 lightCoords = sunPos;
 
-    float ambientIntensity = 0.75;
+    float ambientIntensity = 0.5;
     float specularIntensity = material.specular;
     float diffuseIntensity = 1;
 
@@ -94,7 +91,7 @@ void main() {
     }
 
     float shadow = ShadowCalculation(fragPosLightSpace); 
-    vec4 result = textureColor * (ambientColor + ((1.0 - shadow) * (diffuseColor + specularColor)));
+    vec4 result = (textureColor * (ambientColor + ((1.0 - shadow) * (diffuseColor + specularColor))));
     fragColor = result;
     if(showFog == 1) {
         fragColor = mix(skyColor, fragColor, visibility);

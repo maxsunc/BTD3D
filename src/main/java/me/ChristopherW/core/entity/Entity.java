@@ -3,9 +3,11 @@ package me.ChristopherW.core.entity;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Quaternion;
 
+import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Utils;
 import me.ChristopherW.process.Game;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class Entity {
@@ -201,5 +203,28 @@ public class Entity {
 
     public void setModel(Model model) {
         this.model = model;
+    }
+
+    public void lookAtY(Vector3f in) {
+        float Dx = in.x - position.x;
+        float Dz = in.z - position.z;
+        float y = (float)(-Math.atan2(Dz,Dx));
+        this.setRotation(0, (float)Math.toDegrees(y) + 90, 0);
+    }
+
+    public Vector3f getFoward() {
+        Vector3f forward = new Vector3f();
+        forward.x = (float) (Math.cos(Math.toRadians(this.rotation.x)) * Math.sin(Math.toRadians(this.rotation.y)));
+        forward.y = (float) (-Math.sin(Math.toRadians(this.rotation.x)));
+        forward.z = (float) (Math.cos(Math.toRadians(this.rotation.x)) * Math.cos(Math.toRadians(this.rotation.y)));
+        return forward;
+    }
+
+    public Vector3f getRight() {
+        Vector3f right = new Vector3f();
+        right.x = (float) (Math.cos(Math.toRadians(this.rotation.y)));
+        right.y = 0;
+        right.z = (float) (-Math.sin(Math.toRadians(this.rotation.y)));
+        return right;
     }
 }

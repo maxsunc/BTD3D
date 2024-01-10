@@ -9,6 +9,13 @@
             "name": "Launcher",
             "request": "launch",
             "mainClass": "me.ChristopherW.process.Launcher",
+            "projectName": "BTD3D"
+        },
+        {
+            "type": "java",
+            "name": "Launcher",
+            "request": "launch",
+            "mainClass": "me.ChristopherW.process.Launcher",
             "projectName": "BTD 3D"
         },
         {

@@ -30,6 +30,7 @@ import com.jme3.bullet.objects.PhysicsRigidBody;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 import me.ChristopherW.core.Camera;
+import me.ChristopherW.core.EngineManager;
 import me.ChristopherW.core.ILogic;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.MouseInput;
@@ -118,6 +119,7 @@ public class Game implements ILogic {
 
 
     RiggedModel monkeyModel;
+    Entity cameraPos = new Entity(null, new Vector3f(), new Vector3f(), new Vector3f());
     @Override
     public void init() throws Exception {
 
@@ -138,6 +140,8 @@ public class Game implements ILogic {
         );
         entities.put("map", map);
 
+        Model dartModel = loader.loadModel("assets/models/dart.fbx");
+
         monkeyModel = loader.loadRiggedModel("assets/models/monkey.fbx");
 
         audioSources.get("jazz").play();
@@ -151,7 +155,7 @@ public class Game implements ILogic {
             if(action == GLFW.GLFW_PRESS) {
                 dMouse = new Vector2d(input.getCurrentPos());
             } else if (action == GLFW.GLFW_RELEASE) {
-                if(dMouse.distance(input.getCurrentPos()) < 5f) {
+                if(dMouse.distance(input.getCurrentPos()) < 2f) {
                     AnimatedEntity monkey = new AnimatedEntity(RiggedModel.copy(monkeyModel), 
                         mouseWorldPos, 
                         new Vector3f(), 
@@ -168,16 +172,20 @@ public class Game implements ILogic {
     int frameCounter = 0;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
         if(key == GLFW.GLFW_KEY_SPACE) {
-            if(action == GLFW.GLFW_PRESS)
+            if(action == GLFW.GLFW_PRESS) {
                 GlobalVariables.DEBUG_SHADOWS = true;
-            if(action == GLFW.GLFW_RELEASE)
+            }
+            if(action == GLFW.GLFW_RELEASE) {
                 GlobalVariables.DEBUG_SHADOWS = false;
+            }
         }
     }
 
     float rotX = 45;
     float rotY = 45;
     float zoom = 2;
+    float panX = 0;
+    float panZ = 0;
 
     @Override
     public void input(MouseInput input, double deltaTime, int frame) {
@@ -187,47 +195,56 @@ public class Game implements ILogic {
                 return;
             rotX += input.getDisplVec().y * GlobalVariables.MOUSE_SENSITIVITY_X;
             rotY += input.getDisplVec().x * GlobalVariables.MOUSE_SENSITIVITY_X;
-            rotY = Utils.clamp(rotY, -90, 90);
+            rotY = Utils.clamp(rotY, 10, 90);
         }
-        zoom = Utils.clamp(zoom, 0, 100);
+        zoom = Utils.clamp(zoom, 0.75f, 1.75f);
 
-        if(window.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
-            rotX -= 1f;
+        float moveSpeed = 0.125f/2;
+        Vector3f panVec = new Vector3f(0);
+        if(window.isKeyPressed(GLFW.GLFW_KEY_W)) {
+            panVec.add(cameraPos.getFoward().mul(-moveSpeed));
         }
-        if(window.isKeyPressed(GLFW.GLFW_KEY_LEFT)) {
-            rotX += 1f;
+        if(window.isKeyPressed(GLFW.GLFW_KEY_A)) {
+            panVec.add(cameraPos.getRight().mul(-moveSpeed));
         }
-        if(window.isKeyPressed(GLFW.GLFW_KEY_UP)) {
-            rotY += 1f;
+        if(window.isKeyPressed(GLFW.GLFW_KEY_S)) {
+            panVec.add(cameraPos.getFoward().mul(moveSpeed));
         }
-        if(window.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
-            rotY -= 1f;
+        if(window.isKeyPressed(GLFW.GLFW_KEY_D)) {
+            panVec.add(cameraPos.getRight().mul(moveSpeed));
         }
+        Vector3f normalized = panVec.normalize().mul(moveSpeed);
+        cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
     }
 
     public void onScroll(double dy) {
         if(GUIManager.currentScreen != "MainMenu")
-            zoom -= dy/2;
+            zoom -= dy/4;
     }
 
     float defaultRadius = 20f;
     float theta = 0.0f;
     double x = 0;
     
+    int animationTick = 0;
     @Override
     public void update(float interval, MouseInput mouseInput) {
         
 
         float radius = defaultRadius * zoom;
 
+        int minPan = -20, maxPan = 20;
+        cameraPos.setPosition(Utils.clamp(cameraPos.getPosition().x,minPan, maxPan),0,Utils.clamp(cameraPos.getPosition().z, minPan, maxPan));
+
         // orbit the camera around the active ball
         Vector3f orbitVec = new Vector3f();
-        orbitVec.x = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.cos(Math.toRadians(rotX)));
+        orbitVec.x = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.cos(Math.toRadians(rotX))) + cameraPos.getPosition().x;
         orbitVec.y = (float) (radius * Math.sin(Math.toRadians(rotY))) + 1;
-        orbitVec.z = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.sin(Math.toRadians(rotX)));
+        orbitVec.z = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.sin(Math.toRadians(rotX))) + cameraPos.getPosition().z;
 
         camera.setPosition(orbitVec);
         camera.setRotation(rotY, rotX-90, camera.getRotation().z);
+        cameraPos.setRotation(0, -camera.getRotation().y,0);  
 
 
         // for each entity in the world
@@ -240,7 +257,14 @@ public class Game implements ILogic {
             }
             if(entity instanceof AnimatedEntity) {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
-                animatedEntity.nextFrame();
+
+                if(animatedEntity.getAnimationTick() >= (1f/30f)) {
+                    animatedEntity.nextFrame();
+                    animatedEntity.setAnimationTick(0);
+                }
+                animatedEntity.tick((double)interval);
+
+                animatedEntity.lookAtY(mouseWorldPos);
             }
         }
 

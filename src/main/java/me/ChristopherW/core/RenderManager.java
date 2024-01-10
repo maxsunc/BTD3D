@@ -50,9 +50,7 @@ public class RenderManager {
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_BORDER); 
         //float[] borderColor = { 0.0f, 0.0f, 0.0f, 0.0f };
         float[] borderColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        FloatBuffer borderColorBuffer = BufferUtils.createFloatBuffer(4);
-        borderColorBuffer.put(borderColor).flip();
-        GL30.glTexParameterfv(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_BORDER_COLOR, borderColorBuffer);
+        GL30.glTexParameterfv(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_BORDER_COLOR, borderColor);
 
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, depthFBO);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_TEXTURE_2D, depthMap, 0);
