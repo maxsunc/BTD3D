@@ -6,6 +6,11 @@ public class Model {
     private String name;
     private HashMap<String, Mesh> meshes = new HashMap<>();
 
+    public void setAllMaterials(Material material) {
+        for(Mesh mesh : meshes.values()) {
+            mesh.setMaterial(material);
+        }
+    }
 
     public Mesh setMesh(String key, Mesh mesh) {
         return this.meshes.put(key, mesh);

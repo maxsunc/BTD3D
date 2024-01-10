@@ -543,6 +543,9 @@ public class ObjectLoader {
         return data;
     }
 
+    public Texture createTextureColor(Color color) {
+        return new Texture(loadTextureColor(color));
+    }
     public int loadTextureColor(Color color) {
         // create a new solid color image of the color provided
         int width = 16, height = 16;

@@ -45,6 +45,7 @@ import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
+import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.entity.primatives.Cube;
@@ -141,6 +142,15 @@ public class Game implements ILogic {
         entities.put("map", map);
 
         Model dartModel = loader.loadModel("assets/models/dart.fbx");
+        Model bloonModel = loader.loadModel("assets/models/bloon.dae");
+        bloonModel.setAllMaterials(new Material(1.0f, 1, loader.createTextureColor(Color.RED)));
+        Entity bloon = new Entity(bloonModel, 
+            new Vector3f(0, 5, 0), 
+            new Vector3f(), 
+            new Vector3f(0.5f)
+        );
+        entities.put("bloon", bloon);
+
 
         monkeyModel = loader.loadRiggedModel("assets/models/monkey.fbx");
 
