@@ -5,6 +5,8 @@ import org.joml.Matrix4f;
 import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.ShaderManager;
+import me.ChristopherW.core.custom.Animations.AnimatedEntity;
+import me.ChristopherW.core.custom.Animations.AnimationData;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Mesh;
@@ -37,15 +39,13 @@ public class DepthShader extends ShaderManager implements IShader{
         Matrix4f modelMatrix = Transformation.createTransformationMatrix(entity);
         this.setUniform("transformationMatrix", modelMatrix);
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        boolean animated = mesh instanceof RiggedMesh;
-        Matrix4f[] b = new Matrix4f[GlobalVariables.MAX_BONES];
-        if(animated) {  
-            RiggedMesh rm = (RiggedMesh)mesh;
-            for(int i = 0; i < rm.getBones().length; i++) {
-                b[i] = rm.getBones()[i].getTransformation();
-            }
+        boolean animated = entity instanceof AnimatedEntity;
+        if (!animated) {
+            this.setUniform("bones", AnimationData.DEFAULT_BONES_MATRICES);
+        } else {
+            AnimatedEntity ae = (AnimatedEntity)entity;
+            this.setUniform("bones", ae.getCurrentFrame((RiggedMesh)mesh).boneMatrices());
         }
-        this.setUniform("bones", b);
         this.setUniform("animated", animated ? 1 : 0);
     }
     

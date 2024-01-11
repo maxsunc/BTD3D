@@ -80,13 +80,15 @@ public class AnimatedEntity extends Entity {
         return -1;
     }
 
-    public void nextFrame() {
+    public boolean nextFrame() {
+        boolean loopComplete = false;
         for(Mesh mesh : this.getModel().getMeshes().values()) {
             RiggedMesh rm = (RiggedMesh)mesh;
             
             if(rm.getAnimationData() != null) {
-                rm.getAnimationData().nextFrame();
+                loopComplete = rm.getAnimationData().nextFrame();
             }
         }
+        return loopComplete;
     }
 }

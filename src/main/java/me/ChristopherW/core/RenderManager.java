@@ -174,6 +174,27 @@ public class RenderManager {
         debugShader.unbind();
     }
 
+    public void forceRender(Entity entity, Camera camera) {
+        for(Mesh mesh : entity.getModel().getMeshes().values()) {
+            // bind the model's shader and set the projectionMatrix uniform data
+            mesh.getShader().bind();
+            mesh.getShader().setUniform("projectionMatrix", window.updateProjectionMatrix());
+            
+            // bind the mesh itself
+            bind(mesh);
+
+                // prepare it to be rendered then draw the triangles to the viewBuffer
+            prepare((IShader) mesh.getShader(), entity, mesh, camera);
+            GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+ 
+            // unbind the model
+            unbind();
+
+            // unbind the shader
+            mesh.getShader().unbind();
+        }
+    }
+
     public void renderScene(Camera camera) {
         // for each model in the entities 
         for(Mesh mesh : entities.keySet()) {

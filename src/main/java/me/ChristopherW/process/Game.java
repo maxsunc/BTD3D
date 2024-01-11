@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.joml.Matrix4f;
+import org.joml.Random;
 import org.joml.Vector2d;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -38,6 +39,7 @@ import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.Bloon;
+import me.ChristopherW.core.custom.BloonType;
 import me.ChristopherW.core.custom.Dart;
 import me.ChristopherW.core.custom.Monkey;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
@@ -67,7 +69,7 @@ import java.io.File;
 
 public class Game implements ILogic {
     private final RenderManager renderer;
-    private final ObjectLoader loader;
+    public static ObjectLoader loader;
     private final WindowManager window;
     private final SoundManager soundManager;
     public HashMap<String, SoundSource> audioSources = new HashMap<>();
@@ -114,6 +116,17 @@ public class Game implements ILogic {
             // repeat this for each sound file
             SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), true, false, 0.4f);
             audioSources.put("jazz", jazz);
+            SoundSource tower_place = soundManager.createSound("tower_place", "assets/sounds/tower_place.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("tower_place", tower_place);
+            
+            SoundSource pop1 = soundManager.createSound("pop1", "assets/sounds/pop1.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop1", pop1);
+            SoundSource pop2 = soundManager.createSound("pop2", "assets/sounds/pop2.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop2", pop2);
+            SoundSource pop3 = soundManager.createSound("pop3", "assets/sounds/pop3.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop3", pop3);
+            SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/pop4.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop4", pop4);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -121,6 +134,8 @@ public class Game implements ILogic {
     }
 
 
+    Material previewRed;
+    Material previewWhite;
     RiggedModel monkeyModel;
     Entity cameraPos = new Entity(null, new Vector3f(), new Vector3f(), new Vector3f());
     @Override
@@ -172,6 +187,16 @@ public class Game implements ILogic {
 
         monkeyModel = loader.loadRiggedModel("assets/models/monkey.fbx");
 
+        AnimatedEntity monkey = new AnimatedEntity(RiggedModel.copy(monkeyModel), 
+            new Vector3f(), new Vector3f(), new Vector3f(0.1f));
+        monkey.setEnabled(false);
+        monkey.setAnimationId(2);
+        entities.put("preview_monkey", monkey);
+
+        previewRed = new Material(loader.createTextureColor(Color.RED));
+        previewWhite = new Material(loader.createTextureColor(Color.WHITE));
+        
+
         audioSources.get("jazz").play();
     }
 
@@ -182,16 +207,19 @@ public class Game implements ILogic {
             if(action == GLFW.GLFW_PRESS) {
                 dMouse = new Vector2d(input.getCurrentPos());
             } else if (action == GLFW.GLFW_RELEASE) {
+                if(!monkeyMode || isInvalid)
+                    return;
                 if(dMouse.distance(input.getCurrentPos()) < 2f) {
                     Monkey monkey = new Monkey("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModel), 
                         mouseWorldPos, 
                         new Vector3f(), 
                         new Vector3f(0.1f,0.1f,0.1f),
-                        5,0.5f,50f,0f
+                        5,0.5f,50,0f
                     );
                     monkeys.add(monkey);
                     monkey.setAnimationId(2);
                     entities.put("monkey" + monkeys.size(), monkey);
+                    audioSources.get("tower_place").play();
                 }
             }
         }
@@ -199,11 +227,35 @@ public class Game implements ILogic {
 
     int frameCounter = 0;
     int bloonCounter = 0;
-    boolean spawnNewBloonOnNextTick = false;
+    int spawnNewBloonOnNextTick = -1;
+    boolean monkeyMode = false;
+    boolean isInvalid = false;
     public void keyDown(long window, int key, int scancode, int action, int mods) {
-        if(key == GLFW.GLFW_KEY_SPACE) {
-            if(action == GLFW.GLFW_PRESS) {
-                spawnNewBloonOnNextTick = true;
+        if(action == GLFW.GLFW_PRESS) {
+            if(key ==GLFW.GLFW_KEY_1)
+                spawnNewBloonOnNextTick = 0;
+            if(key ==GLFW.GLFW_KEY_2)
+                spawnNewBloonOnNextTick = 1;
+            if(key ==GLFW.GLFW_KEY_3)
+                spawnNewBloonOnNextTick = 2;
+            if(key ==GLFW.GLFW_KEY_4)
+                spawnNewBloonOnNextTick = 3;
+            if(key ==GLFW.GLFW_KEY_5)
+                spawnNewBloonOnNextTick = 4;
+            if(key ==GLFW.GLFW_KEY_6)
+                spawnNewBloonOnNextTick = 5;
+            if(key ==GLFW.GLFW_KEY_7)
+                spawnNewBloonOnNextTick = 6;
+            if(key ==GLFW.GLFW_KEY_8)
+                spawnNewBloonOnNextTick = 7;
+
+            if(key ==GLFW.GLFW_KEY_SPACE) {
+                monkeyMode = true;
+            }
+        }
+        if(action ==GLFW.GLFW_RELEASE) {
+            if(key ==GLFW.GLFW_KEY_SPACE) {
+                monkeyMode = false;
             }
         }
     }
@@ -216,6 +268,28 @@ public class Game implements ILogic {
 
     @Override
     public void input(MouseInput input, double deltaTime, int frame) {
+
+        if(monkeyMode) {
+            Entity previewMonkey = entities.get("preview_monkey");
+            previewMonkey.setPosition(new Vector3f(mouseWorldPos));
+            
+            isInvalid = false;
+            if(previewMonkey.getPosition().y > 0.01f)
+                isInvalid = true;
+
+            for(Monkey monkey : monkeys) {
+                if(monkey.getPosition().distance(previewMonkey.getPosition()) < 0.5f) {
+                    isInvalid = true;
+                    break;
+                }
+            }
+
+            if(isInvalid) {
+                previewMonkey.getModel().setAllMaterials(previewRed);
+            } else {
+                previewMonkey.getModel().setAllMaterials(previewWhite);
+            }
+        }
 
         if(input.isLeftButtonPress()) {
             if(GUIManager.currentScreen == "MainMenu")
@@ -250,14 +324,12 @@ public class Game implements ILogic {
     }
 
     float defaultRadius = 20f;
-    float theta = 0.0f;
-    double x = 0;
-    
-    int animationTick = 0;
+    Random random = new Random();
     @Override
     public void update(float interval, MouseInput mouseInput) {
-        if(spawnNewBloonOnNextTick) {
-            Bloon b = new Bloon("bloon", Model.copy(bloonModel), 
+        if(spawnNewBloonOnNextTick >= 0) {
+            Bloon b = new Bloon("bloon", BloonType.values()[spawnNewBloonOnNextTick],
+                Model.copy(bloonModel), 
                 new Vector3f(bloonNodes[0]), 
                 new Vector3f(),
                 new Vector3f(0.5f)
@@ -266,7 +338,7 @@ public class Game implements ILogic {
             bloonCounter++;
             entities.put("bloon" + bloonCounter, b);
             b.setName("bloon" + bloonCounter);
-            spawnNewBloonOnNextTick = false;
+            spawnNewBloonOnNextTick = -1;
         }
 
         float radius = defaultRadius * zoom;
@@ -296,10 +368,25 @@ public class Game implements ILogic {
             if(entity instanceof AnimatedEntity) {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
 
-                if(animatedEntity.getAnimationTick() >= (1f/30f)) {
-                    animatedEntity.nextFrame();
+                if(animatedEntity.getAnimationTick() >= (1f/60f)) {
+                    boolean loopComplete = animatedEntity.nextFrame();
                     animatedEntity.setAnimationTick(0);
+
+                    if(loopComplete) {
+                        if(animatedEntity instanceof Monkey) {
+                            int randomNumber = random.nextInt(6) + 1;
+                            if(randomNumber == 6)
+                                ((Monkey)animatedEntity).setAnimationId(3);
+                            else if(randomNumber == 5)
+                                ((Monkey)animatedEntity).setAnimationId(4);
+                            else
+                                ((Monkey)animatedEntity).setAnimationId(2);
+                        }
+                    }
+                    
                 }
+
+                animatedEntity.tick(interval);
             }
 
             if(entity instanceof Bloon) {
@@ -325,7 +412,7 @@ public class Game implements ILogic {
                     entities.remove(bloon.getName());
                     bloons.remove(bloon);
                 }
-                bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(2 * interval));
+                bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(2 * bloon.getSpeed() * interval));
             }
 
             if(entity instanceof Monkey) {
@@ -337,15 +424,18 @@ public class Game implements ILogic {
                     Bloon target = null;
                     for(int b = 0; b < bloons.size(); b++) {
                         Bloon bloon = bloons.get(b);
-                        if(bloon.getPosition().distance(monkey.getPosition()) <= monkey.getRange())
+                        if(bloon.getPosition().distance(monkey.getPosition()) <= monkey.getRange()) {
                             target = bloon;
+                            break;
+                        }
                     }
                     if(target == null)
                         continue;
+                    monkey.setAnimationId(1);
                     monkey.lookAtY(new Vector3f(target.getPosition()));
                     
                     Dart d = new Dart("dart", Model.copy(dartModel), 
-                        new Vector3f(monkey.getPosition().x, monkey.getPosition().y + 0.5f, monkey.getPosition().z), 
+                        new Vector3f(monkey.getPosition().x, monkey.getPosition().y + 0.6f, monkey.getPosition().z).add(monkey.getRight().div(-3)), 
                         new Vector3f(), 
                         new Vector3f(0.1f)
                     );
@@ -369,9 +459,15 @@ public class Game implements ILogic {
                 for(int b = 0; b < bloons.size(); b++) {
                     Bloon bloon = bloons.get(b);
                     if(dart.getPosition().distance(bloon.getPosition()) < 0.5f) {
-                        if(bloon.damage(1)) {
-                            bloons.remove(b);
-                            entities.remove(bloon.getName());
+                        int result = bloon.damage(1);
+                        if(result >= 0) {
+                            int randomNumber = random.nextInt(4) + 1;
+                            audioSources.get("pop" + randomNumber).play();
+                            
+                            if(result > 0) {
+                                bloons.remove(b);
+                                entities.remove(bloon.getName());
+                            }
                         }
                         darts.remove(dart);
                         entities.remove(dart.getName());
@@ -461,6 +557,9 @@ public class Game implements ILogic {
         } catch(OutOfMemoryError e) {
             System.out.println("Error. Out of Memory. Skipping depth check");
         }
+
+        if(monkeyMode)
+            renderer.forceRender(entities.get("preview_monkey"), camera);
  
         // update the render of the ImGui frame
         window.imGuiGlfw.newFrame();

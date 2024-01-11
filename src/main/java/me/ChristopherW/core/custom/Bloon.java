@@ -3,7 +3,9 @@ package me.ChristopherW.core.custom;
 import org.joml.Vector3f;
 
 import me.ChristopherW.core.entity.Entity;
+import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.process.Game;
 
 public class Bloon extends Entity{
     private float speed;
@@ -14,9 +16,12 @@ public class Bloon extends Entity{
     
 
 
-    public Bloon(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
+    public Bloon(String name, BloonType type, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
         super(name, model, position, rotation, scale);
         nodeIndex = 0;
+        this.speed = type.speed;
+        this.health = type.health;
+        this.getModel().setAllMaterials(new Material(1f, 5f, Game.loader.createTextureColor(type.color)));
     }
 
     
@@ -51,13 +56,22 @@ public class Bloon extends Entity{
         this.health = health;
     }
     
-    public boolean damage(int amount){
+    public int damage(int amount){
         this.health -= amount;
 
         if(this.health <= 0) {
-            return true;
+            return 1;
         }
-        return false;
+
+        BloonType newBloonType = BloonType.getTypeFromHealth(health);
+        if(newBloonType != null) {
+            this.speed = newBloonType.speed;
+            this.health = newBloonType.health;
+            this.getModel().setAllMaterials(new Material(1f, 5f, Game.loader.createTextureColor(newBloonType.color)));
+            return 0;
+        }
+
+        return -1;
     }
 
 

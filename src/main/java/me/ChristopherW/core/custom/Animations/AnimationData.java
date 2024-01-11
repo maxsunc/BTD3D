@@ -39,12 +39,14 @@ public class AnimationData {
         return currentFrameIdx;
     }
 
-    public void nextFrame() {
+    public boolean nextFrame() {
         int nextFrame = currentFrameIdx + 1;
         if (nextFrame > currentAnimation.frames().size() - 1) {
             currentFrameIdx = 0;
+            return true;
         } else {
             currentFrameIdx = nextFrame;
+            return false;
         }
     }
 
