@@ -87,6 +87,10 @@ public class Game implements ILogic {
     private Model dartModel;
     private Vector3f[] bloonNodes;
 
+    // temp
+    //private Entity[] nodes = new Entity[5];
+    private float sphereRadius = 1.2f;
+
     public Game() throws Exception {
         // create new instances for these things
         renderer = new RenderManager();
@@ -183,7 +187,17 @@ public class Game implements ILogic {
             entities.put("bloon" + bloonCounter, b);
             b.setName("bloon" + bloonCounter);
         }
-        
+        //TEMP
+        // nodes[0] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
+        // nodes[1] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
+        // nodes[2] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
+        // nodes[3] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
+        // nodes[4] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
+        // entities.put("node5", nodes[3]);
+        // entities.put("node4", nodes[4]);
+        // entities.put("node1", nodes[0]);
+        // entities.put("node2", nodes[1]);
+        // entities.put("node3", nodes[2]);
 
         monkeyModel = loader.loadRiggedModel("assets/models/monkey.fbx");
 
@@ -221,6 +235,7 @@ public class Game implements ILogic {
                     entities.put("monkey" + monkeys.size(), monkey);
                     audioSources.get("tower_place").play();
                 }
+
             }
         }
     }
@@ -278,11 +293,57 @@ public class Game implements ILogic {
                 isInvalid = true;
 
             for(Monkey monkey : monkeys) {
-                if(monkey.getPosition().distance(previewMonkey.getPosition()) < 0.5f) {
+                Vector3f monkeyPos = monkey.getPosition();
+                if(monkeyPos.distance(previewMonkey.getPosition()) < 0.5f) {
                     isInvalid = true;
                     break;
                 }
             }
+
+            // also check if it's place on a path
+
+            int nodeIndex = 0;
+            float leastDistance = Float.MAX_VALUE;
+            
+            // get the 2 closest nodes
+            for(int i = 0; i < bloonNodes.length; i++){
+                if(mouseWorldPos.distance(bloonNodes[i]) < leastDistance){
+                    nodeIndex = i;
+                    leastDistance = mouseWorldPos.distance(bloonNodes[i]);
+                }
+            }
+            Vector3f closestNode = bloonNodes[nodeIndex];
+            Vector3f backNode = bloonNodes[Math.max(nodeIndex-1,0)];
+            Vector3f frontNode = bloonNodes[Math.min(nodeIndex+1, bloonNodes.length - 1)];
+
+            // nodes[0].setPosition(closestNode);
+            // nodes[1].setPosition(backNode);
+            // nodes[2].setPosition(frontNode);
+            // get the slopes (m values)
+            Vector3f averageVector1 = new Vector3f();
+            closestNode.add(backNode, averageVector1);
+            averageVector1.div(2);
+            Vector3f averageVector2 = new Vector3f();
+            closestNode.add(frontNode, averageVector2);
+            averageVector2.div(2);
+            // nodes[4].setPosition(averageVector1);
+            // nodes[3].setPosition(averageVector2);
+            
+            Vector3f[] vectorsToCompare = {closestNode, backNode, frontNode, averageVector1, averageVector2};
+            // check all vectors
+
+            float smallestDist = Float.MAX_VALUE;
+            for(Vector3f v : vectorsToCompare){
+                v = new Vector3f(v.x, mouseWorldPos.y, v.z);
+                float dist = v.distance(mouseWorldPos);
+                smallestDist = Math.min(dist, smallestDist);
+                if(dist < sphereRadius){
+                    isInvalid = true;
+                    break;
+                }
+            }
+            System.out.println(smallestDist);
+            
 
             if(isInvalid) {
                 previewMonkey.getModel().setAllMaterials(previewRed);
