@@ -11,12 +11,12 @@ public class Monkey extends AnimatedEntity{
     private float speed;
     private float tick;
     
-    public Monkey(String name, RiggedModel model, Vector3f position, Vector3f rotation, Vector3f scale, int range, float rate, float speed, float tick){
+    public Monkey(String name, RiggedModel model, Vector3f position, Vector3f rotation, Vector3f scale, MonkeyType type){
         super(name, model, position, rotation, scale);
-        this.range = range;
-        this.rate = rate;
-        this.tick = tick;
-        this.speed = speed;
+        this.range = type.range;
+        this.rate = type.rate;
+        this.speed = type.speed;
+        this.tick = 0f;
     }
 
     public int getRange() {

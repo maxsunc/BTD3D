@@ -8,6 +8,7 @@ import me.ChristopherW.core.entity.Model;
 public class Dart extends Entity{
     private Vector3f destinationDirection;
     private Monkey source;
+    private Bloon target;
     private float speed;
 
     public Dart(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
@@ -40,6 +41,14 @@ public class Dart extends Entity{
 
     public void setSpeed(float speed) {
         this.speed = speed;
+    }
+
+    public void setTarget(Bloon target) {
+        this.target = target;
+    }
+
+    public Bloon getTarget() {
+        return this.target;
     }
 
     
