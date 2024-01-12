@@ -5,14 +5,14 @@ import me.ChristopherW.process.Game;
 
 public enum BloonType {
 	RED(1,1, Game.RED), 
-	BLUE(2, 1.4f, Game.BLUE), 
-	GREEN(3,1.8f, Game.GREEN),
-	YELLOW(4,2.4f, Game.YELLOW),
-	PINK(5,2.8f, Game.PINK), 
-	BLACK(6, 1.5f, Game.BLACK), 
-	ZEBRA(7, 1.8f, Game.WHITE),
-	PURPLE(15,3.5f, Game.MAGENTA),
-	MOAB(100,0.8f, Game.MOAB);
+	BLUE(1, 1.4f, Game.BLUE), 
+	GREEN(1,1.8f, Game.GREEN),
+	YELLOW(1,3.2f, Game.YELLOW),
+	PINK(1,3.5f, Game.PINK), 
+	BLACK(1, 1.8f, Game.BLACK), 
+	WHITE(1, 2f, Game.WHITE),
+	CERAMIC(10,2.5f, Game.CERAMIC),
+	MOAB(200,1f, Game.MOAB);
 	
 	public int health;
 	public float speed;

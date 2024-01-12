@@ -94,8 +94,12 @@ public class Game implements ILogic {
     public static Texture PINK;
     public static Texture BLACK;
     public static Texture WHITE;
-    public static Texture MAGENTA;
+    public static Texture CERAMIC;
     public static Texture MOAB;
+    public static Texture MOAB_1;
+    public static Texture MOAB_2;
+    public static Texture MOAB_3;
+    public static Texture MOAB_4;
 
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
     public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
@@ -153,6 +157,8 @@ public class Game implements ILogic {
             audioSources.put("moab_damage", moab_damage);
             SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/moab_destroyed_short.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("moab_destroyed", moab_destroyed);
+            SoundSource ceramic_hit = soundManager.createSound("ceramic_hit", "assets/sounds/ceramic_hit.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("ceramic_hit", ceramic_hit);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -175,8 +181,12 @@ public class Game implements ILogic {
         PINK = loader.createTextureColor(Color.PINK);
         BLACK = loader.createTextureColor(Color.BLACK);
         WHITE = loader.createTextureColor(Color.WHITE);
-        MAGENTA = loader.createTextureColor(Color.MAGENTA);
+        CERAMIC = loader.createTexture("assets/textures/materials/Ceramic.png");
         MOAB = loader.createTexture("assets/textures/materials/MoabStandardDiffuse.png");
+        MOAB_1 = loader.createTexture("assets/textures/materials/MoabDamage1Diffuse.png");
+        MOAB_2 = loader.createTexture("assets/textures/materials/MoabDamage2Diffuse.png");
+        MOAB_3 = loader.createTexture("assets/textures/materials/MoabDamage3Diffuse.png");
+        MOAB_4 = loader.createTexture("assets/textures/materials/MoabDamage4Diffuse.png");
 
         // initialize entities map
         entities = new HashMap<>();
