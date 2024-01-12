@@ -28,6 +28,8 @@ public class AnimatedEntity extends Entity {
 
     public void setAnimationId(int id) {
         for(Mesh mesh : this.getModel().getMeshes().values()) {
+            if(!(mesh instanceof RiggedMesh))
+                continue;
             RiggedMesh rm = (RiggedMesh)mesh;
             rm.setAnimationData(new AnimationData(rm.getAnimationList().get(id)));
         }
@@ -64,6 +66,8 @@ public class AnimatedEntity extends Entity {
 
     public int getAnimationCount() {
         for(Mesh mesh : this.getModel().getMeshes().values()) {
+            if(!(mesh instanceof RiggedMesh))
+                continue;
             RiggedMesh rm = (RiggedMesh)mesh;
             int animationCount = rm.getAnimationList().size();
             return animationCount;
@@ -73,6 +77,8 @@ public class AnimatedEntity extends Entity {
 
     public int getCurrentFrameIdx() {
         for(Mesh mesh : this.getModel().getMeshes().values()) {
+            if(!(mesh instanceof RiggedMesh))
+                continue;
             RiggedMesh rm = (RiggedMesh)mesh;
             
             int currentFrameId = rm.getAnimationData().getCurrentFrameIdx();
@@ -86,6 +92,8 @@ public class AnimatedEntity extends Entity {
     public boolean nextFrame() {
         boolean loopComplete = false;
         for(Mesh mesh : this.getModel().getMeshes().values()) {
+            if(!(mesh instanceof RiggedMesh))
+                continue;
             RiggedMesh rm = (RiggedMesh)mesh;
             
             if(rm.getAnimationData() != null) {

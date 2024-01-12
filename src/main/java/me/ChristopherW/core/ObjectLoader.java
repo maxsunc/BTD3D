@@ -179,7 +179,7 @@ public class ObjectLoader {
         }
 
         List<Bone> boneList = new ArrayList<>();
-        HashMap<String, RiggedMesh> meshes = new HashMap<>();
+        HashMap<String, Mesh> meshes = new HashMap<>();
         for (int i = 0; i < numMeshes; i++) {
             AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
 
@@ -198,27 +198,41 @@ public class ObjectLoader {
                 textCoords = new float[numElements];
             }
 
-            List<RiggedMesh.Animation> animations = new ArrayList<>();
-            int numAnimations = aiScene.mNumAnimations();
-            if (numAnimations > 0) {
-                Node rootNode = buildNodesTree(aiScene.mRootNode(), null);
-                Matrix4f globalInverseTransformation = toMatrix(aiScene.mRootNode().mTransformation()).invert();
-                animations = processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
-            }
+            int numberOfBones = aiMesh.mNumBones();
+            if(numberOfBones > 0) {
+                List<RiggedMesh.Animation> animations = new ArrayList<>();
+                int numAnimations = aiScene.mNumAnimations();
+                if (numAnimations > 0) {
+                    Node rootNode = buildNodesTree(aiScene.mRootNode(), null);
+                    Matrix4f globalInverseTransformation = toMatrix(aiScene.mRootNode().mTransformation()).invert();
+                    animations = processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
 
-            Material material = materials.get(aiMesh.mMaterialIndex());
-            RiggedMesh mesh = loadRiggedMesh(vertices, textCoords, normals, tangents, indices, animMeshData.weights, animMeshData.boneIds, boneList.toArray(new Bone[]{}), material.getTexture(), fileName);
-            mesh.setAnimations(animations);
-            String suffix = "";
-            while(meshes.containsKey(aiMesh.mName().dataString() + suffix)) {
-                suffix += "(Clone)";
+                    Material material = materials.get(aiMesh.mMaterialIndex());
+                    RiggedMesh mesh = loadRiggedMesh(vertices, textCoords, normals, tangents, indices, animMeshData.weights, animMeshData.boneIds, boneList.toArray(new Bone[]{}), material.getTexture(), fileName);
+                    mesh.setAnimations(animations);
+                    mesh.setName(aiMesh.mName().dataString());
+                    String suffix = "";
+                    while(meshes.containsKey(aiMesh.mName().dataString() + suffix)) {
+                        suffix += "(Clone)";
+                    }
+                    meshes.put(aiMesh.mName().dataString() + suffix, mesh);
+                }
+            } else {
+                Material material = materials.get(aiMesh.mMaterialIndex());
+                Mesh mesh = loadMesh(vertices, textCoords, normals, indices, material.getTexture(), fileName);
+                mesh.setName(aiMesh.mName().dataString());
+
+                String suffix = "";
+                while(meshes.containsKey(aiMesh.mName().dataString() + suffix)) {
+                    suffix += "(Clone)";
+                }
+                meshes.put(aiMesh.mName().dataString() + suffix, mesh);
             }
-            meshes.put(aiMesh.mName().dataString() + suffix, mesh);
         }
 
         
         RiggedModel model = new RiggedModel();
-        model.setRiggedMeshes(meshes);
+        model.setMeshes(meshes);
         return model;
     }
 
@@ -269,6 +283,7 @@ public class ObjectLoader {
 
             Material material = materials.get(aiMesh.mMaterialIndex());
             Mesh mesh = loadMesh(vertices, textCoords, normals, indices, material.getTexture(), modelPath);
+            mesh.setName(aiMesh.mName().dataString());
 
             String suffix = "";
             while(meshes.containsKey(aiMesh.mName().dataString() + suffix)) {
@@ -278,7 +293,7 @@ public class ObjectLoader {
         }
 
         Model model = new Model();
-        model.setMeshs(meshes);
+        model.setMeshes(meshes);
         return model;
     }
 

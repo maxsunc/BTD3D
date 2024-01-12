@@ -8,6 +8,7 @@ import me.ChristopherW.core.custom.Shaders.DefaultShader;
 
 public class Mesh {
     public static int MAX_WEIGHTS = 4;
+    private String name;
     private String path = "generated";
     private int id;
     private int vertexCount;
@@ -67,6 +68,11 @@ public class Mesh {
         this.id = mesh.getId();
         this.vertexCount = mesh.getVertexCount();
         this.material = new Material(mesh.getMaterial());
+        this.vertices = mesh.vertices;
+        this.normals = mesh.normals;
+        this.indices = mesh.indices;
+        this.textureCoords = mesh.textureCoords;
+        this.name = mesh.name;
         init();
     }
 
@@ -157,5 +163,15 @@ public class Mesh {
     }
     public ShaderManager getShader() {
         return shader;
+    }
+
+    public String getName() {
+        if(name == null)
+            return "";
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

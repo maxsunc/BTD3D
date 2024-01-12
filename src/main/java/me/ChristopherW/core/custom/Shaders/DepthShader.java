@@ -39,10 +39,8 @@ public class DepthShader extends ShaderManager implements IShader{
         Matrix4f modelMatrix = Transformation.createTransformationMatrix(entity);
         this.setUniform("transformationMatrix", modelMatrix);
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        boolean animated = entity instanceof AnimatedEntity;
-        if (!animated) {
-            this.setUniform("bones", AnimationData.DEFAULT_BONES_MATRICES);
-        } else {
+        boolean animated = mesh instanceof RiggedMesh;
+        if (animated) {
             AnimatedEntity ae = (AnimatedEntity)entity;
             this.setUniform("bones", ae.getCurrentFrame((RiggedMesh)mesh).boneMatrices());
         }

@@ -11,13 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-import org.lwjgl.assimp.AIAnimation;
-import org.lwjgl.assimp.AINode;
-import org.lwjgl.assimp.AINodeAnim;
-import org.lwjgl.assimp.AIQuaternion;
-import org.lwjgl.assimp.AIVector3D;
 
 public class RiggedMesh extends Mesh {
     private Bone[] bones;

@@ -2,6 +2,8 @@ package me.ChristopherW.core.entity;
 
 import java.util.HashMap;
 
+import me.ChristopherW.core.custom.Animations.RiggedMesh;
+
 public class Model {
     private String name;
     private HashMap<String, Mesh> meshes = new HashMap<>();
@@ -27,8 +29,14 @@ public class Model {
     public HashMap<String, Mesh> getMeshes() {
         return meshes;
     }
-    public void setMeshs(HashMap<String, Mesh> meshes) {
-        this.meshes = meshes;
+    public void setMeshes(HashMap<String, Mesh> meshes) {
+        for(String key : meshes.keySet()) {
+            Mesh mesh = meshes.get(key);
+            if(mesh instanceof RiggedMesh)
+                this.meshes.put(key, new RiggedMesh((RiggedMesh)meshes.get(key)));
+            else
+                this.meshes.put(key, new Mesh(meshes.get(key)));
+        }
     }
 
     public static Model copy(Model model) {

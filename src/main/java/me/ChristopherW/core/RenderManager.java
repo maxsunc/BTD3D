@@ -201,10 +201,8 @@ public class RenderManager {
             // bind the model's shader and set the projectionMatrix uniform data
             mesh.getShader().bind();
             mesh.getShader().setUniform("projectionMatrix", window.updateProjectionMatrix());
-            
             // bind the mesh itself
             bind(mesh);
-
             // for each entity that uses that model
             List<Entity> entityList = entities.get(mesh);
             for(Entity entity : entityList) {
@@ -239,17 +237,18 @@ public class RenderManager {
         entities.clear();
     }
     public void processEntity(Entity entity) {
-        // TLDR; bind together the entities that share the same model
-        List<Entity> entityList = entities.get(entity.getModel());
-        if(entityList != null)
-            entityList.add(entity);
-        else {
-            List<Entity> newEntityList = new ArrayList<>();
-            newEntityList.add(entity);
-            for(Mesh mesh : entity.getModel().getMeshes().values()) {
+        for(Mesh mesh : entity.getModel().getMeshes().values()) {
+            List<Entity> entityList = entities.get(mesh);
+            if(entityList != null)
+                entityList.add(entity);
+            else {
+                List<Entity> newEntityList = new ArrayList<>();
+                newEntityList.add(entity);
                 entities.put(mesh, newEntityList);
             }
         }
+        // TLDR; bind together the entities that share the same model
+        
     }
 
     public void cleanup() {

@@ -67,7 +67,8 @@ public class AnimatedShader extends ShaderManager implements IShader {
         this.setUniform("viewMatrix", Transformation.createViewMatrix(camera));
         this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        if (!(entity instanceof AnimatedEntity)) {
+        boolean animated = mesh instanceof RiggedMesh;
+        if (!animated) {
             this.setUniform("bones", AnimationData.DEFAULT_BONES_MATRICES);
         } else {
             AnimatedEntity ae = (AnimatedEntity)entity;

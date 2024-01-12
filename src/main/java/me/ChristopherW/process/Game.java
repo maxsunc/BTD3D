@@ -73,7 +73,7 @@ public class Game implements ILogic {
     public static ObjectLoader loader;
     private final WindowManager window;
     private final SoundManager soundManager;
-    public HashMap<String, SoundSource> audioSources = new HashMap<>();
+    public static HashMap<String, SoundSource> audioSources = new HashMap<>();
     public Map<String, Entity> entities;
     
 
@@ -83,14 +83,25 @@ public class Game implements ILogic {
     private Material previewRed;
     private Material previewWhite;
     private RiggedModel[] monkeyModels = new RiggedModel[8];
-    private Model bloonModel;
+    public static Model bloonModel;
     private Model dartModel;
+    private Model moabModel;
+
+    public static Texture RED;
+    public static Texture BLUE;
+    public static Texture GREEN;
+    public static Texture YELLOW;
+    public static Texture PINK;
+    public static Texture BLACK;
+    public static Texture WHITE;
+    public static Texture MAGENTA;
+    public static Texture MOAB;
 
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    private ArrayList<Bloon> bloons = new ArrayList<Bloon>();
+    public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
     private ArrayList<Dart> darts = new ArrayList<Dart>();
     private ArrayList<Monkey> monkeys = new ArrayList<Monkey>();
-    private Vector3f[] bloonNodes;
+    public Vector3f[] bloonNodes;
     private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey"};
 
     // temp
@@ -138,6 +149,11 @@ public class Game implements ILogic {
             SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/pop4.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("pop4", pop4);
 
+            SoundSource moab_damage = soundManager.createSound("moab_damage", "assets/sounds/moab_damage.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage", moab_damage);
+            SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/moab_destroyed_short.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_destroyed", moab_destroyed);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -151,6 +167,16 @@ public class Game implements ILogic {
 
         // load all the textures
         defaultTexture = new Texture(loader.loadTexture("assets/textures/DefaultTexture.png"));
+
+        RED = loader.createTextureColor(Color.RED);
+        BLUE = loader.createTextureColor(Color.BLUE);
+        GREEN = loader.createTextureColor(Color.GREEN);
+        YELLOW = loader.createTextureColor(Color.YELLOW);
+        PINK = loader.createTextureColor(Color.PINK);
+        BLACK = loader.createTextureColor(Color.BLACK);
+        WHITE = loader.createTextureColor(Color.WHITE);
+        MAGENTA = loader.createTextureColor(Color.MAGENTA);
+        MOAB = loader.createTexture("assets/textures/materials/MoabStandardDiffuse.png");
 
         // initialize entities map
         entities = new HashMap<>();
@@ -189,20 +215,11 @@ public class Game implements ILogic {
             entities.put("bloon" + bloonCounter, b);
             b.setName("bloon" + bloonCounter);
         }
-        //TEMP
-        // nodes[0] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
-        // nodes[1] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
-        // nodes[2] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
-        // nodes[3] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
-        // nodes[4] = new Sphere(new Vector3f(0,2f,0), sphereRadius);
-        // entities.put("node5", nodes[3]);
-        // entities.put("node4", nodes[4]);
-        // entities.put("node1", nodes[0]);
-        // entities.put("node2", nodes[1]);
-        // entities.put("node3", nodes[2]);
 
         monkeyModels[0] = loader.loadRiggedModel("assets/models/monkey.fbx");
         monkeyModels[1] = loader.loadRiggedModel("assets/models/sniper_monkey.fbx");
+
+        monkeyModels[0].getMeshes().remove("Scene.003");
 
         AnimatedEntity monkey = new AnimatedEntity(RiggedModel.copy(monkeyModels[0]), 
             new Vector3f(), new Vector3f(), new Vector3f(0.1f));
@@ -215,6 +232,11 @@ public class Game implements ILogic {
         sniper_monkey.setAnimationId(2);
         entities.put("preview_sniper_monkey", sniper_monkey);
 
+        moabModel = loader.loadModel("assets/models/moab.fbx");
+        // Entity moab = new Entity(Model.copy(moabModel), 
+        //     new Vector3f(0,5,0), new Vector3f(), new Vector3f(0.075f));
+        // //moab.setAnimationId(0);
+        // moab.setName("moab");
 
         previewRed = new Material(loader.createTextureColor(Color.RED));
         previewWhite = new Material(loader.createTextureColor(Color.WHITE));
@@ -250,7 +272,7 @@ public class Game implements ILogic {
     }
 
     int frameCounter = 0;
-    int bloonCounter = 0;
+    public int bloonCounter = 0;
     int spawnNewBloonOnNextTick = -1;
     int monkeyMode = 0;
     boolean isInvalid = false;
@@ -272,6 +294,8 @@ public class Game implements ILogic {
                 spawnNewBloonOnNextTick = 6;
             if(key ==GLFW.GLFW_KEY_8)
                 spawnNewBloonOnNextTick = 7;
+            if(key ==GLFW.GLFW_KEY_9)
+                spawnNewBloonOnNextTick = 8;
 
             if(key ==GLFW.GLFW_KEY_SPACE) {
                 monkeyMode++;
@@ -295,12 +319,10 @@ public class Game implements ILogic {
             previewMonkey.setPosition(new Vector3f(mouseWorldPos));
             
             isInvalid = false;
-            if(previewMonkey.getPosition().y > 0.01f)
-                isInvalid = true;
 
             for(Monkey monkey : monkeys) {
                 Vector3f monkeyPos = monkey.getPosition();
-                if(monkeyPos.distance(previewMonkey.getPosition()) < 0.5f) {
+                if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
                     isInvalid = true;
                     break;
                 }
@@ -322,18 +344,12 @@ public class Game implements ILogic {
             Vector3f backNode = bloonNodes[Math.max(nodeIndex-1,0)];
             Vector3f frontNode = bloonNodes[Math.min(nodeIndex+1, bloonNodes.length - 1)];
 
-            // nodes[0].setPosition(closestNode);
-            // nodes[1].setPosition(backNode);
-            // nodes[2].setPosition(frontNode);
-            // get the slopes (m values)
             Vector3f averageVector1 = new Vector3f();
             closestNode.add(backNode, averageVector1);
             averageVector1.div(2);
             Vector3f averageVector2 = new Vector3f();
             closestNode.add(frontNode, averageVector2);
             averageVector2.div(2);
-            // nodes[4].setPosition(averageVector1);
-            // nodes[3].setPosition(averageVector2);
             
             Vector3f[] vectorsToCompare = {closestNode, backNode, frontNode, averageVector1, averageVector2};
             // check all vectors
@@ -348,8 +364,6 @@ public class Game implements ILogic {
                     break;
                 }
             }
-            System.out.println(smallestDist);
-            
 
             if(isInvalid) {
                 previewMonkey.getModel().setAllMaterials(previewRed);
@@ -395,11 +409,12 @@ public class Game implements ILogic {
     @Override
     public void update(float interval, MouseInput mouseInput) {
         if(spawnNewBloonOnNextTick >= 0) {
-            Bloon b = new Bloon("bloon", BloonType.values()[spawnNewBloonOnNextTick],
-                Model.copy(bloonModel), 
+            BloonType type = BloonType.values()[spawnNewBloonOnNextTick];
+            Bloon b = new Bloon("bloon", type,
+                (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
                 new Vector3f(bloonNodes[0]), 
                 new Vector3f(),
-                new Vector3f(0.5f)
+                new Vector3f((type == BloonType.MOAB) ? 0.075f : 0.5f)
             );
             bloons.add(b);
             bloonCounter++;
@@ -424,6 +439,7 @@ public class Game implements ILogic {
         cameraPos.setRotation(0, -camera.getRotation().y,0);  
 
 
+        ArrayList<Bloon> targeted = new ArrayList<>();
         // for each entity in the world
         // sync the visual rotation and positions with the physics rotations and positions
         for(int i = 0; i < entities.values().size(); i++) {
@@ -477,11 +493,13 @@ public class Game implements ILogic {
                     nodePos.sub(bloon.getPosition(), difference);
                     difference.normalize();
                     bloon.setCurrentHeading(difference);
+                    bloon.lookAtY(nodePos);
                 }
                 
                 if(bloon.isEnabled() == false) {
                     entities.remove(bloon.getName());
                     bloons.remove(bloon);
+                    continue;
                 }
                 bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(2 * bloon.getSpeed() * interval));
             }
@@ -515,6 +533,9 @@ public class Game implements ILogic {
                     d.setSource(monkey);
                     d.setSpeed(monkey.getSpeed());
                     d.setTarget(target);
+                    targeted.add(target);
+                    bloons.remove(target);
+
                     darts.add(d);
                     d.setName("dart" + darts.size());
                     entities.put("dart" + darts.size(), d);
@@ -557,8 +578,10 @@ public class Game implements ILogic {
                 }
                 dart.translate(new Vector3f(dart.getDestinationDirection()).mul(dart.getSpeed() * interval));
             }
-            //System.out.println(bloons.size());
         }
+
+        bloons.addAll(targeted);
+        targeted.clear();
         
         // update the physics world
         physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);
