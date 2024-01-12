@@ -16,7 +16,21 @@ public class Bloon extends Entity{
     private int health;
     private int nodeIndex;
     private Vector3f currentHeading;
-    
+    private boolean popped;
+
+
+    public boolean isPopped() {
+        return popped;
+    }
+
+
+
+
+    public void setPopped(boolean popped) {
+        this.popped = popped;
+    }
+
+
 
 
     public Bloon(String name, BloonType type, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
@@ -96,6 +110,32 @@ public class Bloon extends Entity{
                             b.setNodeIndex(this.nodeIndex);
                         }
                     }
+                    if(type == BloonType.CERAMIC) {
+                        Game game = Launcher.getGame();
+                        Vector3f diff = new Vector3f();
+                        game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
+                        for(int i = 0; i < 7; i++) {
+                            // move it towards the node pos
+                            Vector3f newPos = new Vector3f();
+                            game.bloonNodes[Math.max(this.nodeIndex - 1,0)].lerp(diff, i/9f, newPos);
+                            Vector3f difference = new Vector3f();
+                            game.bloonNodes[this.nodeIndex].sub(newPos, difference);
+                            difference.normalize();
+                            Bloon b = new Bloon("bloon", (i > 3) ? BloonType.BLACK : BloonType.WHITE,
+                                Model.copy(Game.bloonModel), 
+                                newPos, 
+                                new Vector3f(),
+                                new Vector3f(0.5f)
+                            );
+                            game.bloons.add(b);
+                            game.bloonCounter++;
+                            game.entities.put("bloon" + game.bloonCounter, b);
+                            b.setName("bloon" + game.bloonCounter);
+                            b.setCurrentHeading(difference);
+                            b.setNodeIndex(this.nodeIndex);
+                        }
+                    }
+
                     this.speed = newBloonType.speed;
                     this.health = newBloonType.health;
                     this.getModel().setAllMaterials(new Material(1f, 5f, newBloonType.color));

@@ -43,6 +43,7 @@ import me.ChristopherW.core.custom.BloonType;
 import me.ChristopherW.core.custom.Dart;
 import me.ChristopherW.core.custom.Monkey;
 import me.ChristopherW.core.custom.MonkeyType;
+import me.ChristopherW.core.custom.Player;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.Bone;
 import me.ChristopherW.core.entity.Model;
@@ -111,6 +112,11 @@ public class Game implements ILogic {
     // temp
     //private Entity[] nodes = new Entity[5];
     private float sphereRadius = 1.2f;
+    public float gameSpeed = 1.0f;
+    public Player player;
+    public int bloonCounter = 0;    
+    public int monkeyMode = 0;
+    public boolean isInvalid = false;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -174,19 +180,21 @@ public class Game implements ILogic {
         // load all the textures
         defaultTexture = new Texture(loader.loadTexture("assets/textures/DefaultTexture.png"));
 
-        RED = loader.createTextureColor(Color.RED);
-        BLUE = loader.createTextureColor(Color.BLUE);
-        GREEN = loader.createTextureColor(Color.GREEN);
-        YELLOW = loader.createTextureColor(Color.YELLOW);
+        RED = loader.createTextureColor(Color.decode("#ed1f1f"));
+        BLUE = loader.createTextureColor(Color.decode("#2F9CE4"));
+        GREEN = loader.createTextureColor(Color.decode("#70A204"));
+        YELLOW = loader.createTextureColor(Color.decode("#FFD514"));
         PINK = loader.createTextureColor(Color.PINK);
-        BLACK = loader.createTextureColor(Color.BLACK);
-        WHITE = loader.createTextureColor(Color.WHITE);
+        BLACK = loader.createTextureColor(Color.decode("#262626"));
+        WHITE = loader.createTextureColor(Color.decode("#E3E3E3"));
         CERAMIC = loader.createTexture("assets/textures/materials/Ceramic.png");
         MOAB = loader.createTexture("assets/textures/materials/MoabStandardDiffuse.png");
         MOAB_1 = loader.createTexture("assets/textures/materials/MoabDamage1Diffuse.png");
         MOAB_2 = loader.createTexture("assets/textures/materials/MoabDamage2Diffuse.png");
         MOAB_3 = loader.createTexture("assets/textures/materials/MoabDamage3Diffuse.png");
         MOAB_4 = loader.createTexture("assets/textures/materials/MoabDamage4Diffuse.png");
+
+        player = new Player();
 
         // initialize entities map
         entities = new HashMap<>();
@@ -202,7 +210,6 @@ public class Game implements ILogic {
 
         dartModel = loader.loadModel("assets/models/dart.fbx");
         bloonModel = loader.loadModel("assets/models/bloon.dae");
-        bloonModel.setAllMaterials(new Material(0f, 2, loader.createTextureColor(Color.RED)));
 
 
         // load can map.txt node positions
@@ -275,17 +282,14 @@ public class Game implements ILogic {
                     monkey.setAnimationId(2);
                     entities.put("monkey" + monkeys.size(), monkey);
                     audioSources.get("tower_place").play();
+                    player.removeMoney(monkey.getValue());
                 }
-
             }
         }
     }
 
-    int frameCounter = 0;
-    public int bloonCounter = 0;
     int spawnNewBloonOnNextTick = -1;
-    int monkeyMode = 0;
-    boolean isInvalid = false;
+
     public void keyDown(long window, int key, int scancode, int action, int mods) {
         if(action == GLFW.GLFW_PRESS) {
             if(key ==GLFW.GLFW_KEY_1)
@@ -321,46 +325,41 @@ public class Game implements ILogic {
     float panX = 0;
     float panZ = 0;
 
-    @Override
-    public void input(MouseInput input, double deltaTime, int frame) {
+    private boolean checkPlacementValidity(Entity previewMonkey) {
 
-        if(monkeyMode > 0) {
-            Entity previewMonkey = entities.get(previewKeys[monkeyMode - 1]);
-            previewMonkey.setPosition(new Vector3f(mouseWorldPos));
-            
-            isInvalid = false;
+        if(player.getMoney() < MonkeyType.values()[monkeyMode - 1].cost)
+            return false;
 
-            for(Monkey monkey : monkeys) {
-                Vector3f monkeyPos = monkey.getPosition();
-                if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
-                    isInvalid = true;
-                    break;
-                }
+        for(Monkey monkey : monkeys) {
+            Vector3f monkeyPos = monkey.getPosition();
+            if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
+                return false;
             }
+        }
 
-            // also check if it's place on a path
+        // also check if it's place on a path
 
-            int nodeIndex = 0;
-            float leastDistance = Float.MAX_VALUE;
-            
-            // get the 2 closest nodes
-            for(int i = 0; i < bloonNodes.length; i++){
-                if(mouseWorldPos.distance(bloonNodes[i]) < leastDistance){
-                    nodeIndex = i;
-                    leastDistance = mouseWorldPos.distance(bloonNodes[i]);
-                }
+        int nodeIndex = 0;
+        float leastDistance = Float.MAX_VALUE;
+        
+        // get the 2 closest nodes
+        for(int i = 0; i < bloonNodes.length; i++){
+            if(mouseWorldPos.distance(bloonNodes[i]) < leastDistance){
+                nodeIndex = i;
+                leastDistance = mouseWorldPos.distance(bloonNodes[i]);
             }
-            Vector3f closestNode = bloonNodes[nodeIndex];
-            Vector3f backNode = bloonNodes[Math.max(nodeIndex-1,0)];
-            Vector3f frontNode = bloonNodes[Math.min(nodeIndex+1, bloonNodes.length - 1)];
+        }
+        Vector3f closestNode = bloonNodes[nodeIndex];
+        Vector3f backNode = bloonNodes[Math.max(nodeIndex-1,0)];
+        Vector3f frontNode = bloonNodes[Math.min(nodeIndex+1, bloonNodes.length - 1)];
 
-            Vector3f averageVector1 = new Vector3f();
-            closestNode.add(backNode, averageVector1);
-            averageVector1.div(2);
-            Vector3f averageVector2 = new Vector3f();
-            closestNode.add(frontNode, averageVector2);
-            averageVector2.div(2);
-            
+        Vector3f averageVector1 = new Vector3f();
+        closestNode.add(backNode, averageVector1);
+        averageVector1.div(2);
+        Vector3f averageVector2 = new Vector3f();
+        closestNode.add(frontNode, averageVector2);
+        averageVector2.div(2);
+        
             Vector3f[] vectorsToCompare = {closestNode, backNode, frontNode, averageVector1, averageVector2};
             // check all vectors
 
@@ -370,11 +369,20 @@ public class Game implements ILogic {
                 float dist = v.distance(mouseWorldPos);
                 smallestDist = Math.min(dist, smallestDist);
                 if(dist < sphereRadius){
-                    isInvalid = true;
-                    break;
+                    return false;
                 }
             }
 
+            return true;
+    }
+
+    @Override
+    public void input(MouseInput input, double deltaTime, int frame) {
+
+        if(monkeyMode > 0) {
+            Entity previewMonkey = entities.get(previewKeys[monkeyMode - 1]);
+            previewMonkey.setPosition(new Vector3f(mouseWorldPos));
+            isInvalid = !checkPlacementValidity(previewMonkey);
             if(isInvalid) {
                 previewMonkey.getModel().setAllMaterials(previewRed);
             } else {
@@ -461,7 +469,7 @@ public class Game implements ILogic {
             if(entity instanceof AnimatedEntity) {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
 
-                if(animatedEntity.getAnimationTick() >= (1f/60f)) {
+                if(animatedEntity.getAnimationTick() >= (1f/(gameSpeed * 60f))) {
                     boolean loopComplete = animatedEntity.nextFrame();
                     animatedEntity.setAnimationTick(0);
 
@@ -509,20 +517,25 @@ public class Game implements ILogic {
                 if(bloon.isEnabled() == false) {
                     entities.remove(bloon.getName());
                     bloons.remove(bloon);
+                    player.removeLives(bloon.getType().RBE);
                     continue;
                 }
-                bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(2 * bloon.getSpeed() * interval));
+                bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(gameSpeed * 2 * bloon.getSpeed() * interval));
             }
 
             if(entity instanceof Monkey) {
                 Monkey monkey = (Monkey) entity;
                 //System.out.printf("%.2f/%.2f\n", monkey.getTick(), monkey.getRate());
-                if(monkey.getTick() >= monkey.getRate()) {
+                if(monkey.getTick() >= monkey.getRate()/gameSpeed) {
                     if(bloons.size() < 1)
                         continue;
                     Bloon target = null;
                     for(int b = 0; b < bloons.size(); b++) {
                         Bloon bloon = bloons.get(b);
+                        if(bloon.isPopped()) {
+                            bloons.remove(bloon);
+                            continue;
+                        }
                         if(bloon.getPosition().distance(monkey.getPosition()) <= monkey.getRange()) {
                             target = bloon;
                             break;
@@ -557,36 +570,36 @@ public class Game implements ILogic {
 
             if(entity instanceof Dart) {
                 Dart dart = (Dart) entity;
-
-                boolean popped = false;
                 
                 Bloon bloon = dart.getTarget();
-
-                if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
-                    int result = bloon.damage(1);
-                    if(result >= 0) {
-                        int randomNumber = random.nextInt(4) + 1;
-                        audioSources.get("pop" + randomNumber).play();
-                        
-                        if(result > 0) {
-                            entities.remove(bloon.getName());
-                            bloons.remove(bloon);
+                if(bloon != null) {
+                    if(bloon.isPopped()) {
+                        dart.setTarget(null);
+                    } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
+                        int result = bloon.damage(1);
+                        if(result >= 0) {
+                            int randomNumber = random.nextInt(4) + 1;
+                            audioSources.get("pop" + randomNumber).play();
+                            player.addMoney(1);
+                            
+                            if(result > 0) {
+                                entities.remove(bloon.getName());
+                                bloons.remove(bloon);
+                                bloon.setPopped(true);
+                            }
                         }
+                        darts.remove(dart);
+                        entities.remove(dart.getName());
+                        continue;
                     }
-                    darts.remove(dart);
-                    entities.remove(dart.getName());
-                    popped = true;
                 }
 
-                if(popped)
-                    continue;
-
-                if(dart.getPosition().distance(0,0,0) > 20f) {
+                if(dart.getPosition().distance(dart.getSource().getPosition()) > 75f) {
                     darts.remove(dart);
                     entities.remove(dart.getName());
                     continue;
                 }
-                dart.translate(new Vector3f(dart.getDestinationDirection()).mul(dart.getSpeed() * interval));
+                dart.translate(new Vector3f(dart.getDestinationDirection()).mul(gameSpeed * dart.getSpeed() * interval));
             }
         }
 

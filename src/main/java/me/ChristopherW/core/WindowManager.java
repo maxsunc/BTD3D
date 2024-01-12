@@ -11,6 +11,8 @@ import me.ChristopherW.process.Launcher;
 import java.nio.IntBuffer;
 import java.util.prefs.Preferences;
 
+import javax.swing.event.MouseInputListener;
+
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
@@ -271,5 +273,14 @@ public class WindowManager {
     public Matrix4f updateProjectionMatrix(Matrix4f matrix, int width, int height) {
         float aspectRatio = (float) width / height;
         return matrix.setPerspective(GlobalVariables.FOV, aspectRatio, GlobalVariables.Z_NEAR, GlobalVariables.Z_FAR);
+    }
+
+    private MouseInput mouseInput;
+    public void setInput(MouseInput mouseInput) {
+        this.mouseInput = mouseInput;
+    }
+
+    public MouseInput getInput() {
+        return mouseInput;
     }
 }

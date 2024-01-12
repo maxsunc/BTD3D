@@ -13,6 +13,7 @@ import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.WindowManager;
+import me.ChristopherW.core.custom.UI.UIScreens.GameplayScreen;
 import me.ChristopherW.core.custom.UI.UIScreens.MainMenu;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.utils.GlobalVariables;
@@ -26,6 +27,8 @@ public class GUIManager {
     ImFontConfig fontConfig;
     public ImFont font;
     public ImFont fontSmall;
+    public ImFont monkeyFont;
+    public ImFont monkeyFontSmall;
     ImGuiIO io;
     public int window_flags;
     int location = 0;
@@ -50,14 +53,16 @@ public class GUIManager {
         fontConfig.setGlyphRanges(fontAtlas.getGlyphRangesDefault());
         fontConfig.setPixelSnapH(true);
         fontAtlas.addFontDefault();
+        monkeyFont = fontAtlas.addFontFromFileTTF("assets/fonts/monkey_font.ttf", 34f, fontConfig);
+        monkeyFontSmall = fontAtlas.addFontFromFileTTF("assets/fonts/monkey_font.ttf", 20f, fontConfig);
         font = fontAtlas.addFontFromFileTTF("assets/fonts/mont-heavy.ttf", 34f, fontConfig);
         fontSmall = fontAtlas.addFontFromFileTTF("assets/fonts/mont-heavy.ttf", 17f, fontConfig);
         fontAtlas.build();
         fontConfig.destroy();
 
         // initialize screens
-        screens.put("MainMenu", new MainMenu());
-        currentScreen = "";
+        screens.put("Gameplay", new GameplayScreen());
+        currentScreen = "Gameplay";
 
         // call the start method for each screen
         for(IGUIScreen screen : screens.values()) {

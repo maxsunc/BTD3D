@@ -29,6 +29,7 @@ public class EngineManager {
         window = Launcher.getWindow();
         gameLogic = Launcher.getGame();
         mouseInput = new MouseInput();
+        this.window.setInput(mouseInput);
 
         // initalize the window, game, and input manager
         window.init();
