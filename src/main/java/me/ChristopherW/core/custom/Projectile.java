@@ -5,13 +5,13 @@ import org.joml.Vector3f;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Model;
 
-public class Dart extends Entity{
+public class Projectile extends Entity{
     private Vector3f destinationDirection;
-    private Monkey source;
+    private Tower source;
     private Bloon target;
     private float speed;
 
-    public Dart(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
+    public Projectile(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
         super(name, model, position, rotation, scale);
     }
 
@@ -27,11 +27,11 @@ public class Dart extends Entity{
         this.destinationDirection = new Vector3f(difference);
     }
 
-    public Monkey getSource() {
+    public Tower getSource() {
         return source;
     }
 
-    public void setSource(Monkey source) {
+    public void setSource(Tower source) {
         this.source = source;
     }
 

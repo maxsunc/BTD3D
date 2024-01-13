@@ -10,7 +10,7 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 import me.ChristopherW.core.ObjectLoader;
-import me.ChristopherW.core.custom.MonkeyType;
+import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.custom.UI.IGUIScreen;
 import me.ChristopherW.core.entity.Texture;
@@ -45,7 +45,7 @@ public class GameplayScreen implements IGUIScreen {
             if (ImGui.begin("gameplay_mouse", p_open, gm.window_flags)) {
                 ImGui.pushFont(gm.monkeyFontSmall);
                 ImGui.image(panel.getId(), 71, 32);
-                MonkeyType selectedMonkey = MonkeyType.values()[game.monkeyMode - 1];
+                TowerType selectedMonkey = TowerType.values()[game.monkeyMode - 1];
                 String cost = "$" + String.valueOf(selectedMonkey.cost);
                 ImVec2 dimensions = ImGui.calcTextSize(cost);
                 ImGui.setCursorPos(35-(dimensions.x/3), 14);

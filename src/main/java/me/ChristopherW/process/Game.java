@@ -40,9 +40,10 @@ import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.BloonType;
-import me.ChristopherW.core.custom.Dart;
-import me.ChristopherW.core.custom.Monkey;
-import me.ChristopherW.core.custom.MonkeyType;
+import me.ChristopherW.core.custom.Bomb;
+import me.ChristopherW.core.custom.Projectile;
+import me.ChristopherW.core.custom.Tower;
+import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.Player;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.Bone;
@@ -50,6 +51,10 @@ import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
+import me.ChristopherW.core.custom.Towers.BombTower;
+import me.ChristopherW.core.custom.Towers.DartMonkey;
+import me.ChristopherW.core.custom.Towers.ITower;
+import me.ChristopherW.core.custom.Towers.SniperMonkey;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
@@ -85,7 +90,8 @@ public class Game implements ILogic {
     private Material previewWhite;
     private RiggedModel[] monkeyModels = new RiggedModel[8];
     public static Model bloonModel;
-    private Model dartModel;
+    public static Model bombModel;
+    public static Model dartModel;
     private Model moabModel;
 
     public static Texture RED;
@@ -104,10 +110,10 @@ public class Game implements ILogic {
 
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
     public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
-    private ArrayList<Dart> darts = new ArrayList<Dart>();
-    private ArrayList<Monkey> monkeys = new ArrayList<Monkey>();
+    private ArrayList<Projectile> darts = new ArrayList<Projectile>();
+    private ArrayList<Tower> monkeys = new ArrayList<Tower>();
     public Vector3f[] bloonNodes;
-    private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey"};
+    private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower"};
 
     // temp
     //private Entity[] nodes = new Entity[5];
@@ -159,6 +165,9 @@ public class Game implements ILogic {
             SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/pop4.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("pop4", pop4);
 
+            SoundSource explosion = soundManager.createSound("explosion", "assets/sounds/explosion_small.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion", explosion);
+
             SoundSource moab_damage = soundManager.createSound("moab_damage", "assets/sounds/moab_damage.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("moab_damage", moab_damage);
             SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/moab_destroyed_short.ogg", new Vector3f(0,0,0), false, false, 0.4f);
@@ -208,6 +217,7 @@ public class Game implements ILogic {
         );
         entities.put("map", map);
 
+        bombModel = loader.loadModel("assets/models/bomb.fbx");
         dartModel = loader.loadModel("assets/models/dart.fbx");
         bloonModel = loader.loadModel("assets/models/bloon.dae");
 
@@ -235,8 +245,15 @@ public class Game implements ILogic {
 
         monkeyModels[0] = loader.loadRiggedModel("assets/models/monkey.fbx");
         monkeyModels[1] = loader.loadRiggedModel("assets/models/sniper_monkey.fbx");
+        monkeyModels[2] = loader.loadRiggedModel("assets/models/bomb_tower.fbx");
 
         monkeyModels[0].getMeshes().remove("Scene.003");
+
+        AnimatedEntity bomb_tower = new AnimatedEntity(RiggedModel.copy(monkeyModels[2]), 
+            new Vector3f(), new Vector3f(), new Vector3f(0.1f));
+        bomb_tower.setAnimationId(1);
+        bomb_tower.setEnabled(false);
+        entities.put("preview_bomb_tower", bomb_tower);
 
         AnimatedEntity monkey = new AnimatedEntity(RiggedModel.copy(monkeyModels[0]), 
             new Vector3f(), new Vector3f(), new Vector3f(0.1f));
@@ -272,14 +289,47 @@ public class Game implements ILogic {
                 if(monkeyMode == 0 || isInvalid)
                     return;
                 if(dMouse.distance(input.getCurrentPos()) < 2f) {
-                    Monkey monkey = new Monkey("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
-                        mouseWorldPos, 
-                        new Vector3f(), 
-                        new Vector3f(0.1f,0.1f,0.1f),
-                        MonkeyType.values()[monkeyMode - 1]
-                    );
+                    Tower monkey;
+                    TowerType type = TowerType.values()[monkeyMode - 1];
+
+                    switch (type) {
+                        case BOMB_TOWER:
+                            monkey = new BombTower("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                                mouseWorldPos, 
+                                new Vector3f(), 
+                                new Vector3f(0.1f,0.1f,0.1f),
+                                type
+                            );
+                            break;
+                        case DART_MONKEY:
+                            monkey = new DartMonkey("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                                mouseWorldPos, 
+                                new Vector3f(), 
+                                new Vector3f(0.1f,0.1f,0.1f),
+                                type
+                            );
+                            break;
+                        case SNIPER_MONKEY:
+                            monkey = new SniperMonkey("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                                mouseWorldPos, 
+                                new Vector3f(), 
+                                new Vector3f(0.1f,0.1f,0.1f),
+                                type
+                            );
+                            break;
+                        default:
+                            monkey = new Tower("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                                mouseWorldPos, 
+                                new Vector3f(), 
+                                new Vector3f(0.1f,0.1f,0.1f),
+                                type
+                            );
+                            break;
+                    }
+
+
                     monkeys.add(monkey);
-                    monkey.setAnimationId(2);
+                    monkey.setAnimationId(monkey.getSpawnAnimationId());
                     entities.put("monkey" + monkeys.size(), monkey);
                     audioSources.get("tower_place").play();
                     player.removeMoney(monkey.getValue());
@@ -313,7 +363,7 @@ public class Game implements ILogic {
 
             if(key ==GLFW.GLFW_KEY_SPACE) {
                 monkeyMode++;
-                if(monkeyMode > 2)
+                if(monkeyMode > 3)
                     monkeyMode = 0;
             }
         }
@@ -327,10 +377,10 @@ public class Game implements ILogic {
 
     private boolean checkPlacementValidity(Entity previewMonkey) {
 
-        if(player.getMoney() < MonkeyType.values()[monkeyMode - 1].cost)
+        if(player.getMoney() < TowerType.values()[monkeyMode - 1].cost)
             return false;
 
-        for(Monkey monkey : monkeys) {
+        for(Tower monkey : monkeys) {
             Vector3f monkeyPos = monkey.getPosition();
             if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
                 return false;
@@ -474,18 +524,18 @@ public class Game implements ILogic {
                     animatedEntity.setAnimationTick(0);
 
                     if(loopComplete) {
-                        if(animatedEntity instanceof Monkey) {
-                            if(animatedEntity.getAnimationId() == 1) {
-                                ((Monkey)animatedEntity).setAnimationId(0);
-                                continue;
+                        if(animatedEntity instanceof Tower) {
+                            Tower tower = (Tower)animatedEntity;
+                            if(animatedEntity.getAnimationId() == tower.getAttackAnimationId()) {
+                                tower.setAnimationId(tower.getPostAttackAnimationId());
                             }
                             int randomNumber = random.nextInt(6) + 1;
                             if(randomNumber == 6)
-                                ((Monkey)animatedEntity).setAnimationId(3);
+                                tower.setAnimationId(tower.getIdle2AnimationId());
                             else if(randomNumber == 5)
-                                ((Monkey)animatedEntity).setAnimationId(4);
+                                tower.setAnimationId(tower.getIdle1AnimationId());
                             else
-                                ((Monkey)animatedEntity).setAnimationId(2);
+                                tower.setAnimationId(tower.getIdleAnimationId());
                         }
                     }
                     
@@ -518,13 +568,17 @@ public class Game implements ILogic {
                     entities.remove(bloon.getName());
                     bloons.remove(bloon);
                     player.removeLives(bloon.getType().RBE);
+
+                    // Stop the game
+                    //if(player.getLives() <= 0)
+                    //    Launcher.getEngine().stop();
                     continue;
                 }
                 bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(gameSpeed * 2 * bloon.getSpeed() * interval));
             }
 
-            if(entity instanceof Monkey) {
-                Monkey monkey = (Monkey) entity;
+            if(entity instanceof Tower) {
+                Tower monkey = (Tower) entity;
                 //System.out.printf("%.2f/%.2f\n", monkey.getTick(), monkey.getRate());
                 if(monkey.getTick() >= monkey.getRate()/gameSpeed) {
                     if(bloons.size() < 1)
@@ -543,14 +597,10 @@ public class Game implements ILogic {
                     }
                     if(target == null)
                         continue;
-                    monkey.setAnimationId(1);
+                    monkey.setAnimationId(monkey.getAttackAnimationId());
                     monkey.lookAtY(new Vector3f(target.getPosition()));
                     
-                    Dart d = new Dart("dart", Model.copy(dartModel), 
-                        new Vector3f(monkey.getPosition().x, monkey.getPosition().y + 0.6f, monkey.getPosition().z).add(monkey.getRight().div(-3)), 
-                        new Vector3f(), 
-                        new Vector3f(0.1f)
-                    );
+                    Projectile d = ((ITower)monkey).spawnProjectile();
                     d.setDestinationDirection(new Vector3f(target.getPosition()));
                     d.lookAtY(new Vector3f(target.getPosition()));
                     d.setSource(monkey);
@@ -568,8 +618,8 @@ public class Game implements ILogic {
                 monkey.addTick(interval);
             }
 
-            if(entity instanceof Dart) {
-                Dart dart = (Dart) entity;
+            if(entity instanceof Projectile) {
+                Projectile dart = (Projectile) entity;
                 
                 Bloon bloon = dart.getTarget();
                 if(bloon != null) {
@@ -590,6 +640,27 @@ public class Game implements ILogic {
                         }
                         darts.remove(dart);
                         entities.remove(dart.getName());
+
+                        if(dart instanceof Bomb) {
+                            audioSources.get("explosion").play();
+                            for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
+                                Bloon b = bloons.get(bloonId);
+                                if(b.getPosition().distance(dart.getPosition()) < 2) {
+                                    int r = b.damage(1);
+                                    if(r >= 0) {
+                                        int rn = random.nextInt(4) + 1;
+                                        audioSources.get("pop" + rn).play();
+                                        player.addMoney(1);
+                                        
+                                        if(result > 0) {
+                                            entities.remove(b.getName());
+                                            bloons.remove(b);
+                                            b.setPopped(true);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         continue;
                     }
                 }
