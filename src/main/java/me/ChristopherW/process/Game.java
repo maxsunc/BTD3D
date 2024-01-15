@@ -555,13 +555,6 @@ public class Game implements ILogic {
                     // look at the next node
                     bloon.incremenNodeIndex();
                     nodePos = bloonNodes[bloon.getNodeIndex()];
-                    
-
-                    Vector3f difference = new Vector3f();
-                    nodePos.sub(bloon.getPosition(), difference);
-                    difference.normalize();
-                    bloon.setCurrentHeading(difference);
-                    bloon.lookAtY(nodePos);
                 }
                 
                 if(bloon.isEnabled() == false) {
@@ -574,6 +567,11 @@ public class Game implements ILogic {
                     //    Launcher.getEngine().stop();
                     continue;
                 }
+                Vector3f difference = new Vector3f();
+                    nodePos.sub(bloon.getPosition(), difference);
+                    difference.normalize();
+                    bloon.setCurrentHeading(difference);
+                    bloon.lookAtY(nodePos);
                 bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(gameSpeed * 2 * bloon.getSpeed() * interval));
             }
 
