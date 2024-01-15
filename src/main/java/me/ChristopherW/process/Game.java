@@ -551,7 +551,7 @@ public class Game implements ILogic {
                 
                 Vector3f nodePos = bloonNodes[bloon.getNodeIndex()];
                 // compare the positions
-                if(bloon.getPosition().distance(nodePos) <= 0.1f){
+                if(bloon.getPosition().distance(nodePos) <= 0.25f){
                     // look at the next node
                     bloon.incremenNodeIndex();
                     nodePos = bloonNodes[bloon.getNodeIndex()];
