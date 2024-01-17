@@ -639,7 +639,7 @@ public class Game implements ILogic {
                     if(bloon != null) {
                         if(bloon.isPopped()) {
                             dart.setTarget(null);
-                        } else if(dart.getPosition().distance(bloon.getPosition()) < 0.5f) {
+                        } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
                             int result = bloon.damage(dart.getDamage());
                                 if(result >= 0) {
                                     int randomNumber = random.nextInt(4) + 1;
