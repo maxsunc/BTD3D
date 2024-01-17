@@ -10,9 +10,11 @@ public class Projectile extends Entity{
     private Tower source;
     private Bloon target;
     private float speed;
+    private int damage;
 
-    public Projectile(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale){
+    public Projectile(String name, Model model, Vector3f position, Vector3f rotation, Vector3f scale, int damage){
         super(name, model, position, rotation, scale);
+        this.damage = damage;
     }
 
     public Vector3f getDestinationDirection() {
@@ -49,7 +51,10 @@ public class Projectile extends Entity{
 
     public Bloon getTarget() {
         return this.target;
+
     }
 
-    
+    public int getDamage(){
+        return this.damage;
+    }
 }
