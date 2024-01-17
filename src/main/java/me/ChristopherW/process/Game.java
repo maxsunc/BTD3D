@@ -118,6 +118,7 @@ public class Game implements ILogic {
     // temp
     //private Entity[] nodes = new Entity[5];
     private float sphereRadius = 1.2f;
+    private Tower currentTowerInspecting;
     public float gameSpeed = 1.0f;
     public Player player;
     public int bloonCounter = 0;    
@@ -174,6 +175,9 @@ public class Game implements ILogic {
             audioSources.put("moab_destroyed", moab_destroyed);
             SoundSource ceramic_hit = soundManager.createSound("ceramic_hit", "assets/sounds/ceramic_hit.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("ceramic_hit", ceramic_hit);
+
+            SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("upgrade", upgrade);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -286,9 +290,27 @@ public class Game implements ILogic {
             if(action == GLFW.GLFW_PRESS) {
                 dMouse = new Vector2d(input.getCurrentPos());
             } else if (action == GLFW.GLFW_RELEASE) {
-                if(monkeyMode == 0 || isInvalid)
+                if(monkeyMode == 0){
+                    if(monkeys.size() < 1){
+                        return;
+                    }
+                    // check for towers to inspect
+                    float shortestDistance = Float.MAX_VALUE;
+                    Tower closestTower = monkeys.get(0);
+                    for(int i = 0; i < monkeys.size(); i++){
+                        float distance = mouseWorldPos.distance(monkeys.get(i).getPosition());
+                        if(shortestDistance > distance){
+                            closestTower = monkeys.get(i);
+                            shortestDistance = distance;
+                        }
+                    }
+                    currentTowerInspecting = closestTower;
+                    System.out.println("INSPECTING " + currentTowerInspecting);
+                }
+                else if(isInvalid){
                     return;
-                if(dMouse.distance(input.getCurrentPos()) < 2f) {
+                }
+                else if(dMouse.distance(input.getCurrentPos()) < 2f) {
                     Tower monkey;
                     TowerType type = TowerType.values()[monkeyMode - 1];
 
@@ -365,6 +387,30 @@ public class Game implements ILogic {
                 monkeyMode++;
                 if(monkeyMode > 3)
                     monkeyMode = 0;
+            }
+            if(key == GLFW.GLFW_KEY_Q){
+                if(currentTowerInspecting != null){
+                    // check if it's not null
+                    if(currentTowerInspecting.getPath1().nextUpgrade != null)
+                    // check if you can buy it
+                    if(currentTowerInspecting.getPath1().nextUpgrade.cost <= player.getMoney()){
+                    player.removeMoney(currentTowerInspecting.getPath1().nextUpgrade.cost);
+                    System.out.println("bought " + currentTowerInspecting.getPath1().nextUpgrade.name);
+                    currentTowerInspecting.upgradePath(1);
+                    audioSources.get("upgrade").play();
+                    }
+                }
+            }
+            if(key == GLFW.GLFW_KEY_E){
+                
+                if(currentTowerInspecting != null)
+                if(currentTowerInspecting.getPath2().nextUpgrade != null)
+                    if(currentTowerInspecting.getPath2().nextUpgrade.cost <= player.getMoney()){
+                    player.removeMoney(currentTowerInspecting.getPath2().nextUpgrade.cost);
+                    System.out.println("bought " + currentTowerInspecting.getPath2().nextUpgrade.name);
+                    currentTowerInspecting.upgradePath(2);
+                    audioSources.get("upgrade").play();
+                    }
             }
         }
     }
@@ -510,8 +556,8 @@ public class Game implements ILogic {
         ArrayList<Bloon> targeted = new ArrayList<>();
         // for each entity in the world
         // sync the visual rotation and positions with the physics rotations and positions
-        for(int i = 0; i < entities.values().size(); i++) {
-            Entity entity = entities.values().toArray(new Entity[]{})[i];
+        for(int entityId = 0; entityId < entities.values().size(); entityId++) {
+            Entity entity = entities.values().toArray(new Entity[]{})[entityId];
             if(entity.getRigidBody() != null) {
                 entity.setPosition(Utils.convert(entity.getRigidBody().getPhysicsLocation(null)));
                 entity.setRotation(Utils.ToEulerAngles(Utils.convert(entity.getRigidBody().getPhysicsRotation(null))));
@@ -579,38 +625,7 @@ public class Game implements ILogic {
                 Tower monkey = (Tower) entity;
                 //System.out.printf("%.2f/%.2f\n", monkey.getTick(), monkey.getRate());
                 if(monkey.getTick() >= monkey.getRate()/gameSpeed) {
-                    if(bloons.size() < 1)
-                        continue;
-                    Bloon target = null;
-                    for(int b = 0; b < bloons.size(); b++) {
-                        Bloon bloon = bloons.get(b);
-                        if(bloon.isPopped()) {
-                            bloons.remove(bloon);
-                            continue;
-                        }
-                        if(bloon.getPosition().distance(monkey.getPosition()) <= monkey.getRange()) {
-                            target = bloon;
-                            break;
-                        }
-                    }
-                    if(target == null)
-                        continue;
-                    monkey.setAnimationId(monkey.getAttackAnimationId());
-                    monkey.lookAtY(new Vector3f(target.getPosition()));
-                    
-                    Projectile d = ((ITower)monkey).spawnProjectile();
-                    d.setDestinationDirection(new Vector3f(target.getPosition()));
-                    d.lookAtY(new Vector3f(target.getPosition()));
-                    d.setSource(monkey);
-                    d.setSpeed(monkey.getSpeed());
-                    d.setTarget(target);
-                    targeted.add(target);
-                    bloons.remove(target);
-
-                    darts.add(d);
-                    d.setName("dart" + darts.size());
-                    entities.put("dart" + darts.size(), d);
-                    monkey.setTick(0);
+                    ((ITower)monkey).shoot(bloons, darts, targeted);
                 }
 
                 monkey.addTick(interval);
@@ -619,49 +634,56 @@ public class Game implements ILogic {
             if(entity instanceof Projectile) {
                 Projectile dart = (Projectile) entity;
                 
-                Bloon bloon = dart.getTarget();
-                if(bloon != null) {
-                    if(bloon.isPopped()) {
-                        dart.setTarget(null);
-                    } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
-                        int result = bloon.damage(1);
-                        if(result >= 0) {
-                            int randomNumber = random.nextInt(4) + 1;
-                            audioSources.get("pop" + randomNumber).play();
-                            player.addMoney(1);
+                for(int b = 0; b < bloons.size(); b++) {
+                    Bloon bloon = bloons.get(b);
+                    if(bloon != null) {
+                        if(bloon.isPopped()) {
+                            dart.setTarget(null);
+                        } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
+                            int result = bloon.damage(dart.getDamage());
+                                if(result >= 0) {
+                                    int randomNumber = random.nextInt(4) + 1;
+                                    audioSources.get("pop" + randomNumber).play();
+                                    player.addMoney(1);
+                                    
+                                    if(result > 0) {
+                                        entities.remove(bloon.getName());
+                                        bloons.remove(bloon);
+                                        bloon.setPopped(true);
+                                    }
+                                }
                             
-                            if(result > 0) {
-                                entities.remove(bloon.getName());
-                                bloons.remove(bloon);
-                                bloon.setPopped(true);
-                            }
-                        }
-                        darts.remove(dart);
-                        entities.remove(dart.getName());
+                            dart.setEnabled(false);
+                            darts.remove(dart);
+                            entities.remove(dart.getName());
 
-                        if(dart instanceof Bomb) {
-                            audioSources.get("explosion").play();
-                            for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
-                                Bloon b = bloons.get(bloonId);
-                                if(b.getPosition().distance(dart.getPosition()) < 2) {
-                                    int r = b.damage(1);
-                                    if(r >= 0) {
-                                        int rn = random.nextInt(4) + 1;
-                                        audioSources.get("pop" + rn).play();
-                                        player.addMoney(1);
-                                        
-                                        if(result > 0) {
-                                            entities.remove(b.getName());
-                                            bloons.remove(b);
-                                            b.setPopped(true);
+                            if(dart instanceof Bomb) {
+                                audioSources.get("explosion").play();
+                                for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
+                                    Bloon bl = bloons.get(bloonId);
+                                    if(bl.getPosition().distance(dart.getPosition()) < 2) {
+                                        int r = bl.damage(1);
+                                        if(r >= 0) {
+                                            int rn = random.nextInt(4) + 1;
+                                            audioSources.get("pop" + rn).play();
+                                            player.addMoney(1);
+                                            
+                                            if(r > 0) {
+                                                entities.remove(bl.getName());
+                                                bloons.remove(bl);
+                                                bl.setPopped(true);
+                                            }
                                         }
                                     }
                                 }
                             }
+                            break;
                         }
-                        continue;
                     }
                 }
+
+                if(!dart.isEnabled())
+                    continue;
 
                 if(dart.getPosition().distance(dart.getSource().getPosition()) > 75f) {
                     darts.remove(dart);

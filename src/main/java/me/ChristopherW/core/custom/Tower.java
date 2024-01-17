@@ -2,15 +2,20 @@ package me.ChristopherW.core.custom;
 
 import org.joml.Vector3f;
 
+import me.ChristopherW.core.custom.Towers.ITower;
+
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 
 public class Tower extends AnimatedEntity{
     private int value;
-    private int range;
+    private float range;
     private float rate;
     private float speed;
+    private int damage = 1;
     private float tick;
+    private Upgrade path1;
+    private Upgrade path2;
     
     private int spawnAnimationId;
     private int postAttackAnimationId;
@@ -26,6 +31,7 @@ public class Tower extends AnimatedEntity{
         this.speed = type.speed;
         this.value = type.cost;
         this.tick = 0f;
+
         this.spawnAnimationId = 2;
         this.postAttackAnimationId = 0;
         this.attackAnimationId = 1;
@@ -38,11 +44,11 @@ public class Tower extends AnimatedEntity{
         return value;
     }
 
-    public int getRange() {
+    public float getRange() {
         return range;
     }
 
-    public void setRange(int range) {
+    public void setRange(float range) {
         this.range = range;
     }
 
@@ -71,10 +77,6 @@ public class Tower extends AnimatedEntity{
     }
     public void setTick(float tick) {
         this.tick = tick;
-    }
-
-    public void attack(){
-
     }
 
 
@@ -121,5 +123,48 @@ public class Tower extends AnimatedEntity{
     public void setPostAttackAnimationId(int postAttackAnimationId) {
         this.postAttackAnimationId = postAttackAnimationId;
     }
-    
+
+    public void setPath1(Upgrade path1) {
+        this.path1 = path1;
+    }
+
+    public void setPath2(Upgrade path2) {
+        this.path2 = path2;
+    }
+
+    public void nextPath1() {
+        this.path1 = this.path1.nextUpgrade;
+    }
+
+    public void nextPath2() {
+        this.path2 = this.path2.nextUpgrade;
+    }
+
+    public int getDamage(){
+        return this.damage;
+    }
+
+    public void setDamage(int damage){
+        this.damage = damage;
+    }
+
+    public Upgrade getPath1() {
+        return path1;
+    }
+
+    public Upgrade getPath2() {
+        return path2;
+    }
+
+    public void upgradePath(int index){
+        if(index == 1){
+            ((ITower)this).upgrade(getPath1());
+            setPath1(getPath1().nextUpgrade);
+        }
+        else if(index == 2){
+            ((ITower)this).upgrade(getPath2());
+            setPath2(getPath2().nextUpgrade);
+        }
+    }
+
 }
