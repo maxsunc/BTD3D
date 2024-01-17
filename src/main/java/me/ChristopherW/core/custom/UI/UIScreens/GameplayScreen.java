@@ -67,10 +67,10 @@ public class GameplayScreen implements IGUIScreen {
         ImGui.setNextWindowPos(0,0, 0, 0,0);
         if (ImGui.begin("gameplay_L", p_open, gm.window_flags)) {
             ImGui.text("Round 0");
-            ImGui.image(heart.getId(),32, 32);
+            ImGui.image(heart.getId(),32, 28);
             ImGui.sameLine();
             ImGui.text(String.valueOf(game.player.getLives()));
-            ImGui.image(coin.getId(),32, 32);
+            ImGui.image(coin.getId(),32, 30);
             ImGui.sameLine();
             ImGui.text(String.valueOf(game.player.getMoney()));
         }
@@ -81,7 +81,7 @@ public class GameplayScreen implements IGUIScreen {
             ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);
-            if (ImGui.imageButton((gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), 50, 50, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
+            if (ImGui.imageButton((gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), 100, 100, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
                 gameSpeedToggled = !gameSpeedToggled;
                 game.gameSpeed = (gameSpeedToggled) ? 2f : 1f;
             }
