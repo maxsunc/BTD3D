@@ -152,6 +152,11 @@ public class Game implements ILogic {
         loadSounds();
     }
 
+    public void playRandom(String[] keys) {
+        int randomNumber = random.nextInt(keys.length);
+        audioSources.get(keys[randomNumber]).play();
+    }
+
     void loadSounds() {
         try {
             // load the sound file to a buffer, then create a new audio source at the world origin with the buffer attached
@@ -159,29 +164,66 @@ public class Game implements ILogic {
             // repeat this for each sound file
             SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), true, false, 0.4f);
             audioSources.put("jazz", jazz);
-            SoundSource tower_place = soundManager.createSound("tower_place", "assets/sounds/tower_place.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("tower_place", tower_place);
+            SoundSource jazzHD = soundManager.createSound("jazzHD", "assets/sounds/MusicBTD5JazzA.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("jazzHD", jazzHD);
+            SoundSource upbeat = soundManager.createSound("upbeat", "assets/sounds/MusicUpbeat1A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("upbeat", upbeat);
+
+            SoundSource tower_place_1 = soundManager.createSound("tower_place_1", "assets/sounds/PlaceTowerMonkey01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("tower_place_1", tower_place_1);
+            SoundSource tower_place_2 = soundManager.createSound("tower_place_2", "assets/sounds/PlaceTowerMonkey02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("tower_place_2", tower_place_2);
             
-            SoundSource pop1 = soundManager.createSound("pop1", "assets/sounds/pop1.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop1", pop1);
-            SoundSource pop2 = soundManager.createSound("pop2", "assets/sounds/pop2.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop2", pop2);
-            SoundSource pop3 = soundManager.createSound("pop3", "assets/sounds/pop3.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop3", pop3);
-            SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/pop4.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop4", pop4);
+            SoundSource pop1 = soundManager.createSound("pop1", "assets/sounds/Pop01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_1", pop1);
+            SoundSource pop2 = soundManager.createSound("pop2", "assets/sounds/Pop02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_2", pop2);
+            SoundSource pop3 = soundManager.createSound("pop3", "assets/sounds/Pop03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_3", pop3);
+            SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/Pop04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_4", pop4);
 
-            SoundSource explosion = soundManager.createSound("explosion", "assets/sounds/explosion_small.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("explosion", explosion);
+            SoundSource explosion_1 = soundManager.createSound("explosion_1", "assets/sounds/Explosion01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_1", explosion_1);
+            SoundSource explosion_2 = soundManager.createSound("explosion_2", "assets/sounds/Explosion02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_2", explosion_2);
+            SoundSource explosion_3 = soundManager.createSound("explosion_3", "assets/sounds/Explosion03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_3", explosion_3);
+            SoundSource explosion_4 = soundManager.createSound("explosion_4", "assets/sounds/Explosion04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_4", explosion_4);
+            SoundSource explosion_5 = soundManager.createSound("explosion_5", "assets/sounds/Explosion05.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_5", explosion_5);
 
-            SoundSource moab_damage = soundManager.createSound("moab_damage", "assets/sounds/moab_damage.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("moab_damage", moab_damage);
-            SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/moab_destroyed_short.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            SoundSource moab_damage_1 = soundManager.createSound("moab_damage_1", "assets/sounds/HitMoab01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_1", moab_damage_1);
+            SoundSource moab_damage_2 = soundManager.createSound("moab_damage_2", "assets/sounds/HitMoab02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_2", moab_damage_2);
+            SoundSource moab_damage_3 = soundManager.createSound("moab_damage_3", "assets/sounds/HitMoab03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_3", moab_damage_3);
+            SoundSource moab_damage_4 = soundManager.createSound("moab_damage_4", "assets/sounds/HitMoab04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_4", moab_damage_4);
+
+
+            SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/MoabDestroyed03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("moab_destroyed", moab_destroyed);
-            SoundSource ceramic_hit = soundManager.createSound("ceramic_hit", "assets/sounds/ceramic_hit.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("ceramic_hit", ceramic_hit);
 
-            SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            SoundSource ceramic_destroy_1 = soundManager.createSound("ceramic_destroy_1", "assets/sounds/CeramicDestroyed01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_destroy_1.getName(), ceramic_destroy_1);
+            SoundSource ceramic_destroy_2 = soundManager.createSound("ceramic_destroy_2", "assets/sounds/CeramicDestroyed02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_destroy_2.getName(), ceramic_destroy_2);
+            SoundSource ceramic_destroy_3 = soundManager.createSound("ceramic_destroy_3", "assets/sounds/CeramicDestroyed04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_destroy_3.getName(), ceramic_destroy_3);
+
+            SoundSource ceramic_hit_1 = soundManager.createSound("ceramic_hit_1", "assets/sounds/HitCeramic01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_1.getName(), ceramic_hit_1);
+            SoundSource ceramic_hit_2 = soundManager.createSound("ceramic_hit_2", "assets/sounds/HitCeramic02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_2.getName(), ceramic_hit_2);
+            SoundSource ceramic_hit_3 = soundManager.createSound("ceramic_hit_3", "assets/sounds/HitCeramic03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_3.getName(), ceramic_hit_3);
+            SoundSource ceramic_hit_4 = soundManager.createSound("ceramic_hit_4", "assets/sounds/HitCeramic04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_4.getName(), ceramic_hit_4);
+
+            SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade_hd.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("upgrade", upgrade);
 
         } catch (Exception e) {
@@ -290,7 +332,7 @@ public class Game implements ILogic {
         previewWhite = new Material(loader.createTextureColor(Color.WHITE));
         
 
-        audioSources.get("jazz").play();
+        playRandom(new String[]{"upbeat", "jazzHD"});
     }
 
     int i = 0;
@@ -377,7 +419,7 @@ public class Game implements ILogic {
                     monkeys.add(monkey);
                     monkey.setAnimationId(monkey.getSpawnAnimationId());
                     entities.put("monkey" + monkeys.size(), monkey);
-                    audioSources.get("tower_place").play();
+                    playRandom(new String[]{"tower_place_1", "tower_place_2"});
                     player.removeMoney(monkey.getValue());
                     monkeyMode = 0;
                 }
@@ -665,11 +707,10 @@ public class Game implements ILogic {
                         } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
                             int result = bloon.damage(dart.getDamage());
                                 if(result >= 0) {
-                                    int randomNumber = random.nextInt(4) + 1;
-                                    audioSources.get("pop" + randomNumber).play();
-                                    player.addMoney(1);
+                                    playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                                     
                                     if(result > 0) {
+                                        player.addMoney(1);
                                         entities.remove(bloon.getName());
                                         bloons.remove(bloon);
                                         bloon.setPopped(true);
@@ -681,14 +722,13 @@ public class Game implements ILogic {
                             entities.remove(dart.getName());
 
                             if(dart instanceof Bomb) {
-                                audioSources.get("explosion").play();
+                                playRandom(new String[]{"explosion_1", "explosion_2", "explosion_3", "explosion_4", "explosion_5"});
                                 for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
                                     Bloon bl = bloons.get(bloonId);
                                     if(bl.getPosition().distance(dart.getPosition()) < 2) {
                                         int r = bl.damage(1);
                                         if(r >= 0) {
-                                            int rn = random.nextInt(4) + 1;
-                                            audioSources.get("pop" + rn).play();
+                                            playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                                             player.addMoney(1);
                                             
                                             if(r > 0) {
@@ -772,7 +812,12 @@ public class Game implements ILogic {
             int xPos = (int)x[0];
             int yPos = window.getHeight() - (int)y[0];
             GL11.glReadPixels(xPos, yPos, 1, 1, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, depthBuffer);
-            float depth = depthBuffer.get();
+            float depth = Float.MAX_VALUE;
+            try {
+                depth = depthBuffer.get();
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
         
             vec.z = 2.0f * depth - 1.0f;
             vec.w = 1.0f;

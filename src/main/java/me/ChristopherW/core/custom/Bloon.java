@@ -75,6 +75,11 @@ public class Bloon extends Entity{
     }
     
     public int damage(int amount){
+        Game game = Launcher.getGame();
+
+        if(this.health <= 0 && type == BloonType.RED)
+            return -1;
+
         this.health -= amount;
 
         if(this.health <= 0) {
@@ -86,7 +91,6 @@ public class Bloon extends Entity{
                         this.setScale(0.5f);
                         Game.audioSources.get("moab_destroyed").play();
         
-                        Game game = Launcher.getGame();
                         Vector3f diff = new Vector3f();
                         game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
                         for(int i = 0; i < 9; i++) {
@@ -111,7 +115,8 @@ public class Bloon extends Entity{
                         }
                     }
                     if(type == BloonType.CERAMIC) {
-                        Game game = Launcher.getGame();
+                        game.playRandom(new String[]{"ceramic_destroy_1", "ceramic_destroy_2", "ceramic_destroy_3"});
+
                         Vector3f diff = new Vector3f();
                         game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
                         for(int i = 0; i < 7; i++) {
@@ -147,7 +152,7 @@ public class Bloon extends Entity{
         }
 
         if(type == BloonType.MOAB) {
-            Game.audioSources.get("moab_damage").play();
+            game.playRandom(new String[]{"moab_damage_1", "moab_damage_2", "moab_damage_3", "moab_damage_4"});
             if(this.health < 40) {
                 this.getModel().setAllMaterials(new Material(1f, 5f, Game.MOAB_4));
             }
@@ -162,7 +167,7 @@ public class Bloon extends Entity{
             }
         }
         else if(type == BloonType.CERAMIC) {
-            Game.audioSources.get("ceramic_hit").play();
+            game.playRandom(new String[]{"ceramic_hit_1", "ceramic_hit_2", "ceramic_hit_3", "ceramic_hit_4"});
         }
         
         return -1;

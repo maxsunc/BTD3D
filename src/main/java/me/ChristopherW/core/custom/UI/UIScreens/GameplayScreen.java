@@ -40,24 +40,24 @@ public class GameplayScreen implements IGUIScreen {
         ImVec2 currentCursor = new ImVec2(ImGui.getCursorPos());
         int size = 2;
         ImGui.setCursorPos(currentCursor.x - size,  currentCursor.y - size);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
         ImGui.setCursorPos(currentCursor.x + size,  currentCursor.y - size);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
         ImGui.setCursorPos(currentCursor.x - size,  currentCursor.y + size);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
         ImGui.setCursorPos(currentCursor.x + size,  currentCursor.y + size);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
         ImGui.setCursorPos(currentCursor.x,  currentCursor.y - size);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
         ImGui.setCursorPos(currentCursor.x,  currentCursor.y + size);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
         ImGui.setCursorPos(currentCursor.x - size,  currentCursor.y);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
         ImGui.setCursorPos(currentCursor.x + size,  currentCursor.y);
-        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.textColored(outline.getRed(), outline.getGreen(), outline.getBlue(), outline.getAlpha(), text);
 
         ImGui.setCursorPos(currentCursor.x, currentCursor.y);
-        ImGui.textColored(fill.getRed(), fill.getBlue(), fill.getGreen(), fill.getAlpha(), text);
+        ImGui.textColored(fill.getRed(), fill.getGreen(), fill.getBlue(), fill.getAlpha(), text);
     }
 
     @Override
@@ -204,6 +204,7 @@ public class GameplayScreen implements IGUIScreen {
             if(game.currentTowerInspecting != null) {
                 Tower selected = game.currentTowerInspecting;
                 ImGui.setCursorPosX(ImGui.getCursorPosX() + panelWidth/2 - (upgradeSize * 1.25f));
+                ImVec2 panelPos1 = ImGui.getCursorPos();
                 ImGui.image(upgradePanel.getId(), upgradeSize * 1.25f, upgradeSize);
 
                 Upgrade nextUpgrade1 = selected.getPath1().nextUpgrade;
@@ -215,16 +216,39 @@ public class GameplayScreen implements IGUIScreen {
                     ordinal1 = nextUpgrade1.ordinal();
                     name1 = nextUpgrade1.name;
                 }
+
                 boolean affordable = costValue1 <= game.player.getMoney();
                 ImGui.sameLine();
                 ImGui.setCursorPosX(ImGui.getCursorPosX() - 15);
                 ImVec2 old = ImGui.getCursorPos();
                 ImGui.image(affordable ? upgrade.getId() : upgradeDisabled.getId(), upgradeSize * 1.25f, upgradeSize);
+
+                Upgrade currentUpgrade1 = selected.getPath1();
+                String currentName1 = currentUpgrade1.name;
+
+                if(!currentName1.equals("")) {
+                    ImGui.setCursorPos(panelPos1.x + (upgradeSize/2 - upgradeIconSize/2), panelPos1.y + (upgradeSize/2 - upgradeIconSize/2));
+                    ImGui.image(Game.upgradeTextures[currentUpgrade1.ordinal()].getId(), upgradeIconSize, upgradeIconSize);
+                    ImGui.setCursorPos(panelPos1.x, panelPos1.y);
+                    ImGui.popFont();
+                    ImGui.pushFont(gm.monkeyFontTiny);
+                    ImVec2 currentNameDim = ImGui.calcTextSize(currentName1);
+                    ImGui.setCursorPos(panelPos1.x + upgradeSize/2 - currentNameDim.x/2, panelPos1.y);
+                    textOutline(currentName1, Color.white, Color.black);
+                    ImGui.popFont();
+                    ImGui.pushFont(gm.monkeyFontSmall);
+                    ImVec2 ownerDim = ImGui.calcTextSize("OWNED");
+                    ImGui.setCursorPos(panelPos1.x + upgradeSize/2 - ownerDim.x/2, panelPos1.y + upgradeSize);
+                    textOutline("OWNED", Color.GREEN, Color.black);
+                    ImGui.popFont();
+                    ImGui.pushFont(gm.monkeyFontTiny);
+                }
+
                 ImGui.setCursorPos(old.x + (upgradeSize * 0.25f) + (upgradeSize/2 - upgradeIconSize/2), old.y + (upgradeSize/2 - upgradeIconSize/2));
 
                 ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
                 ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
-                ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 1, 1, 1, affordable ? 0.25f : 0f);
+                ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 1, 1, 1, 0f);
                 if(ImGui.imageButton(Game.upgradeTextures[ordinal1].getId(), upgradeIconSize, upgradeIconSize)) {
                     if(nextUpgrade1 != null && affordable) {
                         game.player.removeMoney(selected.getPath1().nextUpgrade.cost);
@@ -240,8 +264,19 @@ public class GameplayScreen implements IGUIScreen {
                 ImVec2 upgradeNameDim = ImGui.calcTextSize(upgradeName);
                 ImGui.setCursorPos(old.x + upgradeSize/2 - upgradeNameDim.x/2 + (upgradeSize * 0.25f), old.y);
                 textOutline(upgradeName, Color.white, Color.black);
+                if(costValue1 == Integer.MAX_VALUE) {
+                    String max = "Max";
+                    String upgrade = "Upgrades";
+                    ImVec2 maxDim = ImGui.calcTextSize(max);
+                    ImVec2 upgradeDim = ImGui.calcTextSize(upgrade);
+                    ImGui.setCursorPos(old.x + upgradeSize/2 - maxDim.x/2 + (upgradeSize * 0.2f), old.y + upgradeSize/2 - gm.window.getHeight()/48);
+                    textOutline(max, Color.white, Color.black);
+                    ImGui.setCursorPos(old.x + upgradeSize/2 - upgradeDim.x/2 + (upgradeSize * 0.2f), old.y + upgradeSize/2);
+                    textOutline(upgrade, Color.white, Color.black);
+                }
                 ImGui.popFont();
                 ImGui.pushFont(gm.monkeyFontSmall);
+
                 String cost = costValue1 == Integer.MAX_VALUE ? "" : "$" + String.valueOf(costValue1);
                 ImVec2 costDim = ImGui.calcTextSize(cost);
                 ImGui.setCursorPos(old.x + upgradeSize/2 - costDim.x/2 + (upgradeSize * 0.25f), old.y + upgradeSize);
@@ -262,16 +297,39 @@ public class GameplayScreen implements IGUIScreen {
                 ImGui.popFont();
                 ImGui.pushFont(gm.monkeyFontTiny);
                 ImGui.setCursorPosX(ImGui.getCursorPosX() + panelWidth/2 - (upgradeSize * 1.25f));
+                ImVec2 panelPos2 = ImGui.getCursorPos();
                 ImGui.image(upgradePanel.getId(), upgradeSize * 1.25f, upgradeSize);
                 ImGui.sameLine();
                 ImGui.setCursorPosX(ImGui.getCursorPosX() - 15);
                 old = ImGui.getCursorPos();
                 ImGui.image(affordable2 ? upgrade.getId() : upgradeDisabled.getId(), upgradeSize * 1.25f, upgradeSize);
+
+                Upgrade currentUpgrade2 = selected.getPath2();
+                String currentName2 = currentUpgrade2.name;
+
+                if(!currentName2.equals("")) {
+                    ImGui.setCursorPos(panelPos2.x + (upgradeSize/2 - upgradeIconSize/2), panelPos2.y + (upgradeSize/2 - upgradeIconSize/2));
+                    ImGui.image(Game.upgradeTextures[currentUpgrade2.ordinal()].getId(), upgradeIconSize, upgradeIconSize);
+                    ImGui.setCursorPos(panelPos2.x, panelPos2.y);
+                    ImGui.popFont();
+                    ImGui.pushFont(gm.monkeyFontTiny);
+                    ImVec2 currentNameDim = ImGui.calcTextSize(currentName2);
+                    ImGui.setCursorPos(panelPos2.x + upgradeSize/2 - currentNameDim.x/2, panelPos2.y);
+                    textOutline(currentName2, Color.white, Color.black);
+                    ImGui.popFont();
+                    ImGui.pushFont(gm.monkeyFontSmall);
+                    ImVec2 ownerDim = ImGui.calcTextSize("OWNED");
+                    ImGui.setCursorPos(panelPos2.x + upgradeSize/2 - ownerDim.x/2, panelPos2.y + upgradeSize);
+                    textOutline("OWNED", Color.green, Color.black);
+                    ImGui.popFont();
+                    ImGui.pushFont(gm.monkeyFontTiny);
+                }
+
                 ImGui.setCursorPos(old.x + (upgradeSize * 0.25f) + (upgradeSize/2 - upgradeIconSize/2), old.y + (upgradeSize/2 - upgradeIconSize/2));
 
                 ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
                 ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
-                ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 1, 1, 1, affordable2 ? 0.25f : 0f);
+                ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 1, 1, 1, 0f);
                 if(ImGui.imageButton(Game.upgradeTextures[ordinal2].getId(), upgradeIconSize, upgradeIconSize)) {
                     if(nextUpgrade2 != null && affordable2) {
                         game.player.removeMoney(selected.getPath2().nextUpgrade.cost);
@@ -285,6 +343,16 @@ public class GameplayScreen implements IGUIScreen {
                 ImVec2 upgradeNameDim2 = ImGui.calcTextSize(upgradeName2);
                 ImGui.setCursorPos(old.x + upgradeSize/2 - upgradeNameDim2.x/2 + (upgradeSize * 0.25f), old.y);
                 textOutline(upgradeName2, Color.white, Color.black);
+                if(costValue2 == Integer.MAX_VALUE) {
+                    String max = "Max";
+                    String upgrade = "Upgrades";
+                    ImVec2 maxDim = ImGui.calcTextSize(max);
+                    ImVec2 upgradeDim = ImGui.calcTextSize(upgrade);
+                    ImGui.setCursorPos(old.x + upgradeSize/2 - maxDim.x/2 + (upgradeSize * 0.2f), old.y + upgradeSize/2 - gm.window.getHeight()/48);
+                    textOutline(max, Color.white, Color.black);
+                    ImGui.setCursorPos(old.x + upgradeSize/2 - upgradeDim.x/2 + (upgradeSize * 0.2f), old.y + upgradeSize/2);
+                    textOutline(upgrade, Color.white, Color.black);
+                }
                 ImGui.popFont();
                 ImGui.pushFont(gm.monkeyFontSmall);
                 String cost2 = costValue2 == Integer.MAX_VALUE ? "" : "$" + String.valueOf(costValue2);
