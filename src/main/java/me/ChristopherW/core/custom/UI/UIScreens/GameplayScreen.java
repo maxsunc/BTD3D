@@ -3,6 +3,7 @@ package me.ChristopherW.core.custom.UI.UIScreens;
 import imgui.ImGui;
 import imgui.ImGuiStyle;
 import imgui.ImVec2;
+import java.awt.Color;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiColorEditFlags;
 import imgui.flag.ImGuiStyleVar;
@@ -29,6 +30,30 @@ public class GameplayScreen implements IGUIScreen {
     Texture shop;
     boolean gameSpeedToggled = false;
     Texture[] tower_icons = new Texture[8];
+
+    private void textOutline(String text, Color fill, Color outline) {
+        ImVec2 currentCursor = new ImVec2(ImGui.getCursorPos());
+        int size = 2;
+        ImGui.setCursorPos(currentCursor.x - size,  currentCursor.y - size);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.setCursorPos(currentCursor.x + size,  currentCursor.y - size);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.setCursorPos(currentCursor.x - size,  currentCursor.y + size);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.setCursorPos(currentCursor.x + size,  currentCursor.y + size);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.setCursorPos(currentCursor.x,  currentCursor.y - size);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.setCursorPos(currentCursor.x,  currentCursor.y + size);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.setCursorPos(currentCursor.x - size,  currentCursor.y);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+        ImGui.setCursorPos(currentCursor.x + size,  currentCursor.y);
+        ImGui.textColored(outline.getRed(), outline.getBlue(), outline.getGreen(), outline.getAlpha(), text);
+
+        ImGui.setCursorPos(currentCursor.x, currentCursor.y);
+        ImGui.textColored(fill.getRed(), fill.getBlue(), fill.getGreen(), fill.getAlpha(), text);
+    }
 
     @Override
     public void start() {
@@ -77,13 +102,14 @@ public class GameplayScreen implements IGUIScreen {
         ImGui.setNextWindowSize(0, 0);
         ImGui.setNextWindowPos(0,0, 0, 0,0);
         if (ImGui.begin("gameplay_L", p_open, gm.window_flags)) {
-            ImGui.text("Round 0");
+            textOutline("Round", Color.white, Color.black);
             ImGui.image(heart.getId(),32, 28);
             ImGui.sameLine();
-            ImGui.text(String.valueOf(game.player.getLives()));
+            textOutline(String.valueOf(game.player.getLives()), Color.white, Color.black);
+            ImGui.sameLine();
             ImGui.image(coin.getId(),32, 30);
             ImGui.sameLine();
-            ImGui.text(String.valueOf(game.player.getMoney()));
+            textOutline(String.valueOf(game.player.getMoney()), Color.white, Color.black);
         }
         ImGui.end();
 

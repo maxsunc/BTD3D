@@ -53,8 +53,8 @@ public class GUIManager {
         fontConfig.setGlyphRanges(fontAtlas.getGlyphRangesDefault());
         fontConfig.setPixelSnapH(true);
         fontAtlas.addFontDefault();
-        monkeyFont = fontAtlas.addFontFromFileTTF("assets/fonts/monkey_font.ttf", 34f, fontConfig);
-        monkeyFontSmall = fontAtlas.addFontFromFileTTF("assets/fonts/monkey_font.ttf", 20f, fontConfig);
+        monkeyFont = fontAtlas.addFontFromFileTTF("assets/fonts/lucky_font.ttf", 34f, fontConfig);
+        monkeyFontSmall = fontAtlas.addFontFromFileTTF("assets/fonts/lucky_font.ttf", 20f, fontConfig);
         font = fontAtlas.addFontFromFileTTF("assets/fonts/mont-heavy.ttf", 34f, fontConfig);
         fontSmall = fontAtlas.addFontFromFileTTF("assets/fonts/mont-heavy.ttf", 17f, fontConfig);
         fontAtlas.build();
