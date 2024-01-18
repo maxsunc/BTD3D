@@ -100,7 +100,7 @@ public class GameplayScreen implements IGUIScreen {
 
             ImGui.popFont();
             ImGui.pushFont(gm.monkeyFontSmall);
-            String title = "Dart Monkey";
+            String title = game.monkeyMode > 0 ? TowerType.values()[game.monkeyMode - 1].name : "Shop";
             ImVec2 textDim = ImGui.calcTextSize(title);
             ImGui.setCursorPos(panelWidth/2 - textDim.x/2, panelHeight/24);
             ImGui.text(title);
@@ -111,7 +111,7 @@ public class GameplayScreen implements IGUIScreen {
             for(int i = 0; i < TowerType.values().length; i++) {
                 TowerType t = TowerType.values()[i];
 
-                ImGui.setCursorPos(panelWidth/7 + (currentX * (towerImageSize + gm.window.getWidth()/256)), panelHeight/10 + (currentY * (towerImageSize + gm.window.getWidth()/256)));
+                ImGui.setCursorPos(panelWidth/7 + (currentX * (towerImageSize + gm.window.getWidth()/256)), panelHeight/10 + (currentY * (towerImageSize + gm.window.getWidth()/64)));
                 ImVec2 oldCursor = ImGui.getCursorPos();
                 switch (t.towerClass) {
                     case PRIMARY:
@@ -124,7 +124,23 @@ public class GameplayScreen implements IGUIScreen {
                 }
                 ImGui.setCursorPos(oldCursor.x, oldCursor.y);
 
-                ImGui.image(tower_icons[i].getId(), towerImageSize, towerImageSize);
+                ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
+                ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
+                ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 1, 1, 1, 0.25f);
+                if(ImGui.imageButton(tower_icons[i].getId(), towerImageSize, towerImageSize)) {
+                    game.monkeyMode = (Integer.valueOf(i) + 1);
+                }
+                ImGui.popStyleColor(3);
+
+                if(game.player.getMoney() >= TowerType.values()[i].cost)
+                    ImGui.pushStyleColor(ImGuiCol.Text, 1f,1f,1f,1f);
+                else
+                    ImGui.pushStyleColor(ImGuiCol.Text, 1f,0.25f,0.25f,1f);
+                String cost = "$" + String.valueOf(TowerType.values()[i].cost);
+                ImVec2 costSize = ImGui.calcTextSize(cost);
+                ImGui.setCursorPos(oldCursor.x + towerImageSize/2 - costSize.x/2, oldCursor.y + towerImageSize);
+                ImGui.text(cost);
+                ImGui.popStyleColor();
 
                 currentX++;
                 if(currentX > 1) {
@@ -134,7 +150,7 @@ public class GameplayScreen implements IGUIScreen {
             }
 
             float imageSize = panelHeight * 0.1388f;
-            ImGui.setCursorPos(panelWidth/2 - imageSize/2, panelHeight - panelHeight/4);
+            ImGui.setCursorPos(panelWidth/2 - imageSize/2, panelHeight - panelHeight/5);
             ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);

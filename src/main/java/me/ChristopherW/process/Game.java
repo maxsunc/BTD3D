@@ -82,6 +82,7 @@ public class Game implements ILogic {
     public static HashMap<String, SoundSource> audioSources = new HashMap<>();
     public Map<String, Entity> entities;
     
+    public FloatBuffer depthBuffer;
 
     public static PhysicsSpace physicsSpace;
     private Camera camera;
@@ -129,6 +130,7 @@ public class Game implements ILogic {
         // create new instances for these things
         renderer = new RenderManager();
         window = Launcher.getWindow();
+        depthBuffer = BufferUtils.createFloatBuffer(window.getWidth() * window.getHeight());
         loader = new ObjectLoader();
 
         // setup sound system
@@ -294,23 +296,33 @@ public class Game implements ILogic {
                     if(monkeys.size() < 1){
                         return;
                     }
+
+                    if(dMouse.distance(input.getCurrentPos()) > 2)
+                        return;
+
                     // check for towers to inspect
                     float shortestDistance = Float.MAX_VALUE;
                     Tower closestTower = monkeys.get(0);
                     for(int i = 0; i < monkeys.size(); i++){
+                        monkeys.get(i).getModel().setAllColorBlending(0f);
                         float distance = mouseWorldPos.distance(monkeys.get(i).getPosition());
                         if(shortestDistance > distance){
                             closestTower = monkeys.get(i);
                             shortestDistance = distance;
                         }
                     }
-                    currentTowerInspecting = closestTower;
-                    System.out.println("INSPECTING " + currentTowerInspecting);
+                    if(closestTower.getPosition().distance(mouseWorldPos) < 2f) {
+                        currentTowerInspecting = closestTower;
+                        closestTower.getModel().setAllColorBlending(0.5f);
+                    }
                 }
                 else if(isInvalid){
                     return;
                 }
                 else if(dMouse.distance(input.getCurrentPos()) < 2f) {
+                    if(input.getCurrentPos().x > (this.window.getWidth() - this.window.getHeight() * 0.3f))
+                        return;
+
                     Tower monkey;
                     TowerType type = TowerType.values()[monkeyMode - 1];
 
@@ -355,6 +367,7 @@ public class Game implements ILogic {
                     entities.put("monkey" + monkeys.size(), monkey);
                     audioSources.get("tower_place").play();
                     player.removeMoney(monkey.getValue());
+                    monkeyMode = 0;
                 }
             }
         }
@@ -383,11 +396,10 @@ public class Game implements ILogic {
             if(key ==GLFW.GLFW_KEY_9)
                 spawnNewBloonOnNextTick = 8;
 
-            if(key ==GLFW.GLFW_KEY_SPACE) {
-                monkeyMode++;
-                if(monkeyMode > 3)
-                    monkeyMode = 0;
+            if(key ==GLFW.GLFW_KEY_ESCAPE) {
+                monkeyMode = 0;
             }
+
             if(key == GLFW.GLFW_KEY_Q){
                 if(currentTowerInspecting != null){
                     // check if it's not null
@@ -711,7 +723,6 @@ public class Game implements ILogic {
     } 
 
     
-    FloatBuffer depthBuffer = BufferUtils.createFloatBuffer(1920*1080);
     @Override
     public void render() throws Exception {
         // if the window was resized, update the OpenGL viewport to match

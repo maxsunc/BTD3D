@@ -9,6 +9,8 @@ in float visibility;
 out vec4 fragColor;
 
 struct Material {
+    vec4 color;
+    float colorBlending;
     float specular;
     float reflectability;
     int hasTexture;
@@ -92,7 +94,7 @@ void main() {
 
     float shadow = ShadowCalculation(fragPosLightSpace); 
     vec4 result = (textureColor * (ambientColor + ((1.0 - shadow) * (diffuseColor + specularColor))));
-    fragColor = result;
+    fragColor = mix(result, material.color, material.colorBlending);
     if(showFog == 1) {
         fragColor = mix(skyColor, fragColor, visibility);
     }
