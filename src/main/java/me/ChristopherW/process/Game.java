@@ -709,8 +709,8 @@ public class Game implements ILogic {
                                 if(result >= 0) {
                                     playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                                     
+                                    player.addMoney(1);
                                     if(result > 0) {
-                                        player.addMoney(1);
                                         entities.remove(bloon.getName());
                                         bloons.remove(bloon);
                                         bloon.setPopped(true);

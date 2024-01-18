@@ -172,7 +172,7 @@ public class WindowManager {
             }
             
         });
-        
+        GLFW.glfwSetWindowSizeLimits(window, 1280, 720, GLFW.GLFW_DONT_CARE, GLFW.GLFW_DONT_CARE);
         // make the window visible
         GLFW.glfwShowWindow(window);
 

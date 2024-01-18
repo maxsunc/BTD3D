@@ -5,8 +5,8 @@ public class Player {
     private int money;
 
     public Player() {
-        this.lives = 100;
-        this.money = 6000;
+        this.lives = 200;
+        this.money = 650;
     }
 
     public int getLives() {
