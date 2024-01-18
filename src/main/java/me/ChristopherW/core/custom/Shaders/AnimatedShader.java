@@ -24,12 +24,16 @@ public class AnimatedShader extends ShaderManager implements IShader {
 
     public void createMaterialUniform(String uniformName) throws Exception {
         createUniform(uniformName + ".specular");
+        createUniform(uniformName + ".color");
+        createUniform(uniformName + ".colorBlending");
         createUniform(uniformName + ".hasTexture");
         createUniform(uniformName + ".reflectability");
     }
 
     public void setUniform(String uniformName, Material material) {
         setUniform(uniformName + ".specular", material.getSpecular());
+        setUniform(uniformName + ".color", material.getColorFilter());
+        setUniform(uniformName + ".colorBlending", material.getColorBlending());
         setUniform(uniformName + ".hasTexture", material.hasTexture() ? 1 : 0);
         setUniform(uniformName + ".reflectability", material.getReflectability());
     }

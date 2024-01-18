@@ -164,6 +164,14 @@ public class WindowManager {
                 Launcher.getGame().onScroll(dy);
             }
         });
+
+        GLFW.glfwSetWindowSizeCallback(window, new GLFWWindowSizeCallback() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                Launcher.getGame().depthBuffer = BufferUtils.createFloatBuffer(width * height);
+            }
+            
+        });
         
         // make the window visible
         GLFW.glfwShowWindow(window);

@@ -2,6 +2,8 @@ package me.ChristopherW.core.entity;
 
 import java.util.HashMap;
 
+import org.joml.Vector4f;
+
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 
 public class Model {
@@ -13,6 +15,31 @@ public class Model {
             mesh.setMaterial(material);
         }
     }
+
+    public void setAllSpecular(float specular) {
+        for(Mesh mesh : meshes.values()) {
+            mesh.getMaterial().setSpecular(specular);;
+        }
+    }
+
+    public void setAllReflectability(float ref) {
+        for(Mesh mesh : meshes.values()) {
+            mesh.getMaterial().setReflectability(ref);
+        }
+    }
+
+    public void setAllColorFilter(Vector4f color) {
+        for(Mesh mesh : meshes.values()) {
+            mesh.getMaterial().setColorFilter(color);
+        }
+    }
+
+    public void setAllColorBlending(float blending) {
+        for(Mesh mesh : meshes.values()) {
+            mesh.getMaterial().setColorBlending(blending);
+        }
+    }
+
 
     public Mesh setMesh(String key, Mesh mesh) {
         return this.meshes.put(key, mesh);

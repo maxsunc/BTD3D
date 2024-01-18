@@ -6,7 +6,7 @@ public class Player {
 
     public Player() {
         this.lives = 100;
-        this.money = 60050;
+        this.money = 650;
     }
 
     public int getLives() {
