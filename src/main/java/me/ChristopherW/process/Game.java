@@ -44,6 +44,7 @@ import me.ChristopherW.core.custom.Bomb;
 import me.ChristopherW.core.custom.Projectile;
 import me.ChristopherW.core.custom.Tower;
 import me.ChristopherW.core.custom.TowerType;
+import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.Player;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.Bone;
@@ -109,6 +110,8 @@ public class Game implements ILogic {
     public static Texture MOAB_3;
     public static Texture MOAB_4;
 
+    public static Texture[] upgradeTextures;
+
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
     public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
     private ArrayList<Projectile> darts = new ArrayList<Projectile>();
@@ -119,7 +122,7 @@ public class Game implements ILogic {
     // temp
     //private Entity[] nodes = new Entity[5];
     private float sphereRadius = 1.2f;
-    private Tower currentTowerInspecting;
+    public Tower currentTowerInspecting;
     public float gameSpeed = 1.0f;
     public Player player;
     public int bloonCounter = 0;    
@@ -208,6 +211,11 @@ public class Game implements ILogic {
         MOAB_2 = loader.createTexture("assets/textures/materials/MoabDamage2Diffuse.png");
         MOAB_3 = loader.createTexture("assets/textures/materials/MoabDamage3Diffuse.png");
         MOAB_4 = loader.createTexture("assets/textures/materials/MoabDamage4Diffuse.png");
+
+        upgradeTextures = new Texture[32];
+        for(int i = 0; i < Upgrade.values().length; i++) {
+            upgradeTextures[i] = loader.createTexture("assets/textures/Upgrades/" + (i) + ".png");
+        }
 
         player = new Player();
 
@@ -300,7 +308,11 @@ public class Game implements ILogic {
                     if(dMouse.distance(input.getCurrentPos()) > 2)
                         return;
 
+                    if(input.getCurrentPos().x > (this.window.getWidth() - this.window.getHeight() * 0.3f) && input.getCurrentPos().y > this.window.getHeight()*0.4)
+                        return;
+
                     // check for towers to inspect
+                    currentTowerInspecting = null;
                     float shortestDistance = Float.MAX_VALUE;
                     Tower closestTower = monkeys.get(0);
                     for(int i = 0; i < monkeys.size(); i++){
@@ -406,10 +418,9 @@ public class Game implements ILogic {
                     if(currentTowerInspecting.getPath1().nextUpgrade != null)
                     // check if you can buy it
                     if(currentTowerInspecting.getPath1().nextUpgrade.cost <= player.getMoney()){
-                    player.removeMoney(currentTowerInspecting.getPath1().nextUpgrade.cost);
-                    System.out.println("bought " + currentTowerInspecting.getPath1().nextUpgrade.name);
-                    currentTowerInspecting.upgradePath(1);
-                    audioSources.get("upgrade").play();
+                        player.removeMoney(currentTowerInspecting.getPath1().nextUpgrade.cost);
+                        currentTowerInspecting.upgradePath(1);
+                        audioSources.get("upgrade").play();
                     }
                 }
             }

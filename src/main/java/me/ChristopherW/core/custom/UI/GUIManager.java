@@ -28,7 +28,9 @@ public class GUIManager {
     public ImFont font;
     public ImFont fontSmall;
     public ImFont monkeyFont;
+    public ImFont monkeyFontMedium;
     public ImFont monkeyFontSmall;
+    public ImFont monkeyFontTiny;
     ImGuiIO io;
     public int window_flags;
     int location = 0;
@@ -54,7 +56,9 @@ public class GUIManager {
         fontConfig.setPixelSnapH(true);
         fontAtlas.addFontDefault();
         monkeyFont = fontAtlas.addFontFromFileTTF("assets/fonts/lucky_font.ttf", 34f, fontConfig);
+        monkeyFontMedium = fontAtlas.addFontFromFileTTF("assets/fonts/lucky_font.ttf", 27f, fontConfig);
         monkeyFontSmall = fontAtlas.addFontFromFileTTF("assets/fonts/lucky_font.ttf", 20f, fontConfig);
+        monkeyFontTiny = fontAtlas.addFontFromFileTTF("assets/fonts/lucky_font.ttf", 12f, fontConfig);
         font = fontAtlas.addFontFromFileTTF("assets/fonts/mont-heavy.ttf", 34f, fontConfig);
         fontSmall = fontAtlas.addFontFromFileTTF("assets/fonts/mont-heavy.ttf", 17f, fontConfig);
         fontAtlas.build();
