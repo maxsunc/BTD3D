@@ -32,6 +32,10 @@ public class GameplayScreen implements IGUIScreen {
     Texture upgrade;
     Texture upgradeDisabled;
     Texture upgradePanel;
+    Texture cancel;
+    Texture play;
+    Texture music;
+    Texture musicDisabled;
     Texture shop;
     boolean gameSpeedToggled = false;
     Texture[] tower_icons = new Texture[8];
@@ -74,6 +78,11 @@ public class GameplayScreen implements IGUIScreen {
         upgrade = loader.createTexture("assets/textures/upgrade.png");
         upgradeDisabled = loader.createTexture("assets/textures/upgrade_disabled.png");
         upgradePanel = loader.createTexture("assets/textures/upgrade_panel.png");
+
+        cancel = loader.createTexture("assets/textures/cancel.png");
+        play = loader.createTexture("assets/textures/play.png");
+        music = loader.createTexture("assets/textures/music.png");
+        musicDisabled = loader.createTexture("assets/textures/music_disabled.png");
 
         tower_icons[0] = loader.createTexture("assets/textures/dart_monkey.png");
         tower_icons[1] = loader.createTexture("assets/textures/sniper_monkey.png");
@@ -136,6 +145,25 @@ public class GameplayScreen implements IGUIScreen {
             ImGui.popFont();
             ImGui.pushFont(gm.monkeyFont);
             textOutline(roundNumber, Color.white, Color.black);
+        }
+        ImGui.end();
+
+        ImGui.setNextWindowBgAlpha(0f);
+        ImGui.setNextWindowSize(0,0);
+        ImGui.setNextWindowPos(5,gm.window.getHeight() - 5, 0, 0,1);
+        if (ImGui.begin("gameplay_L_bottom", p_open, gm.window_flags)) {
+            float imageSize = panelHeight * 0.07f;
+            boolean musicStatus = game.music.isPlaying();
+            ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
+            ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
+            ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 1, 1, 1, 0f);
+            if(ImGui.imageButton(musicStatus ? music.getId() : musicDisabled.getId(), imageSize, imageSize)) {
+                if(musicStatus)
+                    game.music.pause();
+                else
+                    game.music.play();
+            }
+            ImGui.popStyleColor(3);
         }
         ImGui.end();
 
@@ -414,10 +442,25 @@ public class GameplayScreen implements IGUIScreen {
             ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);
-            if (ImGui.imageButton((gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
-                gameSpeedToggled = !gameSpeedToggled;
-                game.gameSpeed = (gameSpeedToggled) ? 3f : 1f;
+            if(game.roundIsRunning) {
+                if (ImGui.imageButton((gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
+                    gameSpeedToggled = !gameSpeedToggled;
+                    game.gameSpeed = (gameSpeedToggled) ? 3f : 1f;
+                }
+            } else {
+                if (ImGui.imageButton(play.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
+                    game.runRound = true;
+                    game.roundIsRunning = true;
+                }
             }
+
+            if(game.monkeyMode > 0) {
+                ImGui.setCursorPos(panelWidth/2 - imageSize/2, panelHeight/2);
+                if (ImGui.imageButton(cancel.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
+                    game.monkeyMode = 0;
+                }
+            }
+            
             ImGui.popStyleColor(3);
         }
         ImGui.popStyleVar(3);

@@ -68,6 +68,7 @@ public class Game implements ILogic {
     
     public FloatBuffer depthBuffer;
 
+    public SoundSource music;
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
@@ -118,7 +119,7 @@ public class Game implements ILogic {
     public boolean isInvalid = false;
     private Spawner currentSpawnerTimer;
     private Scanner roundScanner;
-    private boolean roundIsRunning;
+    public boolean roundIsRunning;
     private Entity range;
     private int roundNumber;
 
@@ -145,9 +146,10 @@ public class Game implements ILogic {
         loadSounds();
     }
 
-    public void playRandom(String[] keys) {
+    public SoundSource playRandom(String[] keys) {
         int randomNumber = random.nextInt(keys.length);
         audioSources.get(keys[randomNumber]).play();
+        return audioSources.get(keys[randomNumber]);
     }
 
     void loadSounds() {
@@ -341,7 +343,7 @@ public class Game implements ILogic {
         range.getModel().setAllColorBlending(1f);
         range.setEnabled(false);
 
-        playRandom(new String[]{"upbeat", "jazzHD"});
+        music = playRandom(new String[]{"upbeat", "jazzHD"});
     }
 
     int i = 0;
@@ -503,6 +505,10 @@ public class Game implements ILogic {
         if(player.getMoney() < TowerType.values()[monkeyMode - 1].cost)
             return false;
 
+        if(previewMonkey.getPosition().distance(0,0,0) > 50)
+            return false;
+
+
         for(Tower monkey : monkeys) {
             Vector3f monkeyPos = monkey.getPosition();
             if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
@@ -601,7 +607,7 @@ public class Game implements ILogic {
 
     float defaultRadius = 20f;
     Random random = new Random();
-    private boolean runRound = true;
+    public boolean runRound = true;
     @Override
     public void update(float interval, MouseInput mouseInput) {
         if(spawnNewBloonOnNextTick >= 0) {
@@ -799,7 +805,7 @@ public class Game implements ILogic {
                 switch (elements[0]) {
                   case "R":
                     roundNumber = Integer.parseInt(elements[1]);
-                    roundIsRunning = false;
+                    roundIsRunning = true;
                     // end round
                     runRound = false;
                     System.out.println(runRound);
@@ -843,10 +849,10 @@ public class Game implements ILogic {
             //check if all bloons are gone
             if (bloons.size() <= 0 && roundIsRunning) {
                 System.out.println("YEah");
-              roundIsRunning = false;
-              runRound = true;
-              // add round money
-              player.addMoney(99 + roundNumber);
+                roundIsRunning = false;
+                runRound = true;
+                // add round money
+                player.addMoney(99 + roundNumber);
             }
         }
 
