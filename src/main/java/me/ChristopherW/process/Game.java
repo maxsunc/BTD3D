@@ -1,16 +1,16 @@
 package me.ChristopherW.process;
 
-import static org.lwjgl.assimp.Assimp.aiComponent_ANIMATIONS;
-
 import java.awt.Color;
+import java.io.File;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.joml.Matrix4f;
 import org.joml.Random;
 import org.joml.Vector2d;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
@@ -20,20 +20,12 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.shapes.Box2dShape;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
-import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.collision.shapes.MeshCollisionShape;
-import com.jme3.bullet.collision.shapes.SphereCollisionShape;
-import com.jme3.bullet.objects.PhysicsRigidBody;
 
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.EngineManager;
 import me.ChristopherW.core.ILogic;
-import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.MouseInput;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
@@ -41,16 +33,13 @@ import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.BloonType;
 import me.ChristopherW.core.custom.Bomb;
+import me.ChristopherW.core.custom.Player;
 import me.ChristopherW.core.custom.Projectile;
+import me.ChristopherW.core.custom.Spawner;
 import me.ChristopherW.core.custom.Tower;
 import me.ChristopherW.core.custom.TowerType;
-import me.ChristopherW.core.custom.Player;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
-import me.ChristopherW.core.custom.Animations.Bone;
-import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
-import me.ChristopherW.core.custom.Shaders.AnimatedShader;
 import me.ChristopherW.core.custom.Towers.BombTower;
 import me.ChristopherW.core.custom.Towers.DartMonkey;
 import me.ChristopherW.core.custom.Towers.ITower;
@@ -58,21 +47,14 @@ import me.ChristopherW.core.custom.Towers.SniperMonkey;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
-import me.ChristopherW.core.entity.Mesh;
+import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.core.entity.primatives.Cube;
-import me.ChristopherW.core.entity.primatives.Plane;
-import me.ChristopherW.core.entity.primatives.Sphere;
 import me.ChristopherW.core.sound.SoundListener;
 import me.ChristopherW.core.sound.SoundManager;
 import me.ChristopherW.core.sound.SoundSource;
 import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Transformation;
 import me.ChristopherW.core.utils.Utils;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.io.File;
 
 public class Game implements ILogic {
     private final RenderManager renderer;
@@ -115,6 +97,8 @@ public class Game implements ILogic {
     private ArrayList<Tower> monkeys = new ArrayList<Tower>();
     public Vector3f[] bloonNodes;
     private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower"};
+    private ArrayList<Spawner> spawners = new ArrayList<Spawner>();
+    
 
     // temp
     //private Entity[] nodes = new Entity[5];
@@ -125,6 +109,9 @@ public class Game implements ILogic {
     public int bloonCounter = 0;    
     public int monkeyMode = 0;
     public boolean isInvalid = false;
+    private Spawner currentSpawnerTimer;
+    private Scanner roundScanner;
+    private boolean roundIsRunning;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -237,6 +224,9 @@ public class Game implements ILogic {
             String[] splitLine = scanner.nextLine().split(" ");
             bloonNodes[i] = new Vector3f(Float.parseFloat(splitLine[0]), 1, -Float.parseFloat(splitLine[1]));
         }
+        // scans the round file
+        roundScanner = new Scanner(new File("assets/rounds.txt"));
+
 
         for(Bloon b : bloons) {
             bloonCounter++;
@@ -521,6 +511,9 @@ public class Game implements ILogic {
         if(window.isKeyPressed(GLFW.GLFW_KEY_D)) {
             panVec.add(cameraPos.getRight().mul(moveSpeed));
         }
+        if(window.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
+            roundIsRunning = true;
+        }
         Vector3f normalized = panVec.normalize().mul(moveSpeed * (180/EngineManager.getFps()));
         cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
     }
@@ -708,6 +701,59 @@ public class Game implements ILogic {
 
         bloons.addAll(targeted);
         targeted.clear();
+
+        // run rounds
+        // if there is no spawner or time left for next Spawner is done
+        if(currentSpawnerTimer == null || currentSpawnerTimer.canSpawnNext(interval)){
+            // go the next line (spawner or new round)
+            if (roundScanner.hasNext() && roundIsRunning) {
+                String line = roundScanner.nextLine();
+                // format: 1st char (indicator):
+                // R - Round
+                // C - Client
+                // W - WaitClient
+                // 2nd char and 3rd char are constructors for either client or waitClient
+                String[] elements = line.split(" ");
+                // determine indicator
+                switch (elements[0]) {
+                  case "R":
+                    // end round
+                    roundIsRunning = false;
+                    break;
+                  case "C":
+                    int bloonQuantity = Integer.parseInt(elements[2]);
+                    float spawnTime = Integer.parseInt(elements[3]);
+                    float timeToNextSpawn = Integer.parseInt(elements[4]);
+                    Spawner spawner = new Spawner(determineBloonType(elements[1]), bloonQuantity, spawnTime, timeToNextSpawn);
+                    spawners.add(spawner);
+                    // set the 
+                    currentSpawnerTimer = spawner;
+                    break;
+                }
+              }
+        }
+
+        // spawn the bloons from the spawners
+        for(int i = 0; i < spawners.size(); i++){
+            Spawner spawner = spawners.get(i);
+            if (spawner.checkSpawn(interval)) {
+                BloonType type = spawner.getType();
+                Bloon bloon  = new Bloon("bloon", type,
+                    (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
+                    new Vector3f(bloonNodes[0]), 
+                    new Vector3f(),
+                    new Vector3f((type == BloonType.MOAB) ? 0.075f : 0.5f)
+                );
+                bloons.add(bloon);
+                bloonCounter++;
+                entities.put("bloon" + bloonCounter, bloon);
+                bloon.setName("bloon" + bloonCounter);
+            }
+            if (spawner.checkDone()) {
+                spawners.remove(spawner);
+            }
+        }
+
         
         // update the physics world
         physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);
@@ -721,6 +767,47 @@ public class Game implements ILogic {
         if(GUIManager.currentScreen == "MainMenu")
             return;
     } 
+
+    BloonType determineBloonType(String givenType) {
+    BloonType bloonType;
+    // determines bloon attribute based on String
+    switch (givenType) {
+      case "RED":
+        bloonType = BloonType.RED;
+        break;
+      case "BLUE":
+        bloonType = BloonType.BLUE;
+        break;
+      case "GREEN":
+        bloonType = BloonType.GREEN;
+        break;
+      case "YELLOW":
+        bloonType = BloonType.YELLOW;
+        break;
+      case "PINK":
+        bloonType = BloonType.PINK;
+        break;
+      case "BLACK":
+        bloonType = BloonType.BLACK;
+        break;
+    //   case "ZEBRA":
+    //     bloonType = BloonType.ZEBRA;
+    //     break;
+    //   case "RAINBOW":
+    //     bloonType = BloonType.RAINBOW;
+    //     break;
+      case "CERAMIC":
+        bloonType = BloonType.CERAMIC;
+        break;
+      case "MOAB":
+        bloonType = BloonType.MOAB;
+        break;
+      default:
+        bloonType = BloonType.RED;
+        break;
+    }
+    return bloonType;
+  }
 
     
     @Override
