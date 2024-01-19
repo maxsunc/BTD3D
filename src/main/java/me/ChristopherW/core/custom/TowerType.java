@@ -1,9 +1,9 @@
 package me.ChristopherW.core.custom;
 
 public enum TowerType {
-	DART_MONKEY("Dart Monkey", 170,5,0.5f,50, TowerClass.PRIMARY),
-	SNIPER_MONKEY("Sniper Monkey", 300,100,1.34f,100, TowerClass.MILITARY),
-	BOMB_TOWER("Bomb Shooter", 445 ,6,0.8f,25, TowerClass.PRIMARY);
+	DART_MONKEY("Dart Monkey", 170,5,0.95f,50, TowerClass.PRIMARY),
+	SNIPER_MONKEY("Sniper Monkey", 300,100,1.59f,100, TowerClass.MILITARY),
+	BOMB_TOWER("Bomb Shooter", 445 ,6,1.5f,25, TowerClass.PRIMARY);
 	
 	public String name;
 	public int cost;

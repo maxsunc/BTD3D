@@ -128,6 +128,7 @@ public class Game implements ILogic {
     public int bloonCounter = 0;    
     public int monkeyMode = 0;
     public boolean isInvalid = false;
+    private Entity range;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -266,7 +267,7 @@ public class Game implements ILogic {
 
         // init static objects
         Model mapModel = loader.loadModel("assets/models/map.dae");
-        Entity map = new Entity(mapModel, 
+        Entity map = new Entity("map", mapModel, 
             new Vector3f(), 
             new Vector3f(), 
             new Vector3f(1f,1f,1f)
@@ -331,6 +332,15 @@ public class Game implements ILogic {
         previewRed = new Material(loader.createTextureColor(Color.RED));
         previewWhite = new Material(loader.createTextureColor(Color.WHITE));
         
+        Model circle = loader.loadModel("assets/models/circle.fbx");
+        range = new Entity("range", circle,
+            new Vector3f(0, 0.1f, 0),
+            new Vector3f(0, 0, 0),
+            new Vector3f(1, 1, 1)
+        );
+        range.getModel().setAllColorFilter(new Vector4f(0.2f, 0.2f, 0.2f, 0.5f));
+        range.getModel().setAllColorBlending(1f);
+        range.setEnabled(false);
 
         playRandom(new String[]{"upbeat", "jazzHD"});
     }
@@ -355,6 +365,7 @@ public class Game implements ILogic {
 
                     // check for towers to inspect
                     currentTowerInspecting = null;
+                    range.setEnabled(false);
                     float shortestDistance = Float.MAX_VALUE;
                     Tower closestTower = monkeys.get(0);
                     for(int i = 0; i < monkeys.size(); i++){
@@ -368,6 +379,8 @@ public class Game implements ILogic {
                     if(closestTower.getPosition().distance(mouseWorldPos) < 2f) {
                         currentTowerInspecting = closestTower;
                         closestTower.getModel().setAllColorBlending(0.5f);
+                        range.setEnabled(true);
+                        range.setPosition(closestTower.getPosition().x, 0.05f, closestTower.getPosition().z);
                     }
                 }
                 else if(isInvalid){
@@ -602,6 +615,13 @@ public class Game implements ILogic {
             spawnNewBloonOnNextTick = -1;
         }
 
+        if(currentTowerInspecting != null) {
+            if(currentTowerInspecting instanceof SniperMonkey)
+                range.setScale(1);
+            else
+                range.setScale(currentTowerInspecting.getRange());
+        }
+
         float radius = defaultRadius * zoom;
 
         int minPan = -20, maxPan = 20;
@@ -834,8 +854,14 @@ public class Game implements ILogic {
             System.out.println("Error. Out of Memory. Skipping depth check");
         }
 
-        if(monkeyMode > 0)
-            renderer.forceRender(entities.get(previewKeys[monkeyMode - 1]), camera);
+        if(monkeyMode > 0) {
+            Entity preview = entities.get(previewKeys[monkeyMode - 1]);
+            preview.setEnabled(true);
+            renderer.forceRender(preview, camera);
+            preview.setEnabled(false);
+        }
+
+        renderer.forceRender(range, camera);
  
         // update the render of the ImGui frame
         window.imGuiGlfw.newFrame();

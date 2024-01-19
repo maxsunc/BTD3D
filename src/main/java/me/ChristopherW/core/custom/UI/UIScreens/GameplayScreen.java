@@ -232,9 +232,21 @@ public class GameplayScreen implements IGUIScreen {
                     ImGui.setCursorPos(panelPos1.x, panelPos1.y);
                     ImGui.popFont();
                     ImGui.pushFont(gm.monkeyFontTiny);
-                    ImVec2 currentNameDim = ImGui.calcTextSize(currentName1);
-                    ImGui.setCursorPos(panelPos1.x + upgradeSize/2 - currentNameDim.x/2, panelPos1.y);
-                    textOutline(currentName1, Color.white, Color.black);
+
+                    String[] currentNameWords = currentName1.split(" ");
+                    String top = "";
+                    for(int i = 0; i < currentNameWords.length - 1; i++) {
+                        top = top.concat(currentNameWords[i] + " ");
+                    }
+                    top = top.trim();
+                    ImVec2 topSize = ImGui.calcTextSize(top);
+                    ImGui.setCursorPos(panelPos1.x + upgradeSize/2 - topSize.x/2, old.y);
+                    textOutline(top, Color.white, Color.black);
+                    String bottom = currentNameWords[currentNameWords.length - 1];
+                    ImVec2 bottomSize = ImGui.calcTextSize(bottom);
+                    ImGui.setCursorPos(panelPos1.x + upgradeSize/2 - bottomSize.x/2, old.y + gm.window.getHeight()/54);
+                    textOutline(bottom, Color.white, Color.black);
+
                     ImGui.popFont();
                     ImGui.pushFont(gm.monkeyFontSmall);
                     ImVec2 ownerDim = ImGui.calcTextSize("OWNED");
@@ -261,9 +273,21 @@ public class GameplayScreen implements IGUIScreen {
                 ImGui.popFont();
                 ImGui.pushFont(gm.monkeyFontTiny);
                 String upgradeName = name1;
-                ImVec2 upgradeNameDim = ImGui.calcTextSize(upgradeName);
-                ImGui.setCursorPos(old.x + upgradeSize/2 - upgradeNameDim.x/2 + (upgradeSize * 0.25f), old.y);
-                textOutline(upgradeName, Color.white, Color.black);
+
+                String[] upgradeNameWords = upgradeName.split(" ");
+                String top = "";
+                for(int i = 0; i < upgradeNameWords.length - 1; i++) {
+                    top = top.concat(upgradeNameWords[i] + " ");
+                }
+                top = top.trim();
+                ImVec2 topSize = ImGui.calcTextSize(top);
+                ImGui.setCursorPos(old.x + upgradeSize/2 - topSize.x/2 + (upgradeSize * 0.25f), old.y);
+                textOutline(top, Color.white, Color.black);
+                String bottom = upgradeNameWords[upgradeNameWords.length - 1];
+                ImVec2 bottomSize = ImGui.calcTextSize(bottom);
+                ImGui.setCursorPos(old.x + upgradeSize/2 - bottomSize.x/2 + (upgradeSize * 0.25f), old.y + gm.window.getHeight()/54);
+                textOutline(bottom, Color.white, Color.black);
+
                 if(costValue1 == Integer.MAX_VALUE) {
                     String max = "Max";
                     String upgrade = "Upgrades";
@@ -313,9 +337,21 @@ public class GameplayScreen implements IGUIScreen {
                     ImGui.setCursorPos(panelPos2.x, panelPos2.y);
                     ImGui.popFont();
                     ImGui.pushFont(gm.monkeyFontTiny);
-                    ImVec2 currentNameDim = ImGui.calcTextSize(currentName2);
-                    ImGui.setCursorPos(panelPos2.x + upgradeSize/2 - currentNameDim.x/2, panelPos2.y);
-                    textOutline(currentName2, Color.white, Color.black);
+
+                    String[] currentName3Words = currentName2.split(" ");
+                    String top3 = "";
+                    for(int i = 0; i < currentName3Words.length - 1; i++) {
+                        top3 = top3.concat(currentName3Words[i] + " ");
+                    }
+                    top3 = top3.trim();
+                    ImVec2 top3Size = ImGui.calcTextSize(top3);
+                    ImGui.setCursorPos(panelPos2.x + upgradeSize/2 - top3Size.x/2, old.y);
+                    textOutline(top3, Color.white, Color.black);
+                    String bottom3 = currentName3Words[currentName3Words.length - 1];
+                    ImVec2 bottom3Size = ImGui.calcTextSize(bottom3);
+                    ImGui.setCursorPos(panelPos2.x + upgradeSize/2 - bottom3Size.x/2, old.y + gm.window.getHeight()/54);
+                    textOutline(bottom3, Color.white, Color.black);
+
                     ImGui.popFont();
                     ImGui.pushFont(gm.monkeyFontSmall);
                     ImVec2 ownerDim = ImGui.calcTextSize("OWNED");
@@ -340,9 +376,21 @@ public class GameplayScreen implements IGUIScreen {
                 ImGui.popStyleColor(3);
 
                 String upgradeName2 = name2;
-                ImVec2 upgradeNameDim2 = ImGui.calcTextSize(upgradeName2);
-                ImGui.setCursorPos(old.x + upgradeSize/2 - upgradeNameDim2.x/2 + (upgradeSize * 0.25f), old.y);
-                textOutline(upgradeName2, Color.white, Color.black);
+                String[] upgradeName2Words = upgradeName2.split(" ");
+                String top2 = "";
+                for(int i = 0; i < upgradeName2Words.length - 1; i++) {
+                    top2 = top2.concat(upgradeName2Words[i] + " ");
+                }
+                top2 = top2.trim();
+                ImVec2 top2Size = ImGui.calcTextSize(top2);
+                ImGui.setCursorPos(old.x + upgradeSize/2 - top2Size.x/2 + (upgradeSize * 0.25f), old.y);
+                textOutline(top2, Color.white, Color.black);
+                String bottom2 = upgradeName2Words[upgradeName2Words.length - 1];
+                ImVec2 bottom2Size = ImGui.calcTextSize(bottom2);
+                ImGui.setCursorPos(old.x + upgradeSize/2 - bottom2Size.x/2 + (upgradeSize * 0.25f), old.y + gm.window.getHeight()/54);
+                textOutline(bottom2, Color.white, Color.black);
+
+
                 if(costValue2 == Integer.MAX_VALUE) {
                     String max = "Max";
                     String upgrade = "Upgrades";
@@ -368,7 +416,7 @@ public class GameplayScreen implements IGUIScreen {
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);
             if (ImGui.imageButton((gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
                 gameSpeedToggled = !gameSpeedToggled;
-                game.gameSpeed = (gameSpeedToggled) ? 2f : 1f;
+                game.gameSpeed = (gameSpeedToggled) ? 3f : 1f;
             }
             ImGui.popStyleColor(3);
         }
