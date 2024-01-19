@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.entity.primatives.Cube;
 import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
@@ -96,13 +97,14 @@ public class Bloon extends Entity{
                         for(int i = 0; i < 9; i++) {
                             // move it towards the node pos
                             Vector3f newPos = new Vector3f();
-                            game.bloonNodes[Math.max(this.nodeIndex - 1,0)].lerp(diff, i/9f, newPos);
+                            Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                            prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), i/9f, newPos);
                             Vector3f difference = new Vector3f();
                             game.bloonNodes[this.nodeIndex].sub(newPos, difference);
                             difference.normalize();
                             Bloon b = new Bloon("bloon", BloonType.CERAMIC,
                                 Model.copy(Game.bloonModel), 
-                                newPos, 
+                                new Vector3f(newPos), 
                                 new Vector3f(),
                                 new Vector3f(0.5f)
                             );
@@ -122,13 +124,14 @@ public class Bloon extends Entity{
                         for(int i = 0; i < 7; i++) {
                             // move it towards the node pos
                             Vector3f newPos = new Vector3f();
-                            game.bloonNodes[Math.max(this.nodeIndex - 1,0)].lerp(diff, i/9f, newPos);
+                            Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                            prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), i/9f, newPos);
                             Vector3f difference = new Vector3f();
                             game.bloonNodes[this.nodeIndex].sub(newPos, difference);
                             difference.normalize();
                             Bloon b = new Bloon("bloon", (i > 3) ? BloonType.BLACK : BloonType.WHITE,
                                 Model.copy(Game.bloonModel), 
-                                newPos, 
+                                new Vector3f(newPos), 
                                 new Vector3f(),
                                 new Vector3f(0.5f)
                             );

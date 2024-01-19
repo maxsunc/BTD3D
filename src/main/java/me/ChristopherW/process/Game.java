@@ -88,6 +88,9 @@ public class Game implements ILogic {
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
+    public static Model cube;
+    public static Model sphere;
+    public static Model plane;
     private Material previewRed;
     private Material previewWhite;
     private RiggedModel[] monkeyModels = new RiggedModel[8];
@@ -264,6 +267,10 @@ public class Game implements ILogic {
 
         // initialize entities map
         entities = new HashMap<>();
+
+        sphere = loader.loadModel("assets/models/primatives/sphere.obj");
+        cube = loader.loadModel("assets/models/primatives/cube.obj");
+        plane = loader.loadModel("assets/models/primatives/plane.obj");
 
         // init static objects
         Model mapModel = loader.loadModel("assets/models/map.dae");
