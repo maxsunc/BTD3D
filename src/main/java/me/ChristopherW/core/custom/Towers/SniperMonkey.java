@@ -87,8 +87,7 @@ public class SniperMonkey extends Tower implements ITower {
         for(int i = 0; i < this.getDamage(); i++) {
             int result = target.damage(this.getDamage());
             if(result >= 0) {
-                int randomNumber = random.nextInt(4) + 1;
-                Launcher.getGame().audioSources.get("pop" + randomNumber).play();
+                Launcher.getGame().playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                 Launcher.getGame().player.addMoney(1);
                 
                 if(result > 0) {

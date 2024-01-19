@@ -11,7 +11,7 @@ public enum Upgrade {
 	BT_BASE_RELOAD("","",BT_FASTER_RELOAD,0),
 	BT_BASE_RANGE("","",BT_EXTRA_RANGE,0),
 	SM_FULL_AUTOMATIC("Full Automatic", "Attacks 9x as faster.", null, 6000),
-	SM_SEMIAUTOMATIC("Semi-Automatic", "Attacks 3x as faster.", SM_FULL_AUTOMATIC, 3000),
+	SM_SEMIAUTOMATIC("Semi Automatic", "Attacks 3x as faster.", SM_FULL_AUTOMATIC, 3000),
 	SM_EVEN_FASTER_FIRING("Even Faster Firing", "Shoots even faster!.", SM_SEMIAUTOMATIC, 400),
 	SM_FASTER_FIRING("Faster Firing", "Shoots faster than normal.", SM_EVEN_FASTER_FIRING, 400),
 	SM_DEADLY_PRECISION("Deadly Precision", "20 Damage per shot.", null, 3000),

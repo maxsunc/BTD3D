@@ -38,6 +38,8 @@ import me.ChristopherW.core.custom.Projectile;
 import me.ChristopherW.core.custom.Spawner;
 import me.ChristopherW.core.custom.Tower;
 import me.ChristopherW.core.custom.TowerType;
+import me.ChristopherW.core.custom.Upgrade;
+import me.ChristopherW.core.custom.Player;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Towers.BombTower;
@@ -69,6 +71,9 @@ public class Game implements ILogic {
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
+    public static Model cube;
+    public static Model sphere;
+    public static Model plane;
     private Material previewRed;
     private Material previewWhite;
     private RiggedModel[] monkeyModels = new RiggedModel[8];
@@ -91,6 +96,8 @@ public class Game implements ILogic {
     public static Texture MOAB_3;
     public static Texture MOAB_4;
 
+    public static Texture[] upgradeTextures;
+
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
     public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
     private ArrayList<Projectile> darts = new ArrayList<Projectile>();
@@ -103,7 +110,7 @@ public class Game implements ILogic {
     // temp
     //private Entity[] nodes = new Entity[5];
     private float sphereRadius = 1.2f;
-    private Tower currentTowerInspecting;
+    public Tower currentTowerInspecting;
     public float gameSpeed = 1.0f;
     public Player player;
     public int bloonCounter = 0;    
@@ -112,6 +119,7 @@ public class Game implements ILogic {
     private Spawner currentSpawnerTimer;
     private Scanner roundScanner;
     private boolean roundIsRunning;
+    private Entity range;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -136,6 +144,11 @@ public class Game implements ILogic {
         loadSounds();
     }
 
+    public void playRandom(String[] keys) {
+        int randomNumber = random.nextInt(keys.length);
+        audioSources.get(keys[randomNumber]).play();
+    }
+
     void loadSounds() {
         try {
             // load the sound file to a buffer, then create a new audio source at the world origin with the buffer attached
@@ -143,29 +156,66 @@ public class Game implements ILogic {
             // repeat this for each sound file
             SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), true, false, 0.4f);
             audioSources.put("jazz", jazz);
-            SoundSource tower_place = soundManager.createSound("tower_place", "assets/sounds/tower_place.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("tower_place", tower_place);
+            SoundSource jazzHD = soundManager.createSound("jazzHD", "assets/sounds/MusicBTD5JazzA.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("jazzHD", jazzHD);
+            SoundSource upbeat = soundManager.createSound("upbeat", "assets/sounds/MusicUpbeat1A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("upbeat", upbeat);
+
+            SoundSource tower_place_1 = soundManager.createSound("tower_place_1", "assets/sounds/PlaceTowerMonkey01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("tower_place_1", tower_place_1);
+            SoundSource tower_place_2 = soundManager.createSound("tower_place_2", "assets/sounds/PlaceTowerMonkey02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("tower_place_2", tower_place_2);
             
-            SoundSource pop1 = soundManager.createSound("pop1", "assets/sounds/pop1.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop1", pop1);
-            SoundSource pop2 = soundManager.createSound("pop2", "assets/sounds/pop2.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop2", pop2);
-            SoundSource pop3 = soundManager.createSound("pop3", "assets/sounds/pop3.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop3", pop3);
-            SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/pop4.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop4", pop4);
+            SoundSource pop1 = soundManager.createSound("pop1", "assets/sounds/Pop01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_1", pop1);
+            SoundSource pop2 = soundManager.createSound("pop2", "assets/sounds/Pop02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_2", pop2);
+            SoundSource pop3 = soundManager.createSound("pop3", "assets/sounds/Pop03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_3", pop3);
+            SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/Pop04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("pop_4", pop4);
 
-            SoundSource explosion = soundManager.createSound("explosion", "assets/sounds/explosion_small.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("explosion", explosion);
+            SoundSource explosion_1 = soundManager.createSound("explosion_1", "assets/sounds/Explosion01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_1", explosion_1);
+            SoundSource explosion_2 = soundManager.createSound("explosion_2", "assets/sounds/Explosion02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_2", explosion_2);
+            SoundSource explosion_3 = soundManager.createSound("explosion_3", "assets/sounds/Explosion03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_3", explosion_3);
+            SoundSource explosion_4 = soundManager.createSound("explosion_4", "assets/sounds/Explosion04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_4", explosion_4);
+            SoundSource explosion_5 = soundManager.createSound("explosion_5", "assets/sounds/Explosion05.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("explosion_5", explosion_5);
 
-            SoundSource moab_damage = soundManager.createSound("moab_damage", "assets/sounds/moab_damage.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("moab_damage", moab_damage);
-            SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/moab_destroyed_short.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            SoundSource moab_damage_1 = soundManager.createSound("moab_damage_1", "assets/sounds/HitMoab01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_1", moab_damage_1);
+            SoundSource moab_damage_2 = soundManager.createSound("moab_damage_2", "assets/sounds/HitMoab02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_2", moab_damage_2);
+            SoundSource moab_damage_3 = soundManager.createSound("moab_damage_3", "assets/sounds/HitMoab03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_3", moab_damage_3);
+            SoundSource moab_damage_4 = soundManager.createSound("moab_damage_4", "assets/sounds/HitMoab04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("moab_damage_4", moab_damage_4);
+
+
+            SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/MoabDestroyed03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("moab_destroyed", moab_destroyed);
-            SoundSource ceramic_hit = soundManager.createSound("ceramic_hit", "assets/sounds/ceramic_hit.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("ceramic_hit", ceramic_hit);
 
-            SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            SoundSource ceramic_destroy_1 = soundManager.createSound("ceramic_destroy_1", "assets/sounds/CeramicDestroyed01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_destroy_1.getName(), ceramic_destroy_1);
+            SoundSource ceramic_destroy_2 = soundManager.createSound("ceramic_destroy_2", "assets/sounds/CeramicDestroyed02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_destroy_2.getName(), ceramic_destroy_2);
+            SoundSource ceramic_destroy_3 = soundManager.createSound("ceramic_destroy_3", "assets/sounds/CeramicDestroyed04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_destroy_3.getName(), ceramic_destroy_3);
+
+            SoundSource ceramic_hit_1 = soundManager.createSound("ceramic_hit_1", "assets/sounds/HitCeramic01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_1.getName(), ceramic_hit_1);
+            SoundSource ceramic_hit_2 = soundManager.createSound("ceramic_hit_2", "assets/sounds/HitCeramic02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_2.getName(), ceramic_hit_2);
+            SoundSource ceramic_hit_3 = soundManager.createSound("ceramic_hit_3", "assets/sounds/HitCeramic03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_3.getName(), ceramic_hit_3);
+            SoundSource ceramic_hit_4 = soundManager.createSound("ceramic_hit_4", "assets/sounds/HitCeramic04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(ceramic_hit_4.getName(), ceramic_hit_4);
+
+            SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade_hd.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("upgrade", upgrade);
 
         } catch (Exception e) {
@@ -196,14 +246,23 @@ public class Game implements ILogic {
         MOAB_3 = loader.createTexture("assets/textures/materials/MoabDamage3Diffuse.png");
         MOAB_4 = loader.createTexture("assets/textures/materials/MoabDamage4Diffuse.png");
 
+        upgradeTextures = new Texture[32];
+        for(int i = 0; i < Upgrade.values().length; i++) {
+            upgradeTextures[i] = loader.createTexture("assets/textures/Upgrades/" + (i) + ".png");
+        }
+
         player = new Player();
 
         // initialize entities map
         entities = new HashMap<>();
 
+        sphere = loader.loadModel("assets/models/primatives/sphere.obj");
+        cube = loader.loadModel("assets/models/primatives/cube.obj");
+        plane = loader.loadModel("assets/models/primatives/plane.obj");
+
         // init static objects
         Model mapModel = loader.loadModel("assets/models/map.dae");
-        Entity map = new Entity(mapModel, 
+        Entity map = new Entity("map", mapModel, 
             new Vector3f(), 
             new Vector3f(), 
             new Vector3f(1f,1f,1f)
@@ -271,8 +330,17 @@ public class Game implements ILogic {
         previewRed = new Material(loader.createTextureColor(Color.RED));
         previewWhite = new Material(loader.createTextureColor(Color.WHITE));
         
+        Model circle = loader.loadModel("assets/models/circle.fbx");
+        range = new Entity("range", circle,
+            new Vector3f(0, 0.1f, 0),
+            new Vector3f(0, 0, 0),
+            new Vector3f(1, 1, 1)
+        );
+        range.getModel().setAllColorFilter(new Vector4f(0.2f, 0.2f, 0.2f, 0.5f));
+        range.getModel().setAllColorBlending(1f);
+        range.setEnabled(false);
 
-        audioSources.get("jazz").play();
+        playRandom(new String[]{"upbeat", "jazzHD"});
     }
 
     int i = 0;
@@ -290,7 +358,12 @@ public class Game implements ILogic {
                     if(dMouse.distance(input.getCurrentPos()) > 2)
                         return;
 
+                    if(input.getCurrentPos().x > (this.window.getWidth() - this.window.getHeight() * 0.3f) && input.getCurrentPos().y > this.window.getHeight()*0.4)
+                        return;
+
                     // check for towers to inspect
+                    currentTowerInspecting = null;
+                    range.setEnabled(false);
                     float shortestDistance = Float.MAX_VALUE;
                     Tower closestTower = monkeys.get(0);
                     for(int i = 0; i < monkeys.size(); i++){
@@ -304,6 +377,8 @@ public class Game implements ILogic {
                     if(closestTower.getPosition().distance(mouseWorldPos) < 2f) {
                         currentTowerInspecting = closestTower;
                         closestTower.getModel().setAllColorBlending(0.5f);
+                        range.setEnabled(true);
+                        range.setPosition(closestTower.getPosition().x, 0.05f, closestTower.getPosition().z);
                     }
                 }
                 else if(isInvalid){
@@ -355,7 +430,7 @@ public class Game implements ILogic {
                     monkeys.add(monkey);
                     monkey.setAnimationId(monkey.getSpawnAnimationId());
                     entities.put("monkey" + monkeys.size(), monkey);
-                    audioSources.get("tower_place").play();
+                    playRandom(new String[]{"tower_place_1", "tower_place_2"});
                     player.removeMoney(monkey.getValue());
                     monkeyMode = 0;
                 }
@@ -396,10 +471,9 @@ public class Game implements ILogic {
                     if(currentTowerInspecting.getPath1().nextUpgrade != null)
                     // check if you can buy it
                     if(currentTowerInspecting.getPath1().nextUpgrade.cost <= player.getMoney()){
-                    player.removeMoney(currentTowerInspecting.getPath1().nextUpgrade.cost);
-                    System.out.println("bought " + currentTowerInspecting.getPath1().nextUpgrade.name);
-                    currentTowerInspecting.upgradePath(1);
-                    audioSources.get("upgrade").play();
+                        player.removeMoney(currentTowerInspecting.getPath1().nextUpgrade.cost);
+                        currentTowerInspecting.upgradePath(1);
+                        audioSources.get("upgrade").play();
                     }
                 }
             }
@@ -542,6 +616,13 @@ public class Game implements ILogic {
             spawnNewBloonOnNextTick = -1;
         }
 
+        if(currentTowerInspecting != null) {
+            if(currentTowerInspecting instanceof SniperMonkey)
+                range.setScale(1);
+            else
+                range.setScale(currentTowerInspecting.getRange());
+        }
+
         float radius = defaultRadius * zoom;
 
         int minPan = -20, maxPan = 20;
@@ -647,10 +728,9 @@ public class Game implements ILogic {
                         } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
                             int result = bloon.damage(dart.getDamage());
                                 if(result >= 0) {
-                                    int randomNumber = random.nextInt(4) + 1;
-                                    audioSources.get("pop" + randomNumber).play();
-                                    player.addMoney(1);
+                                    playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                                     
+                                    player.addMoney(1);
                                     if(result > 0) {
                                         entities.remove(bloon.getName());
                                         bloons.remove(bloon);
@@ -663,14 +743,13 @@ public class Game implements ILogic {
                             entities.remove(dart.getName());
 
                             if(dart instanceof Bomb) {
-                                audioSources.get("explosion").play();
+                                playRandom(new String[]{"explosion_1", "explosion_2", "explosion_3", "explosion_4", "explosion_5"});
                                 for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
                                     Bloon bl = bloons.get(bloonId);
                                     if(bl.getPosition().distance(dart.getPosition()) < 2) {
                                         int r = bl.damage(1);
                                         if(r >= 0) {
-                                            int rn = random.nextInt(4) + 1;
-                                            audioSources.get("pop" + rn).play();
+                                            playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                                             player.addMoney(1);
                                             
                                             if(r > 0) {
@@ -848,7 +927,11 @@ public class Game implements ILogic {
             int xPos = (int)x[0];
             int yPos = window.getHeight() - (int)y[0];
             GL11.glReadPixels(xPos, yPos, 1, 1, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, depthBuffer);
-            float depth = depthBuffer.get();
+            float depth = Float.MAX_VALUE;
+            try {
+                depth = depthBuffer.get();
+            } catch (Exception e) {
+            }
         
             vec.z = 2.0f * depth - 1.0f;
             vec.w = 1.0f;
@@ -865,8 +948,14 @@ public class Game implements ILogic {
             System.out.println("Error. Out of Memory. Skipping depth check");
         }
 
-        if(monkeyMode > 0)
-            renderer.forceRender(entities.get(previewKeys[monkeyMode - 1]), camera);
+        if(monkeyMode > 0) {
+            Entity preview = entities.get(previewKeys[monkeyMode - 1]);
+            preview.setEnabled(true);
+            renderer.forceRender(preview, camera);
+            preview.setEnabled(false);
+        }
+
+        renderer.forceRender(range, camera);
  
         // update the render of the ImGui frame
         window.imGuiGlfw.newFrame();

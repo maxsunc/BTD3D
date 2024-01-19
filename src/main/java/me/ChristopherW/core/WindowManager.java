@@ -172,7 +172,7 @@ public class WindowManager {
             }
             
         });
-        
+        GLFW.glfwSetWindowSizeLimits(window, 1280, 720, GLFW.GLFW_DONT_CARE, GLFW.GLFW_DONT_CARE);
         // make the window visible
         GLFW.glfwShowWindow(window);
 
@@ -187,6 +187,8 @@ public class WindowManager {
         GL11.glEnable(GL11.GL_STENCIL_TEST);
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glEnable(GL43.GL_DEBUG_OUTPUT);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glCullFace(GL11.GL_BACK);
         GL11.glColorMask(true, true, true, true);
         GL11.glDepthMask(true);

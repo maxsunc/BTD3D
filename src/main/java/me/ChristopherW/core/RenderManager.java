@@ -175,6 +175,8 @@ public class RenderManager {
     }
 
     public void forceRender(Entity entity, Camera camera) {
+        if(!entity.isEnabled() || !entity.isVisible())
+            return;
         for(Mesh mesh : entity.getModel().getMeshes().values()) {
             // bind the model's shader and set the projectionMatrix uniform data
             mesh.getShader().bind();
@@ -196,6 +198,7 @@ public class RenderManager {
     }
 
     public void renderScene(Camera camera) {
+
         // for each model in the entities 
         for(Mesh mesh : entities.keySet()) {
             // bind the model's shader and set the projectionMatrix uniform data

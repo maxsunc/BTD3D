@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.entity.primatives.Cube;
 import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
@@ -75,6 +76,11 @@ public class Bloon extends Entity{
     }
     
     public int damage(int amount){
+        Game game = Launcher.getGame();
+
+        if(this.health <= 0 && type == BloonType.RED)
+            return -1;
+
         this.health -= amount;
 
         if(this.health <= 0) {
@@ -86,19 +92,19 @@ public class Bloon extends Entity{
                         this.setScale(0.5f);
                         Game.audioSources.get("moab_destroyed").play();
         
-                        Game game = Launcher.getGame();
                         Vector3f diff = new Vector3f();
                         game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
                         for(int i = 0; i < 9; i++) {
                             // move it towards the node pos
                             Vector3f newPos = new Vector3f();
-                            game.bloonNodes[Math.max(this.nodeIndex - 1,0)].lerp(diff, i/9f, newPos);
+                            Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                            prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), i/9f, newPos);
                             Vector3f difference = new Vector3f();
                             game.bloonNodes[this.nodeIndex].sub(newPos, difference);
                             difference.normalize();
                             Bloon b = new Bloon("bloon", BloonType.CERAMIC,
                                 Model.copy(Game.bloonModel), 
-                                newPos, 
+                                new Vector3f(newPos), 
                                 new Vector3f(),
                                 new Vector3f(0.5f)
                             );
@@ -111,19 +117,21 @@ public class Bloon extends Entity{
                         }
                     }
                     if(type == BloonType.CERAMIC) {
-                        Game game = Launcher.getGame();
+                        game.playRandom(new String[]{"ceramic_destroy_1", "ceramic_destroy_2", "ceramic_destroy_3"});
+
                         Vector3f diff = new Vector3f();
                         game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
                         for(int i = 0; i < 7; i++) {
                             // move it towards the node pos
                             Vector3f newPos = new Vector3f();
-                            game.bloonNodes[Math.max(this.nodeIndex - 1,0)].lerp(diff, i/9f, newPos);
+                            Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                            prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), i/9f, newPos);
                             Vector3f difference = new Vector3f();
                             game.bloonNodes[this.nodeIndex].sub(newPos, difference);
                             difference.normalize();
                             Bloon b = new Bloon("bloon", (i > 3) ? BloonType.BLACK : BloonType.WHITE,
                                 Model.copy(Game.bloonModel), 
-                                newPos, 
+                                new Vector3f(newPos), 
                                 new Vector3f(),
                                 new Vector3f(0.5f)
                             );
@@ -147,7 +155,7 @@ public class Bloon extends Entity{
         }
 
         if(type == BloonType.MOAB) {
-            Game.audioSources.get("moab_damage").play();
+            game.playRandom(new String[]{"moab_damage_1", "moab_damage_2", "moab_damage_3", "moab_damage_4"});
             if(this.health < 40) {
                 this.getModel().setAllMaterials(new Material(1f, 5f, Game.MOAB_4));
             }
@@ -162,7 +170,7 @@ public class Bloon extends Entity{
             }
         }
         else if(type == BloonType.CERAMIC) {
-            Game.audioSources.get("ceramic_hit").play();
+            game.playRandom(new String[]{"ceramic_hit_1", "ceramic_hit_2", "ceramic_hit_3", "ceramic_hit_4"});
         }
         
         return -1;
