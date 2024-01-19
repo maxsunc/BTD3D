@@ -129,7 +129,7 @@ public class GameplayScreen implements IGUIScreen {
             ImVec2 roundDim = ImGui.calcTextSize("Round");
             ImGui.setCursorPosX(gm.window.getWidth() - panelWidth - roundDim.x - gm.window.getWidth()/128);
             ImVec2 pos = new ImVec2(ImGui.getCursorPos());
-            String roundNumber = "1";
+            String roundNumber = String.valueOf(game.getRoundNumber());
             ImVec2 roundNumDim = ImGui.calcTextSize(roundNumber);
             textOutline("Round", Color.white, Color.black);
             ImGui.setCursorPos(pos.x + roundDim.x - roundNumDim.x - gm.window.getWidth()/128, pos.y + 25);

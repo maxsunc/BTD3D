@@ -120,6 +120,7 @@ public class Game implements ILogic {
     private Scanner roundScanner;
     private boolean roundIsRunning;
     private Entity range;
+    private int roundNumber;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -587,6 +588,7 @@ public class Game implements ILogic {
         }
         if(window.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
             roundIsRunning = true;
+            runRound = true;
         }
         Vector3f normalized = panVec.normalize().mul(moveSpeed * (180/EngineManager.getFps()));
         cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
@@ -599,6 +601,7 @@ public class Game implements ILogic {
 
     float defaultRadius = 20f;
     Random random = new Random();
+    private boolean runRound = true;
     @Override
     public void update(float interval, MouseInput mouseInput) {
         if(spawnNewBloonOnNextTick >= 0) {
@@ -780,10 +783,9 @@ public class Game implements ILogic {
 
         bloons.addAll(targeted);
         targeted.clear();
-
         // run rounds
         // if there is no spawner or time left for next Spawner is done
-        if(currentSpawnerTimer == null || currentSpawnerTimer.canSpawnNext(interval)){
+        if(currentSpawnerTimer == null || currentSpawnerTimer.canSpawnNext(interval * gameSpeed/2f)){
             // go the next line (spawner or new round)
             if (roundScanner.hasNext() && roundIsRunning) {
                 String line = roundScanner.nextLine();
@@ -796,13 +798,17 @@ public class Game implements ILogic {
                 // determine indicator
                 switch (elements[0]) {
                   case "R":
-                    // end round
+                    roundNumber = Integer.parseInt(elements[1]);
                     roundIsRunning = false;
+                    // end round
+                    runRound = false;
+                    System.out.println(runRound);
                     break;
                   case "C":
                     int bloonQuantity = Integer.parseInt(elements[2]);
                     float spawnTime = Integer.parseInt(elements[3]);
-                    float timeToNextSpawn = Integer.parseInt(elements[4]);
+                    System.out.println(elements.length);
+                    float timeToNextSpawn = elements.length > 4 ? Integer.parseInt(elements[4]) : Integer.parseInt(elements[3]);
                     Spawner spawner = new Spawner(determineBloonType(elements[1]), bloonQuantity, spawnTime, timeToNextSpawn);
                     spawners.add(spawner);
                     // set the 
@@ -815,7 +821,7 @@ public class Game implements ILogic {
         // spawn the bloons from the spawners
         for(int i = 0; i < spawners.size(); i++){
             Spawner spawner = spawners.get(i);
-            if (spawner.checkSpawn(interval)) {
+            if (spawner.checkSpawn(interval  * gameSpeed)) {
                 BloonType type = spawner.getType();
                 Bloon bloon  = new Bloon("bloon", type,
                     (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
@@ -830,6 +836,17 @@ public class Game implements ILogic {
             }
             if (spawner.checkDone()) {
                 spawners.remove(spawner);
+            }
+        }
+
+        if (!runRound) {
+            //check if all bloons are gone
+            if (bloons.size() <= 0 && roundIsRunning) {
+                System.out.println("YEah");
+              roundIsRunning = false;
+              runRound = true;
+              // add round money
+              player.addMoney(99 + roundNumber);
             }
         }
 
@@ -976,5 +993,9 @@ public class Game implements ILogic {
     public void cleanup() {
         renderer.cleanup();
         loader.cleanup();
+    }
+
+    public int getRoundNumber() {
+        return roundNumber;
     }
 }

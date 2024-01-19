@@ -39,7 +39,7 @@ public class Spawner {
         // check if it's time to sapwn a bloon
         if(nextSpawnInterval <= timeElapsed){
             // get nextSpawnInterval
-            nextSpawnInterval += spawnInterval/bloonQuantity;
+            nextSpawnInterval += spawnInterval;
             System.out.println(nextSpawnInterval);
             return true;
         }
