@@ -37,6 +37,7 @@ public class GameplayScreen implements IGUIScreen {
     Texture music;
     Texture musicDisabled;
     Texture shop;
+    Texture sell;
     boolean gameSpeedToggled = false;
     Texture[] tower_icons = new Texture[8];
 
@@ -83,6 +84,7 @@ public class GameplayScreen implements IGUIScreen {
         play = loader.createTexture("assets/textures/play.png");
         music = loader.createTexture("assets/textures/music.png");
         musicDisabled = loader.createTexture("assets/textures/music_disabled.png");
+        sell = loader.createTexture("assets/textures/sell.png");
 
         tower_icons[0] = loader.createTexture("assets/textures/dart_monkey.png");
         tower_icons[1] = loader.createTexture("assets/textures/sniper_monkey.png");
@@ -226,7 +228,7 @@ public class GameplayScreen implements IGUIScreen {
                 }
             }
 
-            ImGui.setCursorPosY(ImGui.getCursorPosY() + 100);
+            ImGui.setCursorPosY(ImGui.getCursorPosY() + panelHeight/16);
             float upgradeSize = panelHeight * 0.1f;
             float upgradeIconSize = panelHeight * 0.075f;
             if(game.currentTowerInspecting != null) {
@@ -282,6 +284,17 @@ public class GameplayScreen implements IGUIScreen {
                     textOutline("OWNED", Color.GREEN, Color.black);
                     ImGui.popFont();
                     ImGui.pushFont(gm.monkeyFontTiny);
+                } else {
+                    ImGui.popFont();
+                    ImGui.pushFont(gm.monkeyFontTiny);
+                    String not = "Not";
+                    String upgraded = "Upgraded";
+                    ImVec2 notDim = ImGui.calcTextSize(not);
+                    ImVec2 upgradedDim = ImGui.calcTextSize(upgraded);
+                    ImGui.setCursorPos(panelPos1.x + upgradeSize/2 - notDim.x/2, old.y + upgradeSize/2 - gm.window.getHeight()/48);
+                    textOutline(not, Color.decode("#c1995f"), Color.decode("#7a5c3b"));
+                    ImGui.setCursorPos(panelPos1.x + upgradeSize/2 - upgradedDim.x/2, old.y + upgradeSize/2);
+                    textOutline(upgraded, Color.decode("#c1995f"), Color.decode("#7a5c3b"));
                 }
 
                 ImGui.setCursorPos(old.x + (upgradeSize * 0.25f) + (upgradeSize/2 - upgradeIconSize/2), old.y + (upgradeSize/2 - upgradeIconSize/2));
@@ -387,6 +400,15 @@ public class GameplayScreen implements IGUIScreen {
                     textOutline("OWNED", Color.green, Color.black);
                     ImGui.popFont();
                     ImGui.pushFont(gm.monkeyFontTiny);
+                } else {
+                    String not = "Not";
+                    String upgraded = "Upgraded";
+                    ImVec2 notDim = ImGui.calcTextSize(not);
+                    ImVec2 upgradedDim = ImGui.calcTextSize(upgraded);
+                    ImGui.setCursorPos(panelPos2.x + upgradeSize/2 - notDim.x/2, old.y + upgradeSize/2 - gm.window.getHeight()/48);
+                    textOutline(not, Color.decode("#c1995f"), Color.decode("#7a5c3b"));
+                    ImGui.setCursorPos(panelPos2.x + upgradeSize/2 - upgradedDim.x/2, old.y + upgradeSize/2);
+                    textOutline(upgraded, Color.decode("#c1995f"), Color.decode("#7a5c3b"));
                 }
 
                 ImGui.setCursorPos(old.x + (upgradeSize * 0.25f) + (upgradeSize/2 - upgradeIconSize/2), old.y + (upgradeSize/2 - upgradeIconSize/2));
@@ -429,12 +451,38 @@ public class GameplayScreen implements IGUIScreen {
                     ImGui.setCursorPos(old.x + upgradeSize/2 - upgradeDim.x/2 + (upgradeSize * 0.2f), old.y + upgradeSize/2);
                     textOutline(upgrade, Color.white, Color.black);
                 }
+
                 ImGui.popFont();
                 ImGui.pushFont(gm.monkeyFontSmall);
                 String cost2 = costValue2 == Integer.MAX_VALUE ? "" : "$" + String.valueOf(costValue2);
                 ImVec2 costDim2 = ImGui.calcTextSize(cost2);
                 ImGui.setCursorPos(old.x + upgradeSize/2 - costDim2.x/2 + (upgradeSize * 0.25f), old.y + upgradeSize);
                 textOutline(cost2, affordable2 ? Color.white : Color.red, Color.black);
+
+                float sellSize = upgradeSize * 2.25f;
+                ImGui.setCursorPos(old.x - sellSize/2, old.y + panelHeight/7);
+                ImVec2 oldSellPos = ImGui.getCursorPos();
+                ImGui.image(panel.getId(), sellSize, upgradeSize/2);
+                ImGui.setCursorPos(oldSellPos.x + sellSize/32, oldSellPos.y + upgradeSize/2 - upgradeSize/4 - upgradeSize/3/2);
+                ImGui.image(coin.getId(), upgradeSize/3, upgradeSize/3);
+                ImGui.setCursorPos(oldSellPos.x + sellSize/16 + upgradeSize/3, oldSellPos.y + upgradeSize/2 - upgradeSize/3);
+                float towerValue = selected.getValue() * 0.7f;
+                textOutline("$" + String.valueOf((int)towerValue), Color.white, Color.BLACK);
+                ImGui.setCursorPos(oldSellPos.x + sellSize/4 + upgradeSize/1.25f, oldSellPos.y);
+                ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
+                ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
+                ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);
+                if(ImGui.imageButton(sell.getId(), sellSize * 0.5f, sellSize/4)) {
+                    game.player.addMoney((int)towerValue);
+                    Game.audioSources.get("sell").play();
+                    game.entities.remove(selected.getName());
+                    game.monkeys.remove(selected);
+                    game.currentTowerInspecting = null;
+                    game.range.setEnabled(false);
+                }
+                ImGui.popStyleColor(3);
+                ImGui.setCursorPos(oldSellPos.x + sellSize/4 + upgradeSize/1.25f + sellSize * 0.125f, oldSellPos.y + upgradeSize/2 - upgradeSize/3);
+                textOutline("Sell", Color.white, Color.BLACK);
             }
 
             float imageSize = panelHeight * 0.1388f;
