@@ -120,7 +120,7 @@ public class Game implements ILogic {
     private Scanner roundScanner;
     private boolean roundIsRunning;
     private Entity range;
-    private int roundNumber;
+    private int roundNumber = 1;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -587,8 +587,10 @@ public class Game implements ILogic {
             panVec.add(cameraPos.getRight().mul(moveSpeed));
         }
         if(window.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
-            roundIsRunning = true;
-            runRound = true;
+            if(bloons.size() < 1){
+                roundIsRunning = true;
+                runRound = true;
+            }
         }
         Vector3f normalized = panVec.normalize().mul(moveSpeed * (180/EngineManager.getFps()));
         cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
@@ -785,21 +787,16 @@ public class Game implements ILogic {
         targeted.clear();
         // run rounds
         // if there is no spawner or time left for next Spawner is done
-        if(currentSpawnerTimer == null || currentSpawnerTimer.canSpawnNext(interval * gameSpeed/2f)){
+        if(currentSpawnerTimer == null || currentSpawnerTimer.canSpawnNext(interval * gameSpeed)){
             // go the next line (spawner or new round)
-            if (roundScanner.hasNext() && roundIsRunning) {
+            if (roundScanner.hasNext() && roundIsRunning && runRound) {
                 String line = roundScanner.nextLine();
-                // format: 1st char (indicator):
-                // R - Round
-                // C - Client
-                // W - WaitClient
                 // 2nd char and 3rd char are constructors for either client or waitClient
                 String[] elements = line.split(" ");
                 // determine indicator
                 switch (elements[0]) {
                   case "R":
                     roundNumber = Integer.parseInt(elements[1]);
-                    roundIsRunning = false;
                     // end round
                     runRound = false;
                     System.out.println(runRound);
@@ -816,6 +813,17 @@ public class Game implements ILogic {
                     break;
                 }
               }
+        }
+
+        if (!runRound) {
+            //check if all bloons are gone
+            if (bloons.size() <= 0 && roundIsRunning) {
+                System.out.println("YEah");
+              roundIsRunning = false;
+              runRound = true;
+              // add round money
+              player.addMoney(99 + roundNumber);
+            }
         }
 
         // spawn the bloons from the spawners
@@ -838,19 +846,7 @@ public class Game implements ILogic {
                 spawners.remove(spawner);
             }
         }
-
-        if (!runRound) {
-            //check if all bloons are gone
-            if (bloons.size() <= 0 && roundIsRunning) {
-                System.out.println("YEah");
-              roundIsRunning = false;
-              runRound = true;
-              // add round money
-              player.addMoney(99 + roundNumber);
-            }
-        }
-
-        
+       
         // update the physics world
         physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);
 
