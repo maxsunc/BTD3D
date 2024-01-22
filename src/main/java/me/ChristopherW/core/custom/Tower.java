@@ -160,10 +160,12 @@ public class Tower extends AnimatedEntity{
         if(index == 1){
             ((ITower)this).upgrade(getPath1());
             setPath1(getPath1().nextUpgrade);
+            this.value += getPath1().cost;
         }
         else if(index == 2){
             ((ITower)this).upgrade(getPath2());
             setPath2(getPath2().nextUpgrade);
+            this.value += getPath2().cost;
         }
     }
 

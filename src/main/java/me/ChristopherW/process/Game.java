@@ -68,6 +68,7 @@ public class Game implements ILogic {
     
     public FloatBuffer depthBuffer;
 
+    public SoundSource music;
     public static PhysicsSpace physicsSpace;
     private Camera camera;
     public static Texture defaultTexture;
@@ -101,7 +102,7 @@ public class Game implements ILogic {
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
     public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
     private ArrayList<Projectile> darts = new ArrayList<Projectile>();
-    private ArrayList<Tower> monkeys = new ArrayList<Tower>();
+    public ArrayList<Tower> monkeys = new ArrayList<Tower>();
     public Vector3f[] bloonNodes;
     private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower"};
     private ArrayList<Spawner> spawners = new ArrayList<Spawner>();
@@ -118,8 +119,8 @@ public class Game implements ILogic {
     public boolean isInvalid = false;
     private Spawner currentSpawnerTimer;
     private Scanner roundScanner;
-    private boolean roundIsRunning;
-    private Entity range;
+    public boolean roundIsRunning;
+    public Entity range;
     private int roundNumber = 1;
 
     public Game() throws Exception {
@@ -145,9 +146,10 @@ public class Game implements ILogic {
         loadSounds();
     }
 
-    public void playRandom(String[] keys) {
+    public SoundSource playRandom(String[] keys) {
         int randomNumber = random.nextInt(keys.length);
         audioSources.get(keys[randomNumber]).play();
+        return audioSources.get(keys[randomNumber]);
     }
 
     void loadSounds() {
@@ -159,8 +161,12 @@ public class Game implements ILogic {
             audioSources.put("jazz", jazz);
             SoundSource jazzHD = soundManager.createSound("jazzHD", "assets/sounds/MusicBTD5JazzA.ogg", new Vector3f(0,0,0), true, false, 0.4f);
             audioSources.put("jazzHD", jazzHD);
-            SoundSource upbeat = soundManager.createSound("upbeat", "assets/sounds/MusicUpbeat1A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
-            audioSources.put("upbeat", upbeat);
+            SoundSource upbeat1 = soundManager.createSound("upbeat1", "assets/sounds/MusicUpbeat1A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("upbeat1", upbeat1);
+            SoundSource upbeat2 = soundManager.createSound("upbeat2", "assets/sounds/MusicUpbeat2A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("upbeat2", upbeat2);
+            SoundSource upbeat3 = soundManager.createSound("upbeat3", "assets/sounds/MusicUpbeat3A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            audioSources.put("upbeat3", upbeat3);
 
             SoundSource tower_place_1 = soundManager.createSound("tower_place_1", "assets/sounds/PlaceTowerMonkey01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("tower_place_1", tower_place_1);
@@ -218,6 +224,8 @@ public class Game implements ILogic {
 
             SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade_hd.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("upgrade", upgrade);
+            SoundSource sell = soundManager.createSound("sell", "assets/sounds/UIGetGold.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("sell", sell);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -341,7 +349,7 @@ public class Game implements ILogic {
         range.getModel().setAllColorBlending(1f);
         range.setEnabled(false);
 
-        playRandom(new String[]{"upbeat", "jazzHD"});
+        music = playRandom(new String[]{"upbeat1", "upbeat2", "upbeat3"});
     }
 
     int i = 0;
@@ -503,6 +511,10 @@ public class Game implements ILogic {
         if(player.getMoney() < TowerType.values()[monkeyMode - 1].cost)
             return false;
 
+        if(previewMonkey.getPosition().distance(0,0,0) > 50)
+            return false;
+
+
         for(Tower monkey : monkeys) {
             Vector3f monkeyPos = monkey.getPosition();
             if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
@@ -553,6 +565,7 @@ public class Game implements ILogic {
     public void input(MouseInput input, double deltaTime, int frame) {
 
         if(monkeyMode > 0) {
+            currentTowerInspecting = null;
             Entity previewMonkey = entities.get(previewKeys[monkeyMode - 1]);
             previewMonkey.setPosition(new Vector3f(mouseWorldPos));
             isInvalid = !checkPlacementValidity(previewMonkey);
@@ -603,7 +616,7 @@ public class Game implements ILogic {
 
     float defaultRadius = 20f;
     Random random = new Random();
-    private boolean runRound = true;
+    public boolean runRound = true;
     @Override
     public void update(float interval, MouseInput mouseInput) {
         if(spawnNewBloonOnNextTick >= 0) {
