@@ -809,7 +809,6 @@ public class Game implements ILogic {
                 // determine indicator
                 switch (elements[0]) {
                   case "R":
-                    roundNumber = Integer.parseInt(elements[1]);
                     // end round
                     runRound = false;
                     System.out.println(runRound);
@@ -836,6 +835,8 @@ public class Game implements ILogic {
               runRound = true;
               // add round money
               player.addMoney(99 + roundNumber);
+              // onlychangein the next round when all bloons are gone
+              roundNumber++;
             }
         }
 
