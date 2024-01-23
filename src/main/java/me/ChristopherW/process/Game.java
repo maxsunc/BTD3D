@@ -155,22 +155,30 @@ public class Game implements ILogic {
         audioSources.get(keys[randomNumber]).play();
         return audioSources.get(keys[randomNumber]);
     }
+    public SoundSource getRandom(String[] keys) {
+        int randomNumber = random.nextInt(keys.length);
+        return audioSources.get(keys[randomNumber]);
+    }
 
     void loadSounds() {
         try {
             // load the sound file to a buffer, then create a new audio source at the world origin with the buffer attached
             // store that sound source to a map of sounds
             // repeat this for each sound file
-            SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("jazz", jazz);
-            SoundSource jazzHD = soundManager.createSound("jazzHD", "assets/sounds/MusicBTD5JazzA.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            SoundSource jazzHD = soundManager.createSound("jazzHD", "assets/sounds/MusicBTD5JazzA.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("jazzHD", jazzHD);
-            SoundSource upbeat1 = soundManager.createSound("upbeat1", "assets/sounds/MusicUpbeat1A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            SoundSource upbeat1 = soundManager.createSound("upbeat1", "assets/sounds/MusicUpbeat1A.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("upbeat1", upbeat1);
-            SoundSource upbeat2 = soundManager.createSound("upbeat2", "assets/sounds/MusicUpbeat2A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            SoundSource upbeat2 = soundManager.createSound("upbeat2", "assets/sounds/MusicUpbeat2A.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("upbeat2", upbeat2);
-            SoundSource upbeat3 = soundManager.createSound("upbeat3", "assets/sounds/MusicUpbeat3A.ogg", new Vector3f(0,0,0), true, false, 0.4f);
+            SoundSource upbeat3 = soundManager.createSound("upbeat3", "assets/sounds/MusicUpbeat3A.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("upbeat3", upbeat3);
+            SoundSource musicBMC = soundManager.createSound("musicBMC", "assets/sounds/MusicBMCStreetParty.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("musicBMC", musicBMC);
+            SoundSource sailsAgain = soundManager.createSound("sailsAgain", "assets/sounds/MusicSailsAgain.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("sailsAgain", sailsAgain);
 
             SoundSource tower_place_1 = soundManager.createSound("tower_place_1", "assets/sounds/PlaceTowerMonkey01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("tower_place_1", tower_place_1);
@@ -365,7 +373,7 @@ public class Game implements ILogic {
         range.getModel().setAllColorBlending(1f);
         range.setEnabled(false);
 
-        music = playRandom(new String[]{"upbeat1", "upbeat2", "upbeat3"});
+        music = playRandom(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
     }
 
     int i = 0;
@@ -490,7 +498,9 @@ public class Game implements ILogic {
                 spawnNewBloonOnNextTick = 8;
             if(key ==GLFW.GLFW_KEY_0)
                 spawnNewBloonOnNextTick = 9;
-
+            if(key == GLFW.GLFW_KEY_RIGHT){
+                music.stop();
+            }
             if(key ==GLFW.GLFW_KEY_ESCAPE) {
                 monkeyMode = 0;
             }
@@ -645,7 +655,7 @@ public class Game implements ILogic {
     @Override
     public void update(float interval, MouseInput mouseInput) {
         if(spawnNewBloonOnNextTick >= 0) {
-            BloonType type = BloonType.values()[Math.min(spawnNewBloonOnNextTick, BloonType.values().length - 1) + (secondBloonRow ? 10 : 0)];
+            BloonType type = BloonType.values()[Math.min(spawnNewBloonOnNextTick + (secondBloonRow ? 10 : 0), BloonType.values().length - 1)];
             Bloon b = new Bloon("bloon", type,
                 (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
                 new Vector3f(bloonNodes[0]), 
@@ -909,6 +919,17 @@ public class Game implements ILogic {
                 spawners.remove(spawner);
             }
         }
+        if(!music.isPlaying()){
+            music.stop();
+            float gain = music.getGain();
+            SoundSource soundSource = music;
+            do {
+                soundSource = getRandom(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
+            }  while(soundSource.getName().equals(music.getName()));
+            music = soundSource;
+            music.play();
+            music.setGain(gain);
+        }
        
         // update the physics world
         physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);
@@ -925,7 +946,7 @@ public class Game implements ILogic {
 
     BloonType determineBloonType(String givenType) {
     BloonType bloonType;
-    // determines bloon attribute based on String
+    // determines bloon type based on String
     switch (givenType) {
     case "RED":
         bloonType = BloonType.RED;
@@ -966,6 +987,7 @@ public class Game implements ILogic {
     }
     return bloonType;
   }
+
 
     
     @Override

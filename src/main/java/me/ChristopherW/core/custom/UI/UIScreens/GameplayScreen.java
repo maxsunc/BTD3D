@@ -159,15 +159,15 @@ public class GameplayScreen implements IGUIScreen {
         ImGui.setNextWindowPos(5,gm.window.getHeight() - 5, 0, 0,1);
         if (ImGui.begin("gameplay_L_bottom", p_open, gm.window_flags)) {
             float imageSize = panelHeight * 0.07f;
-            boolean musicStatus = game.music.isPlaying();
+            boolean musicStatus = game.music.getGain() > 0f;
             ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 1, 1, 1, 0f);
             if(ImGui.imageButton(musicStatus ? music.getId() : musicDisabled.getId(), imageSize, imageSize)) {
                 if(musicStatus)
-                    game.music.pause();
+                    game.music.setGain(0.0f);
                 else
-                    game.music.play();
+                    game.music.setGain(0.4f);;
             }
             ImGui.sameLine();
             if(ImGui.imageButton(game.autoStart ? autoStartEnabled.getId() : autoStart.getId(), imageSize, imageSize)) {
