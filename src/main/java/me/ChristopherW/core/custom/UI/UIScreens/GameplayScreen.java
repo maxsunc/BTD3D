@@ -36,6 +36,8 @@ public class GameplayScreen implements IGUIScreen {
     Texture play;
     Texture music;
     Texture musicDisabled;
+    Texture autoStart;
+    Texture autoStartEnabled;
     Texture shop;
     Texture sell;
     boolean gameSpeedToggled = false;
@@ -79,6 +81,8 @@ public class GameplayScreen implements IGUIScreen {
         upgrade = loader.createTexture("assets/textures/upgrade.png");
         upgradeDisabled = loader.createTexture("assets/textures/upgrade_disabled.png");
         upgradePanel = loader.createTexture("assets/textures/upgrade_panel.png");
+        autoStart = loader.createTexture("assets/textures/auto_start.png");
+        autoStartEnabled = loader.createTexture("assets/textures/auto_start_active.png");
 
         cancel = loader.createTexture("assets/textures/cancel.png");
         play = loader.createTexture("assets/textures/play.png");
@@ -164,6 +168,10 @@ public class GameplayScreen implements IGUIScreen {
                     game.music.pause();
                 else
                     game.music.play();
+            }
+            ImGui.sameLine();
+            if(ImGui.imageButton(game.autoStart ? autoStartEnabled.getId() : autoStart.getId(), imageSize, imageSize)) {
+                game.autoStart = !game.autoStart;
             }
             ImGui.popStyleColor(3);
         }

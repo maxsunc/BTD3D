@@ -6,6 +6,7 @@ import org.joml.Random;
 import org.joml.Vector3f;
 
 import me.ChristopherW.core.custom.Bloon;
+import me.ChristopherW.core.custom.BloonType;
 import me.ChristopherW.core.custom.Projectile;
 import me.ChristopherW.core.custom.Tower;
 import me.ChristopherW.core.custom.TowerType;
@@ -83,7 +84,11 @@ public class SniperMonkey extends Tower implements ITower {
         this.setAnimationId(this.getAttackAnimationId());
         this.lookAtY(new Vector3f(target.getPosition()));
 
-
+        if(target.getType() == BloonType.LEAD) {
+            Launcher.getGame().playRandom(new String[]{"metal_hit_1", "metal_hit_2", "metal_hit_3", "metal_hit_4"});
+            this.setTick(0);
+            return;
+        }
         for(int i = 0; i < this.getDamage(); i++) {
             int result = target.damage(this.getDamage());
             if(result >= 0) {

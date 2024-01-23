@@ -90,6 +90,9 @@ public class Game implements ILogic {
     public static Texture PINK;
     public static Texture BLACK;
     public static Texture WHITE;
+    public static Texture LEAD;
+    public static Texture ZEBRA;
+    public static Texture RAINBOW;
     public static Texture CERAMIC;
     public static Texture MOAB;
     public static Texture MOAB_1;
@@ -116,6 +119,7 @@ public class Game implements ILogic {
     public Player player;
     public int bloonCounter = 0;    
     public int monkeyMode = 0;
+    public boolean autoStart = false;
     public boolean isInvalid = false;
     private Spawner currentSpawnerTimer;
     private Scanner roundScanner;
@@ -222,6 +226,15 @@ public class Game implements ILogic {
             SoundSource ceramic_hit_4 = soundManager.createSound("ceramic_hit_4", "assets/sounds/HitCeramic04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put(ceramic_hit_4.getName(), ceramic_hit_4);
 
+            SoundSource metal_hit_1 = soundManager.createSound("metal_hit_1", "assets/sounds/HitMetal01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(metal_hit_1.getName(), metal_hit_1);
+            SoundSource metal_hit_2 = soundManager.createSound("metal_hit_2", "assets/sounds/HitMetal02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(metal_hit_2.getName(), metal_hit_2);
+            SoundSource metal_hit_3 = soundManager.createSound("metal_hit_3", "assets/sounds/HitMetal03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(metal_hit_3.getName(), metal_hit_3);
+            SoundSource metal_hit_4 = soundManager.createSound("metal_hit_4", "assets/sounds/HitMetal04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put(metal_hit_4.getName(), metal_hit_4);
+
             SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade_hd.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("upgrade", upgrade);
             SoundSource sell = soundManager.createSound("sell", "assets/sounds/UIGetGold.ogg", new Vector3f(0,0,0), false, false, 0.4f);
@@ -248,6 +261,9 @@ public class Game implements ILogic {
         PINK = loader.createTextureColor(Color.PINK);
         BLACK = loader.createTextureColor(Color.decode("#262626"));
         WHITE = loader.createTextureColor(Color.decode("#E3E3E3"));
+        LEAD = loader.createTexture("assets/textures/materials/Lead.png");
+        ZEBRA = loader.createTexture("assets/textures/materials/Zebra.png");
+        RAINBOW = loader.createTexture("assets/textures/materials/Rainbow.png");
         CERAMIC = loader.createTexture("assets/textures/materials/Ceramic.png");
         MOAB = loader.createTexture("assets/textures/materials/MoabStandardDiffuse.png");
         MOAB_1 = loader.createTexture("assets/textures/materials/MoabDamage1Diffuse.png");
@@ -402,7 +418,7 @@ public class Game implements ILogic {
 
                     switch (type) {
                         case BOMB_TOWER:
-                            monkey = new BombTower("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new BombTower("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -410,7 +426,7 @@ public class Game implements ILogic {
                             );
                             break;
                         case DART_MONKEY:
-                            monkey = new DartMonkey("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new DartMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -418,7 +434,7 @@ public class Game implements ILogic {
                             );
                             break;
                         case SNIPER_MONKEY:
-                            monkey = new SniperMonkey("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new SniperMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -426,7 +442,7 @@ public class Game implements ILogic {
                             );
                             break;
                         default:
-                            monkey = new Tower("monkey" + (monkeys.size() + 1), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new Tower("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -438,7 +454,7 @@ public class Game implements ILogic {
 
                     monkeys.add(monkey);
                     monkey.setAnimationId(monkey.getSpawnAnimationId());
-                    entities.put("monkey" + monkeys.size(), monkey);
+                    entities.put(monkey.getName(), monkey);
                     playRandom(new String[]{"tower_place_1", "tower_place_2"});
                     player.removeMoney(monkey.getValue());
                     monkeyMode = 0;
@@ -448,9 +464,12 @@ public class Game implements ILogic {
     }
 
     int spawnNewBloonOnNextTick = -1;
+    boolean secondBloonRow = false;
 
     public void keyDown(long window, int key, int scancode, int action, int mods) {
         if(action == GLFW.GLFW_PRESS) {
+            if(key ==GLFW.GLFW_KEY_LEFT_SHIFT)
+                secondBloonRow = true;
             if(key ==GLFW.GLFW_KEY_1)
                 spawnNewBloonOnNextTick = 0;
             if(key ==GLFW.GLFW_KEY_2)
@@ -469,6 +488,8 @@ public class Game implements ILogic {
                 spawnNewBloonOnNextTick = 7;
             if(key ==GLFW.GLFW_KEY_9)
                 spawnNewBloonOnNextTick = 8;
+            if(key ==GLFW.GLFW_KEY_0)
+                spawnNewBloonOnNextTick = 9;
 
             if(key ==GLFW.GLFW_KEY_ESCAPE) {
                 monkeyMode = 0;
@@ -497,6 +518,10 @@ public class Game implements ILogic {
                     audioSources.get("upgrade").play();
                     }
             }
+        }
+        if(action == GLFW.GLFW_RELEASE) {
+            if(key == GLFW.GLFW_KEY_LEFT_SHIFT)
+                secondBloonRow = false;
         }
     }
 
@@ -620,12 +645,12 @@ public class Game implements ILogic {
     @Override
     public void update(float interval, MouseInput mouseInput) {
         if(spawnNewBloonOnNextTick >= 0) {
-            BloonType type = BloonType.values()[spawnNewBloonOnNextTick];
+            BloonType type = BloonType.values()[Math.min(spawnNewBloonOnNextTick, BloonType.values().length - 1) + (secondBloonRow ? 10 : 0)];
             Bloon b = new Bloon("bloon", type,
                 (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
                 new Vector3f(bloonNodes[0]), 
                 new Vector3f(),
-                new Vector3f((type == BloonType.MOAB) ? 0.075f : 0.5f)
+                new Vector3f(type.size)
             );
             bloons.add(b);
             bloonCounter++;
@@ -744,7 +769,25 @@ public class Game implements ILogic {
                         if(bloon.isPopped()) {
                             dart.setTarget(null);
                         } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
-                            int result = bloon.damage(dart.getDamage());
+
+                            if(bloon.getType() == BloonType.LEAD) {
+                                if(dart instanceof Bomb) {
+                                    int result = bloon.damage(dart.getDamage());
+                                    if(result >= 0) {
+                                        playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
+                                        
+                                        player.addMoney(1);
+                                        if(result > 0) {
+                                            entities.remove(bloon.getName());
+                                            bloons.remove(bloon);
+                                            bloon.setPopped(true);
+                                        }
+                                    }
+                                } else {
+                                    playRandom(new String[]{"metal_hit_1", "metal_hit_2", "metal_hit_3", "metal_hit_4"});
+                                }
+                            } else {
+                                int result = bloon.damage(dart.getDamage());
                                 if(result >= 0) {
                                     playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                                     
@@ -755,6 +798,8 @@ public class Game implements ILogic {
                                         bloon.setPopped(true);
                                     }
                                 }
+                            }
+                            
                             
                             dart.setEnabled(false);
                             darts.remove(dart);
@@ -830,13 +875,17 @@ public class Game implements ILogic {
         if (!runRound) {
             //check if all bloons are gone
             if (bloons.size() <= 0 && roundIsRunning) {
-                System.out.println("YEah");
-              roundIsRunning = false;
-              runRound = true;
-              // add round money
-              player.addMoney(99 + roundNumber);
-              // onlychangein the next round when all bloons are gone
-              roundNumber++;
+                System.out.println("Round Ended");
+                roundIsRunning = false;
+                runRound = true;
+                // add round money
+                player.addMoney(99 + roundNumber);
+                // onlychangein the next round when all bloons are gone
+                roundNumber++;
+
+                if(autoStart) {
+                    roundIsRunning = true;
+                }
             }
         }
 
@@ -849,7 +898,7 @@ public class Game implements ILogic {
                     (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
                     new Vector3f(bloonNodes[0]), 
                     new Vector3f(),
-                    new Vector3f((type == BloonType.MOAB) ? 0.075f : 0.5f)
+                    new Vector3f(type.size)
                 );
                 bloons.add(bloon);
                 bloonCounter++;
@@ -878,37 +927,40 @@ public class Game implements ILogic {
     BloonType bloonType;
     // determines bloon attribute based on String
     switch (givenType) {
-      case "RED":
+    case "RED":
         bloonType = BloonType.RED;
         break;
-      case "BLUE":
+    case "BLUE":
         bloonType = BloonType.BLUE;
         break;
-      case "GREEN":
+    case "GREEN":
         bloonType = BloonType.GREEN;
         break;
-      case "YELLOW":
+    case "YELLOW":
         bloonType = BloonType.YELLOW;
         break;
-      case "PINK":
+    case "PINK":
         bloonType = BloonType.PINK;
         break;
-      case "BLACK":
+    case "BLACK":
         bloonType = BloonType.BLACK;
         break;
-    //   case "ZEBRA":
-    //     bloonType = BloonType.ZEBRA;
-    //     break;
-    //   case "RAINBOW":
-    //     bloonType = BloonType.RAINBOW;
-    //     break;
-      case "CERAMIC":
+    case "LEAD":
+        bloonType = BloonType.LEAD;
+        break;
+    case "ZEBRA":
+        bloonType = BloonType.ZEBRA;
+        break;
+    case "RAINBOW":
+        bloonType = BloonType.RAINBOW;
+        break;
+    case "CERAMIC":
         bloonType = BloonType.CERAMIC;
         break;
-      case "MOAB":
+    case "MOAB":
         bloonType = BloonType.MOAB;
         break;
-      default:
+    default:
         bloonType = BloonType.RED;
         break;
     }

@@ -25,6 +25,27 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Utils {
+    public static String generateHash(int length) { 
+        
+        // choose a Character random from this String 
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789" + "abcdefghijklmnopqrstuvxyz"; 
+        
+        // create StringBuffer size of AlphaNumericString 
+        StringBuilder sb = new StringBuilder(length); 
+        
+        for (int i = 0; i < length; i++) { 
+            
+            // generate a random number between 
+            // 0 to AlphaNumericString variable length 
+            int index  = (int)(AlphaNumericString.length() * Math.random()); 
+            
+            // add Character one by one in end of sb 
+            sb.append(AlphaNumericString.charAt(index)); 
+        } 
+        
+        return sb.toString(); 
+    } 
+
     public static float[] listFloatToArray(List<Float> list) {
         int size = list != null ? list.size() : 0;
         float[] floatArr = new float[size];

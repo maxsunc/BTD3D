@@ -116,37 +116,141 @@ public class Bloon extends Entity{
                             b.setNodeIndex(this.nodeIndex);
                         }
                     }
-                    if(type == BloonType.CERAMIC) {
+                    else if(type == BloonType.CERAMIC) {
+                        newBloonType = BloonType.RAINBOW;
+
                         game.playRandom(new String[]{"ceramic_destroy_1", "ceramic_destroy_2", "ceramic_destroy_3"});
 
                         Vector3f diff = new Vector3f();
                         game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
-                        for(int i = 0; i < 7; i++) {
-                            // move it towards the node pos
-                            Vector3f newPos = new Vector3f();
-                            Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
-                            prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), i/9f, newPos);
-                            Vector3f difference = new Vector3f();
-                            game.bloonNodes[this.nodeIndex].sub(newPos, difference);
-                            difference.normalize();
-                            Bloon b = new Bloon("bloon", (i > 3) ? BloonType.BLACK : BloonType.WHITE,
-                                Model.copy(Game.bloonModel), 
-                                new Vector3f(newPos), 
-                                new Vector3f(),
-                                new Vector3f(0.5f)
-                            );
-                            game.bloons.add(b);
-                            game.bloonCounter++;
-                            game.entities.put("bloon" + game.bloonCounter, b);
-                            b.setName("bloon" + game.bloonCounter);
-                            b.setCurrentHeading(difference);
-                            b.setNodeIndex(this.nodeIndex);
-                        }
+                        // move it towards the node pos
+                        Vector3f newPos = new Vector3f();
+                        Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                        prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), 1/9f, newPos);
+                        Vector3f difference = new Vector3f();
+                        game.bloonNodes[this.nodeIndex].sub(newPos, difference);
+                        difference.normalize();
+                        BloonType bloonType = BloonType.RAINBOW;
+                        Bloon b = new Bloon("bloon", bloonType,
+                            Model.copy(Game.bloonModel), 
+                            new Vector3f(newPos), 
+                            new Vector3f(),
+                            new Vector3f(bloonType.size)
+                        );
+                        game.bloons.add(b);
+                        game.bloonCounter++;
+                        game.entities.put("bloon" + game.bloonCounter, b);
+                        b.setName("bloon" + game.bloonCounter);
+                        b.setCurrentHeading(difference);
+                        b.setNodeIndex(this.nodeIndex);
+                        
+                    }
+                    else if(type == BloonType.RAINBOW) {
+                        newBloonType = BloonType.ZEBRA;
+
+                        Vector3f diff = new Vector3f();
+                        game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
+                        // move it towards the node pos
+                        Vector3f newPos = new Vector3f();
+                        Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                        prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), 1/9f, newPos);
+                        Vector3f difference = new Vector3f();
+                        game.bloonNodes[this.nodeIndex].sub(newPos, difference);
+                        difference.normalize();
+                        BloonType bloonType = BloonType.ZEBRA;
+                        Bloon b = new Bloon("bloon", bloonType,
+                            Model.copy(Game.bloonModel), 
+                            new Vector3f(newPos), 
+                            new Vector3f(),
+                            new Vector3f(bloonType.size)
+                        );
+                        game.bloons.add(b);
+                        game.bloonCounter++;
+                        game.entities.put("bloon" + game.bloonCounter, b);
+                        b.setName("bloon" + game.bloonCounter);
+                        b.setCurrentHeading(difference);
+                        b.setNodeIndex(this.nodeIndex);
+                    }
+                    else if(type == BloonType.ZEBRA) {
+                        newBloonType = BloonType.BLACK;
+                        Vector3f diff = new Vector3f();
+                        game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
+                        // move it towards the node pos
+                        Vector3f newPos = new Vector3f();
+                        Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                        prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), 1/9f, newPos);
+                        Vector3f difference = new Vector3f();
+                        game.bloonNodes[this.nodeIndex].sub(newPos, difference);
+                        difference.normalize();
+                        BloonType bloonType = BloonType.WHITE;
+                        Bloon b = new Bloon("bloon", bloonType,
+                            Model.copy(Game.bloonModel), 
+                            new Vector3f(newPos), 
+                            new Vector3f(),
+                            new Vector3f(bloonType.size)
+                        );
+                        game.bloons.add(b);
+                        game.bloonCounter++;
+                        game.entities.put("bloon" + game.bloonCounter, b);
+                        b.setName("bloon" + game.bloonCounter);
+                        b.setCurrentHeading(difference);
+                        b.setNodeIndex(this.nodeIndex);
+                    }
+                    else if(type == BloonType.LEAD) {
+                        newBloonType = BloonType.BLACK;
+                        Vector3f diff = new Vector3f();
+                        game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
+                        // move it towards the node pos
+                        Vector3f newPos = new Vector3f();
+                        Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                        prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), 1/9f, newPos);
+                        Vector3f difference = new Vector3f();
+                        game.bloonNodes[this.nodeIndex].sub(newPos, difference);
+                        difference.normalize();
+                        BloonType bloonType = BloonType.BLACK;
+                        Bloon b = new Bloon("bloon", bloonType,
+                            Model.copy(Game.bloonModel), 
+                            new Vector3f(newPos), 
+                            new Vector3f(),
+                            new Vector3f(bloonType.size)
+                        );
+                        game.bloons.add(b);
+                        game.bloonCounter++;
+                        game.entities.put("bloon" + game.bloonCounter, b);
+                        b.setName("bloon" + game.bloonCounter);
+                        b.setCurrentHeading(difference);
+                        b.setNodeIndex(this.nodeIndex);
+                    }
+                    else if(type == BloonType.BLACK || type == BloonType.WHITE) {
+                        newBloonType = BloonType.PINK;
+                        Vector3f diff = new Vector3f();
+                        game.bloonNodes[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
+                        // move it towards the node pos
+                        Vector3f newPos = new Vector3f();
+                        Vector3f prev = game.bloonNodes[Math.max(this.nodeIndex - 1,0)];
+                        prev.lerp(new Vector3f(getPosition().x, prev.y, getPosition().z), 1/9f, newPos);
+                        Vector3f difference = new Vector3f();
+                        game.bloonNodes[this.nodeIndex].sub(newPos, difference);
+                        difference.normalize();
+                        BloonType bloonType = BloonType.PINK;
+                        Bloon b = new Bloon("bloon", bloonType,
+                            Model.copy(Game.bloonModel), 
+                            new Vector3f(newPos), 
+                            new Vector3f(),
+                            new Vector3f(bloonType.size)
+                        );
+                        game.bloons.add(b);
+                        game.bloonCounter++;
+                        game.entities.put("bloon" + game.bloonCounter, b);
+                        b.setName("bloon" + game.bloonCounter);
+                        b.setCurrentHeading(difference);
+                        b.setNodeIndex(this.nodeIndex);
                     }
 
                     this.speed = newBloonType.speed;
                     this.health = newBloonType.health;
                     this.getModel().setAllMaterials(new Material(1f, 5f, newBloonType.color));
+                    this.setScale(newBloonType.size);
                     this.type = newBloonType;
                     return 0;
                 }
