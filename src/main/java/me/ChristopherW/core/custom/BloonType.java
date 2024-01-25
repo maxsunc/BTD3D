@@ -15,7 +15,7 @@ public enum BloonType {
 	ZEBRA(1,23,1.8f, Game.ZEBRA, 0.5f),
 	RAINBOW(1,47,2.2f, Game.RAINBOW, 0.5f),
 	CERAMIC(10, 104,2.5f, Game.CERAMIC, 0.5f),
-	MOAB(200,616,1f, Game.MOAB, 0.075f);
+	MOAB(132,616,1f, Game.MOAB, 0.075f);
 	
 	public int health;
 	public int RBE;
@@ -28,7 +28,7 @@ public enum BloonType {
 	BloonType(int health, int RBE, float speed, Texture color, float size) {
 		this.health = health;
 		this.RBE = RBE;
-		this.speed = speed;
+		this.speed = speed * 0.91f;
 		this.color = color;
 		this.size = size;
 	}
