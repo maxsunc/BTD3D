@@ -46,6 +46,7 @@ import me.ChristopherW.core.custom.Towers.BombTower;
 import me.ChristopherW.core.custom.Towers.DartMonkey;
 import me.ChristopherW.core.custom.Towers.ITower;
 import me.ChristopherW.core.custom.Towers.SniperMonkey;
+import me.ChristopherW.core.custom.Towers.SuperMonkey;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
@@ -457,6 +458,14 @@ public class Game implements ILogic {
                                 type
                             );
                             break;
+                        case SUPER_MONKEY:
+                            monkey = new SuperMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                                mouseWorldPos, 
+                                new Vector3f(), 
+                                new Vector3f(0.1f,0.1f,0.1f),
+                                type
+                            );
+                            break;
                         default:
                             monkey = new Tower("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
                                 mouseWorldPos, 
@@ -786,7 +795,7 @@ public class Game implements ILogic {
                     if(bloon != null) {
                         if(bloon.isPopped()) {
                             dart.setTarget(null);
-                        } else if(dart.getPosition().distance(bloon.getPosition()) < 1f) {
+                        } else if(dart.getPosition().distance(bloon.getPosition()) < 1.25f) {
 
                             if(bloon.getType() == BloonType.LEAD) {
                                 if(dart instanceof Bomb) {
@@ -855,7 +864,7 @@ public class Game implements ILogic {
                     entities.remove(dart.getName());
                     continue;
                 }
-                dart.translate(new Vector3f(dart.getDestinationDirection()).mul(gameSpeed * dart.getSpeed() * interval));
+                dart.translate(new Vector3f(dart.getDestinationDirection()).mul(dart.getSpeed() * interval));
             }
         }
 

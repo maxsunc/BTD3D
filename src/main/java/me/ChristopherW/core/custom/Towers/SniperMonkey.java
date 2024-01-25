@@ -53,7 +53,7 @@ public class SniperMonkey extends Tower implements ITower {
                 this.setRate(this.getRate() * 1/3);
                 break;
             case SM_FULL_AUTOMATIC:
-                this.setRate(this.getRate() * 1/9);
+                this.setRate(this.getRate() * 1/3);
                 break;
             case SM_DEADLY_PRECISION:
                 this.setDamage(this.getDamage() + 13);
