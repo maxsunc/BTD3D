@@ -93,6 +93,7 @@ public class GameplayScreen implements IGUIScreen {
         tower_icons[0] = loader.createTexture("assets/textures/dart_monkey.png");
         tower_icons[1] = loader.createTexture("assets/textures/sniper_monkey.png");
         tower_icons[2] = loader.createTexture("assets/textures/bomb_shooter.png");
+        tower_icons[3] = loader.createTexture("assets/textures/super_monkey.png");
     }
 
     @Override

@@ -107,7 +107,7 @@ public class Game implements ILogic {
     private ArrayList<Projectile> darts = new ArrayList<Projectile>();
     public ArrayList<Tower> monkeys = new ArrayList<Tower>();
     public Vector3f[] bloonNodes;
-    private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower"};
+    private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower", "preview_super_monkey"};
     private ArrayList<Spawner> spawners = new ArrayList<Spawner>();
     
 
@@ -326,8 +326,16 @@ public class Game implements ILogic {
         monkeyModels[0] = loader.loadRiggedModel("assets/models/monkey.fbx");
         monkeyModels[1] = loader.loadRiggedModel("assets/models/sniper_monkey.fbx");
         monkeyModels[2] = loader.loadRiggedModel("assets/models/bomb_tower.fbx");
+        monkeyModels[3] = loader.loadRiggedModel("assets/models/super_monkey.fbx");
 
         monkeyModels[0].getMeshes().remove("Scene.003");
+
+        AnimatedEntity super_monkey = new AnimatedEntity(RiggedModel.copy(monkeyModels[3]), 
+            new Vector3f(), new Vector3f(), new Vector3f(0.1f));
+            super_monkey.setAnimationId(1);
+            super_monkey.setEnabled(false);
+        entities.put("preview_super_monkey", super_monkey);
+
 
         AnimatedEntity bomb_tower = new AnimatedEntity(RiggedModel.copy(monkeyModels[2]), 
             new Vector3f(), new Vector3f(), new Vector3f(0.1f));

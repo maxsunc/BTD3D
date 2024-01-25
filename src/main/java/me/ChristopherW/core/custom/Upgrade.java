@@ -25,7 +25,9 @@ public enum Upgrade {
 	DM_ENCHANCED_EYESIGHT("Enchanced Eyesight", "Shoots even furthur", null, 200),
 	DM_LONG_RANGE("Long Range Darts", "Makes the Dart Monkey shoot furthur than normal.", DM_ENCHANCED_EYESIGHT, 90),
 	DM_BASE_RANGE("","", DM_LONG_RANGE, 0),
-	DM_BASE_RATE("","", DM_QUICK_SHOTS, 0);
+	DM_BASE_RATE("","", DM_QUICK_SHOTS, 0),
+	SUPM_BASE_RANGE("","", null, 0),
+	SUPM_BASE_RATE("","", null, 0);
 
 	public String name;
 	public String description;
