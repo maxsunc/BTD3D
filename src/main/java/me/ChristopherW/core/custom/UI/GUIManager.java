@@ -45,7 +45,7 @@ public class GUIManager {
         if(currentScreen != "")
             screens.get(currentScreen).render(p_open, this);
 
-        if(Launcher.getGame().player.getLives() <= 0) {
+        if(Launcher.getGame().getPlayer().getLives() <= 0) {
             screens.get("Gameover").render(p_open, this);
             ImGui.setWindowFocus("gameover");
         }

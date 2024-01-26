@@ -95,7 +95,16 @@ public class Game implements ILogic {
     private boolean roundShouldRun = true;
     private Entity range;
     private int roundNumber = 1;
-    private boolean gameSpeedToggled = false;
+    private boolean fastForwardToggled = false;
+    private float defaultCameraOrbitRadius = 20f;
+    private Random random = new Random();
+    private Entity cameraPos = new Entity(null, new Vector3f(), new Vector3f(), new Vector3f());
+    private Vector2d dMouse = new Vector2d();
+    private int spawnNewBloonOnNextTick = -1;
+    private boolean secondBloonRow = false;
+    private float cameraRotationX = 45;
+    private float cameraRotationY = 45;
+    private float cameraZoom = 2;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -120,17 +129,7 @@ public class Game implements ILogic {
         Assets.loadSounds(audioSources, soundManager);
     }
 
-    public SoundSource playRandom(String[] keys) {
-        int randomNumber = random.nextInt(keys.length);
-        audioSources.get(keys[randomNumber]).play();
-        return audioSources.get(keys[randomNumber]);
-    }
-    public SoundSource getRandom(String[] keys) {
-        int randomNumber = random.nextInt(keys.length);
-        return audioSources.get(keys[randomNumber]);
-    }
 
-    Entity cameraPos = new Entity(null, new Vector3f(), new Vector3f(), new Vector3f());
     @Override
     public void init() throws Exception {
 
@@ -216,8 +215,6 @@ public class Game implements ILogic {
             GLFW.glfwSetCursor(window.getWindow(), window.getInput().getCursor());
     }
 
-    int i = 0;
-    Vector2d dMouse = new Vector2d();
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
         if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             if(action == GLFW.GLFW_PRESS) {
@@ -322,9 +319,6 @@ public class Game implements ILogic {
         }
     }
 
-    int spawnNewBloonOnNextTick = -1;
-    boolean secondBloonRow = false;
-
     public void keyDown(long window, int key, int scancode, int action, int mods) {
         if(action == GLFW.GLFW_PRESS) {
             if(key ==GLFW.GLFW_KEY_LEFT_SHIFT)
@@ -384,12 +378,6 @@ public class Game implements ILogic {
                 secondBloonRow = false;
         }
     }
-
-    float rotX = 45;
-    float rotY = 45;
-    float zoom = 2;
-    float panX = 0;
-    float panZ = 0;
 
     private boolean checkPlacementValidity(Entity previewMonkey) {
 
@@ -464,11 +452,11 @@ public class Game implements ILogic {
         if(input.isLeftButtonPress() && player.getLives() > 0) {
             if(GUIManager.currentScreen == "MainMenu")
                 return;
-            rotX += input.getDisplVec().y * GlobalVariables.MOUSE_SENSITIVITY_X;
-            rotY += input.getDisplVec().x * GlobalVariables.MOUSE_SENSITIVITY_X;
-            rotY = Utils.clamp(rotY, 10, 90);
+            cameraRotationX += input.getDisplVec().y * GlobalVariables.MOUSE_SENSITIVITY_X;
+            cameraRotationY += input.getDisplVec().x * GlobalVariables.MOUSE_SENSITIVITY_X;
+            cameraRotationY = Utils.clamp(cameraRotationY, 10, 90);
         }
-        zoom = Utils.clamp(zoom, 0.75f, 1.75f);
+        cameraZoom = Utils.clamp(cameraZoom, 0.75f, 1.75f);
 
         float moveSpeed = 10;
         Vector3f panVec = new Vector3f(0);
@@ -499,11 +487,9 @@ public class Game implements ILogic {
 
     public void onScroll(double dy) {
         if(player.getLives() > 0)
-            zoom -= dy/4;
+            cameraZoom -= dy/4;
     }
 
-    float defaultRadius = 20f;
-    Random random = new Random();
     @Override
     public void update(float interval, MouseInput mouseInput) {
         if(spawnNewBloonOnNextTick >= 0) {
@@ -528,19 +514,19 @@ public class Game implements ILogic {
                 range.setScale(currentTowerInspecting.getRange());
         }
 
-        float radius = defaultRadius * zoom;
+        float radius = defaultCameraOrbitRadius * cameraZoom;
 
         int minPan = -20, maxPan = 20;
         cameraPos.setPosition(Utils.clamp(cameraPos.getPosition().x,minPan, maxPan),0,Utils.clamp(cameraPos.getPosition().z, minPan, maxPan));
 
         // orbit the camera around the active ball
         Vector3f orbitVec = new Vector3f();
-        orbitVec.x = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.cos(Math.toRadians(rotX))) + cameraPos.getPosition().x;
-        orbitVec.y = (float) (radius * Math.sin(Math.toRadians(rotY))) + 1;
-        orbitVec.z = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.sin(Math.toRadians(rotX))) + cameraPos.getPosition().z;
+        orbitVec.x = (float) (Math.abs(radius * Math.cos(Math.toRadians(cameraRotationY))) * Math.cos(Math.toRadians(cameraRotationX))) + cameraPos.getPosition().x;
+        orbitVec.y = (float) (radius * Math.sin(Math.toRadians(cameraRotationY))) + 1;
+        orbitVec.z = (float) (Math.abs(radius * Math.cos(Math.toRadians(cameraRotationY))) * Math.sin(Math.toRadians(cameraRotationX))) + cameraPos.getPosition().z;
 
         camera.setPosition(orbitVec);
-        camera.setRotation(rotY, rotX-90, camera.getRotation().z);
+        camera.setRotation(cameraRotationY, cameraRotationX-90, camera.getRotation().z);
         cameraPos.setRotation(0, -camera.getRotation().y,0);  
 
 
@@ -775,7 +761,7 @@ public class Game implements ILogic {
             float gain = music.getGain();
             SoundSource soundSource = music;
             do {
-                soundSource = getRandom(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
+                soundSource = getRandomSound(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
             }  while(soundSource.getName().equals(music.getName()));
             music = soundSource;
             music.play();
@@ -837,7 +823,7 @@ public class Game implements ILogic {
         break;
     }
     return bloonType;
-  }
+}
 
 
     
@@ -936,6 +922,22 @@ public class Game implements ILogic {
         loader.cleanup();
     }
 
+
+    public SoundSource playRandom(String[] keys) {
+        int randomNumber = random.nextInt(keys.length);
+        audioSources.get(keys[randomNumber]).play();
+        return audioSources.get(keys[randomNumber]);
+    }
+    
+    public SoundSource getRandomSound(String[] keys) {
+        int randomNumber = random.nextInt(keys.length);
+        return audioSources.get(keys[randomNumber]);
+    }
+
+    /*
+     * GETTERS AND SETTERS
+     */
+
     public int getRoundNumber() {
         return roundNumber;
     }
@@ -1014,5 +1016,25 @@ public class Game implements ILogic {
 
     public float getGameSpeed() {
         return gameSpeed;
+    }
+
+    public void toggleFastForward() {
+        this.fastForwardToggled = !fastForwardToggled;
+    }
+
+    public boolean isFastForward() {
+        return fastForwardToggled;
+    }
+
+    public ArrayList<Projectile> getProjectiles() {
+        return projectiles;
+    }
+
+    public void setRoundNumber(int value) {
+        this.roundNumber = value;
+    }
+
+    public void setRoundScanner(Scanner scanner) {
+        this.roundScanner = scanner;
     }
 }

@@ -506,9 +506,9 @@ public class GameplayScreen implements IGUIScreen {
             ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);
             if(game.isRoundRunning()) {
-                if (ImGui.imageButton((Game.gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
-                    Game.gameSpeedToggled = !Game.gameSpeedToggled;
-                    game.setGameSpeed((Game.gameSpeedToggled) ? 3f : 1f);
+                if (ImGui.imageButton((game.isFastForward()) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
+                    game.toggleFastForward();
+                    game.setGameSpeed((game.isFastForward()) ? 3f : 1f);
                 }
             } else {
                 if (ImGui.imageButton(play.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
