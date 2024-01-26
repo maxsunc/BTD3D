@@ -93,7 +93,7 @@ public class Bloon extends Entity{
         
                         Vector3f diff = new Vector3f();
                         game.getMapNodes()[Math.max(this.nodeIndex - 1,0)].sub(this.getPosition(), diff);
-                        for(int i = 0; i < 9; i++) {
+                        for(int i = 0; i < 4; i++) {
                             // move it towards the node pos
                             Vector3f newPos = new Vector3f();
                             Vector3f prev = game.getMapNodes()[Math.max(this.nodeIndex - 1,0)];

@@ -104,7 +104,6 @@ public class GameplayScreen implements IGUIScreen {
             ImGui.setNextWindowPos((int)gm.window.getInput().getCurrentPos().x - 15,(int)gm.window.getInput().getCurrentPos().y, 0, 1,0);
             if (ImGui.begin("gameplay_mouse", p_open, gm.window_flags)) {
                 ImGui.pushFont(gm.monkeyFontMedium);
-                //ImGui.image(panel.getId(), 71, 32);
                 TowerType selectedMonkey = TowerType.values()[game.getMonkeyPlacingId() - 1];
                 String cost = "$" + String.valueOf(selectedMonkey.cost);
                 ImVec2 dimensions = ImGui.calcTextSize(cost);

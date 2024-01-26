@@ -174,6 +174,8 @@ public class Assets {
             audioSources.put("upgrade", upgrade);
             SoundSource sell = soundManager.createSound("sell", "assets/sounds/UIGetGold.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("sell", sell);
+            SoundSource defeat = soundManager.createSound("defeat", "assets/sounds/UIDefeat.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("defeat", defeat);
 
         } catch (Exception e) {
             e.printStackTrace();

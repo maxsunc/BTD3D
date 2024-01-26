@@ -603,18 +603,17 @@ public class Game implements ILogic {
                 }
                 // finally make the bloon look at the node Position (on the y rotation only)
                 Vector3f difference = new Vector3f();
-                    nodePos.sub(bloon.getPosition(), difference);
-                    difference.normalize();
-                    // sets the direction of motion to go
-                    bloon.setCurrentHeading(difference);
-                    bloon.lookAtY(nodePos);
-                    // translate it forward
+                nodePos.sub(bloon.getPosition(), difference);
+                difference.normalize();
+                // sets the direction of motion to go
+                bloon.setCurrentHeading(difference);
+                bloon.lookAtY(nodePos);
+                // translate it forward
                 bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(gameSpeed * 2 * bloon.getSpeed() * interval));
             }
 
             if(entity instanceof Tower) {
                 Tower monkey = (Tower) entity;
-                //System.out.printf("%.2f/%.2f\n", monkey.getTick(), monkey.getRate());
                 if(monkey.getTick() >= monkey.getRate()/gameSpeed) {
                     ((ITower)monkey).shoot(bloons, projectiles, targeted);
                 }
@@ -671,7 +670,7 @@ public class Game implements ILogic {
                                 playRandom(new String[]{"explosion_1", "explosion_2", "explosion_3", "explosion_4", "explosion_5"});
                                 for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
                                     Bloon bl = bloons.get(bloonId);
-                                    if(bl.getPosition().distance(dart.getPosition()) < 2) {
+                                    if(bl.getPosition().distance(dart.getPosition()) < 3f) {
                                         int r = bl.damage(1);
                                         if(r >= 0) {
                                             playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
