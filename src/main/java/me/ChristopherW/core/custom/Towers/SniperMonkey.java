@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.joml.Random;
 import org.joml.Vector3f;
 
+import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.BloonType;
 import me.ChristopherW.core.custom.Projectile;
@@ -13,7 +14,6 @@ import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
 public class SniperMonkey extends Tower implements ITower {
@@ -27,7 +27,7 @@ public class SniperMonkey extends Tower implements ITower {
 
     @Override
     public Projectile spawnProjectile() {
-        return new Projectile("dart", Model.copy(Game.dartModel), 
+        return new Projectile("dart", Model.copy(Assets.dartModel), 
             new Vector3f(this.getPosition().x, this.getPosition().y + 0.6f, this.getPosition().z).add(this.getRight().div(-3)), 
             new Vector3f(), 
             new Vector3f(0.1f), getDamage()
@@ -93,7 +93,7 @@ public class SniperMonkey extends Tower implements ITower {
             int result = target.damage(this.getDamage());
             if(result >= 0) {
                 Launcher.getGame().playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
-                Launcher.getGame().player.addMoney(1);
+                Launcher.getGame().getPlayer().addMoney(1);
                 
                 if(result > 0) {
                     Launcher.getGame().entities.remove(target.getName());

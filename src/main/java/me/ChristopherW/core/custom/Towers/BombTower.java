@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
+import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.Bomb;
 import me.ChristopherW.core.custom.Projectile;
@@ -12,7 +13,6 @@ import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
 public class BombTower extends Tower implements ITower {
@@ -32,7 +32,7 @@ public class BombTower extends Tower implements ITower {
 
     @Override
     public Projectile spawnProjectile() {
-        return new Bomb("dart", Model.copy(Game.bombModel), 
+        return new Bomb("dart", Model.copy(Assets.bombModel), 
             new Vector3f(this.getPosition().x, this.getPosition().y + 0.6f, this.getPosition().z), 
             new Vector3f(), 
             new Vector3f(0.5f), getDamage()

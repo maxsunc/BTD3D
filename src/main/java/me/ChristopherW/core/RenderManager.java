@@ -1,6 +1,7 @@
 package me.ChristopherW.core;
 
 import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Shaders.DebugShader;
 import me.ChristopherW.core.custom.Shaders.DepthShader;
@@ -88,7 +89,7 @@ public class RenderManager {
         } 
         // or use the default texture if none specified
         else {
-            GL11.glBindTexture(GL30.GL_TEXTURE_2D, Game.defaultTexture.getId());
+            GL11.glBindTexture(GL30.GL_TEXTURE_2D, Assets.defaultTexture.getId());
         }
         GL13.glActiveTexture(GL30.GL_TEXTURE0 + 1);
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, depthMap);
