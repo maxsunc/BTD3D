@@ -2,11 +2,11 @@ package me.ChristopherW.process;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.Scanner;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.joml.Matrix4f;
 import org.joml.Random;
@@ -39,7 +39,6 @@ import me.ChristopherW.core.custom.Spawner;
 import me.ChristopherW.core.custom.Tower;
 import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.Upgrade;
-import me.ChristopherW.core.custom.Player;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Towers.BombTower;
@@ -105,7 +104,7 @@ public class Game implements ILogic {
 
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
     public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
-    private ArrayList<Projectile> darts = new ArrayList<Projectile>();
+    public ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
     public ArrayList<Tower> monkeys = new ArrayList<Tower>();
     public Vector3f[] bloonNodes;
     private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower", "preview_super_monkey"};
@@ -123,10 +122,11 @@ public class Game implements ILogic {
     public boolean autoStart = false;
     public boolean isInvalid = false;
     private Spawner currentSpawnerTimer;
-    private Scanner roundScanner;
+    public Scanner roundScanner;
     public boolean roundIsRunning;
     public Entity range;
     private int roundNumber = 1;
+    public boolean gameSpeedToggled = false;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -248,6 +248,8 @@ public class Game implements ILogic {
             audioSources.put("upgrade", upgrade);
             SoundSource sell = soundManager.createSound("sell", "assets/sounds/UIGetGold.ogg", new Vector3f(0,0,0), false, false, 0.4f);
             audioSources.put("sell", sell);
+            SoundSource defeat = soundManager.createSound("defeat", "assets/sounds/UIDefeat.ogg", new Vector3f(0,0,0), false, false, 0.4f);
+            audioSources.put("defeat", defeat);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -483,6 +485,7 @@ public class Game implements ILogic {
                     playRandom(new String[]{"tower_place_1", "tower_place_2"});
                     player.removeMoney(monkey.getValue());
                     monkeyMode = 0;
+                    range.setEnabled(false);
                 }
             }
         }
@@ -628,7 +631,7 @@ public class Game implements ILogic {
             }
         }
 
-        if(input.isLeftButtonPress()) {
+        if(input.isLeftButtonPress() && player.getLives() > 0) {
             if(GUIManager.currentScreen == "MainMenu")
                 return;
             rotX += input.getDisplVec().y * GlobalVariables.MOUSE_SENSITIVITY_X;
@@ -657,12 +660,15 @@ public class Game implements ILogic {
                 runRound = true;
             }
         }
+        
         Vector3f normalized = panVec.normalize().mul(moveSpeed * (180/EngineManager.getFps()));
-        cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
+        
+        if(player.getLives() > 0)
+            cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
     }
 
     public void onScroll(double dy) {
-        if(GUIManager.currentScreen != "MainMenu")
+        if(player.getLives() > 0)
             zoom -= dy/4;
     }
 
@@ -764,9 +770,11 @@ public class Game implements ILogic {
                     bloons.remove(bloon);
                     player.removeLives(bloon.getType().RBE);
 
-                    // Stop the game
-                    //if(player.getLives() <= 0)
-                    //    Launcher.getEngine().stop();
+                    
+                    if(player.getLives() <= 0) {
+                        audioSources.get("defeat").play();
+                        gameSpeed = 0;
+                    }
                     continue;
                 }
                 Vector3f difference = new Vector3f();
@@ -781,7 +789,7 @@ public class Game implements ILogic {
                 Tower monkey = (Tower) entity;
                 //System.out.printf("%.2f/%.2f\n", monkey.getTick(), monkey.getRate());
                 if(monkey.getTick() >= monkey.getRate()/gameSpeed) {
-                    ((ITower)monkey).shoot(bloons, darts, targeted);
+                    ((ITower)monkey).shoot(bloons, projectiles, targeted);
                 }
 
                 monkey.addTick(interval);
@@ -829,7 +837,7 @@ public class Game implements ILogic {
                             
                             
                             dart.setEnabled(false);
-                            darts.remove(dart);
+                            projectiles.remove(dart);
                             entities.remove(dart.getName());
 
                             if(dart instanceof Bomb) {
@@ -860,7 +868,7 @@ public class Game implements ILogic {
                     continue;
 
                 if(dart.getPosition().distance(dart.getSource().getPosition()) > 75f) {
-                    darts.remove(dart);
+                    projectiles.remove(dart);
                     entities.remove(dart.getName());
                     continue;
                 }
@@ -1071,6 +1079,11 @@ public class Game implements ILogic {
             preview.setEnabled(true);
             renderer.forceRender(preview, camera);
             preview.setEnabled(false);
+
+            range.setEnabled(true);
+            float scale = (TowerType.values()[monkeyMode - 1] == TowerType.SNIPER_MONKEY) ? 1.0f : TowerType.values()[monkeyMode - 1].range;
+            range.setScale(scale);
+            range.setPosition(preview.getPosition().x, 0.05f, preview.getPosition().z);
         }
 
         renderer.forceRender(range, camera);
@@ -1087,6 +1100,7 @@ public class Game implements ILogic {
             ImGui.renderPlatformWindowsDefault();
             GLFW.glfwMakeContextCurrent(backupWindowPtr);
         }
+
         GLFW.glfwPollEvents();
     }
 
@@ -1098,5 +1112,9 @@ public class Game implements ILogic {
 
     public int getRoundNumber() {
         return roundNumber;
+    }
+
+    public void setRoundNumber(int number) {
+        this.roundNumber = number;
     }
 }

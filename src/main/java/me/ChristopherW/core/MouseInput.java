@@ -6,6 +6,7 @@ import me.ChristopherW.process.Launcher;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWImage;
 
 public class MouseInput {
     private final Vector2d previousPos, currentPos;
@@ -16,6 +17,16 @@ public class MouseInput {
     private final Vector2f displVec;
 
     private boolean inWindow = false, leftButtonPress = false, rightButtonPress = false;
+
+    private long cursor;
+    private long cursorDown;
+    public long getCursor() {
+        return cursor;
+    }
+
+    public long getCursorDown() {
+        return cursorDown;
+    }
 
     public MouseInput() {
         // init variables
@@ -39,6 +50,13 @@ public class MouseInput {
             this.inWindow = entered;
         });
 
+        ObjectLoader loader = new ObjectLoader();
+        GLFWImage.Buffer mousebf = GLFWImage.malloc(1);
+        mousebf.put(0, loader.loadtextureBuffer("assets/textures/HandCursor.png"));
+        GLFWImage.Buffer mouseDownbf = GLFWImage.malloc(1);
+        mouseDownbf.put(0, loader.loadtextureBuffer("assets/textures/HandCursorDown.png"));
+        cursor = GLFW.glfwCreateCursor(mousebf.get(), 20, 8);
+        cursorDown = GLFW.glfwCreateCursor(mouseDownbf.get(), 20, 8);
         // set the mouse click callbacks to store the result
         GLFW.glfwSetMouseButtonCallback(Launcher.getWindow().getWindow(), (window, button, action, mods) -> {
             Launcher.getGame().mouseDown(window, button, action, mods, this);

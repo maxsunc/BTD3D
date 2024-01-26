@@ -13,6 +13,7 @@ import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.WindowManager;
+import me.ChristopherW.core.custom.UI.UIScreens.GameoverScreen;
 import me.ChristopherW.core.custom.UI.UIScreens.GameplayScreen;
 import me.ChristopherW.core.custom.UI.UIScreens.MainMenu;
 import me.ChristopherW.core.entity.Texture;
@@ -41,6 +42,11 @@ public class GUIManager {
         ImBoolean p_open = new ImBoolean();
         if(currentScreen != "")
             screens.get(currentScreen).render(p_open, this);
+
+        if(Launcher.getGame().player.getLives() <= 0) {
+            screens.get("Gameover").render(p_open, this);
+            ImGui.setWindowFocus("gameover");
+        }
     }
 
     public GUIManager(WindowManager window) {
@@ -66,6 +72,7 @@ public class GUIManager {
 
         // initialize screens
         screens.put("Gameplay", new GameplayScreen());
+        screens.put("Gameover", new GameoverScreen());
         currentScreen = "Gameplay";
 
         // call the start method for each screen

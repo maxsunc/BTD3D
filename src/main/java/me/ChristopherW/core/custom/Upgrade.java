@@ -40,6 +40,6 @@ public enum Upgrade {
 		this.name = name;
 		this.description = description;
 		this.nextUpgrade = nextUpgrade;
-		this.cost = cost;
+		this.cost = (int) Math.floor(cost * 0.85f);
 	}
 }

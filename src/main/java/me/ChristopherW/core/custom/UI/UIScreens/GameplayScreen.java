@@ -40,7 +40,6 @@ public class GameplayScreen implements IGUIScreen {
     Texture autoStartEnabled;
     Texture shop;
     Texture sell;
-    boolean gameSpeedToggled = false;
     Texture[] tower_icons = new Texture[8];
 
     private void textOutline(String text, Color fill, Color outline) {
@@ -500,9 +499,9 @@ public class GameplayScreen implements IGUIScreen {
             ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);
             if(game.roundIsRunning) {
-                if (ImGui.imageButton((gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
-                    gameSpeedToggled = !gameSpeedToggled;
-                    game.gameSpeed = (gameSpeedToggled) ? 3f : 1f;
+                if (ImGui.imageButton((game.gameSpeedToggled) ? gameSpeedButtonActive.getId() : gameSpeedButton.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
+                    game.gameSpeedToggled = !game.gameSpeedToggled;
+                    game.gameSpeed = (game.gameSpeedToggled) ? 3f : 1f;
                 }
             } else {
                 if (ImGui.imageButton(play.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
@@ -515,6 +514,7 @@ public class GameplayScreen implements IGUIScreen {
                 ImGui.setCursorPos(panelWidth/2 - imageSize/2, panelHeight/2);
                 if (ImGui.imageButton(cancel.getId(), imageSize, imageSize, 0, 0, 1, 1, 0, 0, 0, 0, 0)) {
                     game.monkeyMode = 0;
+                    game.range.setEnabled(false);
                 }
             }
             
