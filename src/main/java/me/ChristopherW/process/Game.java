@@ -323,6 +323,7 @@ public class Game implements ILogic {
         if(action == GLFW.GLFW_PRESS) {
             if(key ==GLFW.GLFW_KEY_LEFT_SHIFT)
                 secondBloonRow = true;
+            // sets the spawnNewBloonOnNextTick to a number which refers to the type of bloon to spawn.
             if(key ==GLFW.GLFW_KEY_1)
                 spawnNewBloonOnNextTick = 0;
             if(key ==GLFW.GLFW_KEY_2)
@@ -347,15 +348,18 @@ public class Game implements ILogic {
                 music.stop();
             }
             if(key ==GLFW.GLFW_KEY_ESCAPE) {
+                // sets monkey mode to 0 which gets rid of selected monkeys
                 placingMonkeyId = 0;
             }
-
+            // check for key presses Q and E, checking for E uses basically the same code but for the other path 
             if(key == GLFW.GLFW_KEY_Q){
+                // only attempts an upgrade if the current inspecting tower is not null
                 if(currentTowerInspecting != null){
-                    // check if it's not null
+                    // check if the next upgrade we want to buy is not null
                     if(currentTowerInspecting.getPath1().nextUpgrade != null)
-                    // check if you can buy it
+                    // check if you can actually buy it
                     if(currentTowerInspecting.getPath1().nextUpgrade.cost <= player.getMoney()){
+                        // remove the money, upgrade the monkey and play the sound
                         player.removeMoney(currentTowerInspecting.getPath1().nextUpgrade.cost);
                         currentTowerInspecting.upgradePath(1);
                         audioSources.get("upgrade").play();
@@ -363,7 +367,6 @@ public class Game implements ILogic {
                 }
             }
             if(key == GLFW.GLFW_KEY_E){
-                
                 if(currentTowerInspecting != null)
                 if(currentTowerInspecting.getPath2().nextUpgrade != null)
                     if(currentTowerInspecting.getPath2().nextUpgrade.cost <= player.getMoney()){
@@ -492,23 +495,30 @@ public class Game implements ILogic {
 
     @Override
     public void update(float interval, MouseInput mouseInput) {
+        
         if(spawnNewBloonOnNextTick >= 0) {
+            // spawns the type of bloon based on spawnNewBloonOnNextTick. adds extra 10 if shift key is pressed (secondBloonRow) 
             BloonType type = BloonType.values()[Math.min(spawnNewBloonOnNextTick + (secondBloonRow ? 10 : 0), BloonType.values().length - 1)];
+            // create new bloon based on the type selected
             Bloon b = new Bloon("bloon", type,
                 (type == BloonType.MOAB) ? Model.copy(Assets.moabModel) : Model.copy(Assets.bloonModel), 
                 new Vector3f(bloonNodes[0]), 
                 new Vector3f(),
                 new Vector3f(type.size)
             );
+            // add the bloon to the arrayList of bloons and increment bloonCounter
             bloons.add(b);
             bloonCounter++;
+            // add it to the hashmap of entities so it can be renderered and exist.
             entities.put("bloon" + bloonCounter, b);
             b.setName("bloon" + bloonCounter);
+            // reset spawnNewBloon on next tick so it wont be spawned again
             spawnNewBloonOnNextTick = -1;
         }
-
+        // if we are inspecting a tower make the dark circle that reveals the tower's range
         if(currentTowerInspecting != null) {
             if(currentTowerInspecting instanceof SniperMonkey)
+            // sniper monkey range is everything but we set it to 1 to show that.
                 range.setScale(1);
             else
                 range.setScale(currentTowerInspecting.getRange());
@@ -529,7 +539,7 @@ public class Game implements ILogic {
         camera.setRotation(cameraRotationY, cameraRotationX-90, camera.getRotation().z);
         cameraPos.setRotation(0, -camera.getRotation().y,0);  
 
-
+        // contains all of the bloons targetted by monkeys 
         ArrayList<Bloon> targeted = new ArrayList<>();
         // for each entity in the world
         // sync the visual rotation and positions with the physics rotations and positions
@@ -541,7 +551,7 @@ public class Game implements ILogic {
             }
             if(entity instanceof AnimatedEntity) {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
-
+                // animate the tower
                 if(animatedEntity.getAnimationTick() >= (1f/(gameSpeed * 60f))) {
                     boolean loopComplete = animatedEntity.nextFrame();
                     animatedEntity.setAnimationTick(0);
@@ -570,33 +580,39 @@ public class Game implements ILogic {
             if(entity instanceof Bloon) {
                 Bloon bloon = (Bloon) entity;
 
-                // check if the bloon met the nodePosition
-                
+                // save the position of the next node the bloon should get to
                 Vector3f nodePos = bloonNodes[bloon.getNodeIndex()];
-                // compare the positions
+                // compare the positions check if the bloon met the nodePosition (at least distance of 0.25f)
                 if(bloon.getPosition().distance(nodePos) <= 0.25f){
                     // look at the next node
                     bloon.incremenNodeIndex();
+                    // set the new nodePosition to follow
                     nodePos = bloonNodes[bloon.getNodeIndex()];
                 }
-                
+                // bloon.isEnabled is only false if the bloon makes it to the end
                 if(bloon.isEnabled() == false) {
+                    // remove the bloon based on the name from entities and bloon array
                     entities.remove(bloon.getName());
                     bloons.remove(bloon);
+                    // remove the amount of lives based on how many red bloons the bloon is worth
                     player.removeLives(bloon.getType().RBE);
 
-                    
+                    // check if we're dead
                     if(player.getLives() <= 0) {
                         audioSources.get("defeat").play();
                         gameSpeed = 0;
                     }
+                    // we know the bloon made it to the end so there is no need to do any more with it
                     continue;
                 }
+                // finally make the bloon look at the node Position (on the y rotation only)
                 Vector3f difference = new Vector3f();
                     nodePos.sub(bloon.getPosition(), difference);
                     difference.normalize();
+                    // sets the direction of motion to go
                     bloon.setCurrentHeading(difference);
                     bloon.lookAtY(nodePos);
+                    // translate it forward
                 bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(gameSpeed * 2 * bloon.getSpeed() * interval));
             }
 
@@ -923,12 +939,13 @@ public class Game implements ILogic {
     }
 
 
+    //Plays a random sound given an array of String keys and returns it.
     public SoundSource playRandom(String[] keys) {
         int randomNumber = random.nextInt(keys.length);
         audioSources.get(keys[randomNumber]).play();
         return audioSources.get(keys[randomNumber]);
     }
-    
+    // gets and returns a random sound in a hashmap using keys
     public SoundSource getRandomSound(String[] keys) {
         int randomNumber = random.nextInt(keys.length);
         return audioSources.get(keys[randomNumber]);
