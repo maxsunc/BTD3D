@@ -63,7 +63,7 @@ import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.core.utils.Utils;
 
 import java.util.Arrays;
@@ -151,6 +151,8 @@ public class ObjectLoader {
     }
 
     public RiggedModel loadRiggedModel(String fileName) {
+        // same as other loading method however this must take into account the bones and their hierarchy 
+
         AIScene aiScene = aiImportFile(fileName, aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices |
                 aiProcess_Triangulate | aiProcess_FixInfacingNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights);
         File file = new File(fileName);
@@ -311,7 +313,7 @@ public class ObjectLoader {
             animations.add(animation);
 
             for (int j = 0; j < maxFrames; j++) {
-                Matrix4f[] boneMatrices = new Matrix4f[GlobalVariables.MAX_BONES];
+                Matrix4f[] boneMatrices = new Matrix4f[Config.MAX_BONES];
                 Arrays.fill(boneMatrices, IDENTITY_MATRIX);
                 RiggedMesh.AnimatedFrame animatedFrame = new RiggedMesh.AnimatedFrame(boneMatrices);
                 buildFrameMatrices(aiAnimation, boneList, animatedFrame, j, rootNode,

@@ -1,6 +1,6 @@
 package me.ChristopherW.core;
 
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.process.Launcher;
 
 import org.joml.Vector2d;
@@ -30,14 +30,14 @@ public class MouseInput {
 
     public MouseInput() {
         // init variables
-        this.previousPos = new Vector2d(GlobalVariables.WIDTH/2, GlobalVariables.HEIGHT/2);
-        this.currentPos = new Vector2d(GlobalVariables.WIDTH/2,GlobalVariables.HEIGHT/2);
+        this.previousPos = new Vector2d(Config.WIDTH/2, Config.HEIGHT/2);
+        this.currentPos = new Vector2d(Config.WIDTH/2,Config.HEIGHT/2);
         this.displVec = new Vector2f();
     }
 
     public void init() {
         // set the mouse to the center of the window
-        GLFW.glfwSetCursorPos(Launcher.getWindow().getWindow(), GlobalVariables.WIDTH/2, GlobalVariables.HEIGHT/2);
+        GLFW.glfwSetCursorPos(Launcher.getWindow().getWindow(), Config.WIDTH/2, Config.HEIGHT/2);
 
         // set the callback for mouse movement to store the position
         GLFW.glfwSetCursorPosCallback(Launcher.getWindow().getWindow(), (window, xpos, ypos) -> {
@@ -56,13 +56,15 @@ public class MouseInput {
         mouseDownbf.put(0, loader.loadtextureBuffer("assets/textures/HandCursorDown.png"));
         cursor = GLFW.glfwCreateCursor(mousebf.get(), 20, 8);
         cursorDown = GLFW.glfwCreateCursor(mouseDownbf.get(), 20, 8);
+
         // set the mouse click callbacks to store the result
         GLFW.glfwSetMouseButtonCallback(Launcher.getWindow().getWindow(), (window, button, action, mods) -> {
             Launcher.getGame().mouseDown(window, button, action, mods, this);
             this.leftButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS;
             this.rightButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_2 && action == GLFW.GLFW_PRESS;
 
-            if(GlobalVariables.USE_CUSTOM_CURSOR) {
+            // if we have custom cursor enabled in settings
+            if(Config.USE_CUSTOM_CURSOR) {
                 if(isLeftButtonPress()) {
                     GLFW.glfwSetCursor(window, cursorDown);
                 } else {

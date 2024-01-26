@@ -5,7 +5,7 @@ package me.ChristopherW.process;
 // import com.jme3.bullet.util.NativeLibrary;
 import me.ChristopherW.core.EngineManager;
 import me.ChristopherW.core.WindowManager;
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 
 // import com.jme3.system.NativeLibraryLoader;
 
@@ -21,13 +21,31 @@ public class Launcher {
     private static EngineManager engine;
 
     public static void main(String[] args) throws Exception {
-        // // Load the physics engine natives
+        // Load the physics engine natives
         NativeLibraryLoader.loadLibbulletjme(true, new File("natives/"), "Release", "Sp");
         NativeLibrary.setStartupMessageEnabled(false);
         NativeLibrary.logger.setLevel(Level.OFF);
 
+        // Change graphics settings based on the configs graphics mode
+        switch (Config.GRAPHICS_MODE) {
+            case LOW:
+                Config.SHADOW_RES = 0;
+                Config.SHADOW_FILTERING = false;
+                break;
+            case MEDIUM:
+                Config.SHADOW_RES = 2048;
+                Config.SHADOW_FILTERING = false;
+                break;
+            case HIGH:
+                Config.SHADOW_RES = 4096;
+                Config.SHADOW_FILTERING = true;
+                break;
+            default:
+                break;
+        }
+
         // create new window manager, game instance and engine instance
-        window = new WindowManager(GlobalVariables.TITLE, GlobalVariables.WIDTH, GlobalVariables.HEIGHT, GlobalVariables.VSYNC);
+        window = new WindowManager(Config.TITLE, Config.WIDTH, Config.HEIGHT, Config.VSYNC);
         game = new Game();
         engine = new EngineManager();
 

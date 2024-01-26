@@ -1,6 +1,6 @@
 package me.ChristopherW.core;
 
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.process.Launcher;
 
 import org.lwjgl.glfw.GLFW;
@@ -9,7 +9,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 public class EngineManager {
     public static final long NANOSECOND = 1000000000L;
 
-    private static int fps = (int) GlobalVariables.FRAMERATE;
+    private static int fps = (int) Config.FRAMERATE;
     private static float frametime;
 
     private boolean isRunning;
@@ -35,12 +35,12 @@ public class EngineManager {
         mouseInput.init();
 
         // set the seconds per frame based on the current framerate preference
-        frametime = 1.0f / GlobalVariables.FRAMERATE;
+        frametime = 1.0f / Config.FRAMERATE;
     }
     
     public void ForceUpdateFramerate() {
         // update the seconds per frame based on the current framerate preference
-        frametime = 1.0f / GlobalVariables.FRAMERATE;
+        frametime = 1.0f / Config.FRAMERATE;
     }
 
     public void start() throws Exception {
@@ -94,7 +94,7 @@ public class EngineManager {
                 // if a second has passed, set the FPS and update the window title
                 if(frameCounter >= NANOSECOND) {
                     setFps(frames);
-                    window.setTitle(GlobalVariables.TITLE + " - FPS: " + getFps());
+                    window.setTitle(Config.TITLE + " - FPS: " + getFps());
                     frames = 0;
                     frameCounter = 0;
                 }

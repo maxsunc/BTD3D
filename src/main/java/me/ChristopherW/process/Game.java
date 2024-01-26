@@ -50,7 +50,7 @@ import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.sound.SoundListener;
 import me.ChristopherW.core.sound.SoundManager;
 import me.ChristopherW.core.sound.SoundSource;
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.core.utils.Transformation;
 import me.ChristopherW.core.utils.Utils;
 
@@ -117,7 +117,7 @@ public class Game implements ILogic {
 
         physicsSpace = new PhysicsSpace(PhysicsSpace.BroadphaseType.DBVT);
         physicsSpace.getSolverInfo().setSplitImpulseEnabled(true);
-        physicsSpace.setGravity(new com.jme3.math.Vector3f(0, GlobalVariables.GRAVITY, 0));
+        physicsSpace.setGravity(new com.jme3.math.Vector3f(0, Config.GRAVITY, 0));
         
         // set setup the sound listener to be at the world origin and load the audio sounds
         soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
@@ -206,7 +206,7 @@ public class Game implements ILogic {
 
         music = playRandom(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
 
-        if(GlobalVariables.USE_CUSTOM_CURSOR)
+        if(Config.USE_CUSTOM_CURSOR)
             GLFW.glfwSetCursor(window.getWindow(), window.getInput().getCursor());
     }
 
@@ -309,6 +309,7 @@ public class Game implements ILogic {
                     playRandom(new String[]{"tower_place_1", "tower_place_2"});
                     player.removeMoney(monkey.getValue());
                     placingMonkeyId = 0;
+                    range.setEnabled(false);
                 }
             }
         }
@@ -450,8 +451,8 @@ public class Game implements ILogic {
         if(input.isLeftButtonPress() && player.getLives() > 0) {
             if(GUIManager.currentScreen == "MainMenu")
                 return;
-            cameraRotationX += input.getDisplVec().y * GlobalVariables.MOUSE_SENSITIVITY_X;
-            cameraRotationY += input.getDisplVec().x * GlobalVariables.MOUSE_SENSITIVITY_X;
+            cameraRotationX += input.getDisplVec().y * Config.MOUSE_SENSITIVITY_X;
+            cameraRotationY += input.getDisplVec().x * Config.MOUSE_SENSITIVITY_X;
             cameraRotationY = Utils.clamp(cameraRotationY, 10, 90);
         }
         cameraZoom = Utils.clamp(cameraZoom, 0.75f, 1.75f);
@@ -780,7 +781,7 @@ public class Game implements ILogic {
         }
        
         // update the physics world
-        physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);
+        physicsSpace.update(1/Config.FRAMERATE, 2, false, true, false);
 
         // for each visible entity in the world, process its data before rendered
         for(Entity entity : entities.values()) {
@@ -847,7 +848,7 @@ public class Game implements ILogic {
         }
 
         // set the clear color to the sky color
-        GL11.glClearColor(GlobalVariables.BG_COLOR.x, GlobalVariables.BG_COLOR.y, GlobalVariables.BG_COLOR.z, GlobalVariables.BG_COLOR.w);
+        GL11.glClearColor(Config.BG_COLOR.x, Config.BG_COLOR.y, Config.BG_COLOR.z, Config.BG_COLOR.w);
         
         // render to the OpenGL viewport from the perspective of the camera
         renderer.render(camera);
