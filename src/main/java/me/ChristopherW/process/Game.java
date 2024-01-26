@@ -399,6 +399,9 @@ public class Game implements ILogic {
                         return;
                     }
 
+                    if(player.getLives() < 1)
+                        return;
+
                     if(dMouse.distance(input.getCurrentPos()) > 2)
                         return;
 

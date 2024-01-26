@@ -29,6 +29,7 @@ public class GameplayScreen implements IGUIScreen {
     Texture heart;
     Texture primarySlot;
     Texture militarySlot;
+    Texture magicSlot;
     Texture upgrade;
     Texture upgradeDisabled;
     Texture upgradePanel;
@@ -75,6 +76,7 @@ public class GameplayScreen implements IGUIScreen {
         shop = loader.createTexture("assets/textures/shop_large.png");
         primarySlot = loader.createTexture("assets/textures/primary_slot.png");
         militarySlot = loader.createTexture("assets/textures/military_slot.png");
+        magicSlot = loader.createTexture("assets/textures/magic_slot.png");
         gameSpeedButton = loader.createTexture("assets/textures/ff_icon.png");
         gameSpeedButtonActive = loader.createTexture("assets/textures/ff_icon_active.png");
         upgrade = loader.createTexture("assets/textures/upgrade.png");
@@ -208,6 +210,10 @@ public class GameplayScreen implements IGUIScreen {
                 
                     case MILITARY:
                         ImGui.image(militarySlot.getId(), towerImageSize, towerImageSize);
+                        break;
+
+                    case MAGIC:
+                        ImGui.image(magicSlot.getId(), towerImageSize, towerImageSize);
                         break;
                 }
                 ImGui.setCursorPos(oldCursor.x, oldCursor.y);

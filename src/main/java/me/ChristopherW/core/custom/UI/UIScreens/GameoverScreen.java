@@ -125,6 +125,13 @@ public class GameoverScreen implements IGUIScreen {
                 }
             }
             ImGui.popStyleColor(3);
+            ImGui.popFont();
+            ImGui.pushFont(gm.monkeyFontSmall);
+            String restart = "Restart";
+            ImVec2 restartDim = ImGui.calcTextSize(restart);
+            ImGui.setCursorPos(gm.window.getWidth()/2 - restartDim.x/2, gm.window.getHeight()/2 + panelWidth/4.5f);
+            textOutline(restart, Color.white, Color.black);
+
         }
         
         ImGui.popFont();
