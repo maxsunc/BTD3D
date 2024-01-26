@@ -44,7 +44,6 @@ import org.lwjgl.assimp.AIString;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.assimp.AIVectorKey;
 import org.lwjgl.assimp.AIVertexWeight;
-import org.lwjgl.assimp.Assimp;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -66,7 +65,6 @@ import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Utils;
-import me.ChristopherW.process.Game;
 
 import java.util.Arrays;
 

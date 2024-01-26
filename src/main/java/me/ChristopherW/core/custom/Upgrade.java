@@ -1,8 +1,5 @@
 package me.ChristopherW.core.custom;
 
-import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.process.Game;
-
 public enum Upgrade {
 	BT_EVEN_MORE_RANGE("Even More Range", "Increases to even more range!", null, 300),
 	BT_EXTRA_RANGE("Extra Range", "Increases attack range.", BT_EVEN_MORE_RANGE, 200),

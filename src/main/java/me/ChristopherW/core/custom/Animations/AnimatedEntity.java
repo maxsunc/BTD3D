@@ -1,17 +1,10 @@
 package me.ChristopherW.core.custom.Animations;
 
-import java.util.Arrays;
-
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.system.linux.Flock;
 
 import me.ChristopherW.core.custom.Animations.RiggedMesh.AnimatedFrame;
-import me.ChristopherW.core.custom.Animations.RiggedMesh.Animation;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Mesh;
-
-import java.util.HashMap;
 
 public class AnimatedEntity extends Entity {
 

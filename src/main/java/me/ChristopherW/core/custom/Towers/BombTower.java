@@ -54,6 +54,8 @@ public class BombTower extends Tower implements ITower {
             case BT_EVEN_FASTER_RELOAD:
                 this.setRate(this.getRate() * 0.80f);
                 break;
+            default:
+                break;
         }
     }
 

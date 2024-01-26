@@ -9,9 +9,6 @@ import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.process.Launcher;
 
 import java.nio.IntBuffer;
-import java.util.prefs.Preferences;
-
-import javax.swing.event.MouseInputListener;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2i;

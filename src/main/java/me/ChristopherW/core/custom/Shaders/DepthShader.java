@@ -6,11 +6,9 @@ import me.ChristopherW.core.Camera;
 import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.ShaderManager;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
-import me.ChristopherW.core.custom.Animations.AnimationData;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Mesh;
-import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Transformation;
 
 public class DepthShader extends ShaderManager implements IShader{

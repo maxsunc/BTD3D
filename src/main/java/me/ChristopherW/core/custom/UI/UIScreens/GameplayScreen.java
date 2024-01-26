@@ -1,15 +1,11 @@
 package me.ChristopherW.core.custom.UI.UIScreens;
 
 import imgui.ImGui;
-import imgui.ImGuiStyle;
 import imgui.ImVec2;
 import java.awt.Color;
 import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiColorEditFlags;
 import imgui.flag.ImGuiStyleVar;
-import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
-import imgui.type.ImInt;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Tower;

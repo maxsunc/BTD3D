@@ -7,7 +7,6 @@ public class Spawner {
     private float nextSpawnInterval;
     private BloonType type;
     private float spawnTime;
-    private int bloonQuantity;
     private float timeToNextSpawn;
 
     // takes in bloonAttribute to spawn, amount of bloons to spawn and time to spawn all the bloons
@@ -15,7 +14,6 @@ public class Spawner {
         spawnInterval = spawnTime / bloonQuantity;
         nextSpawnInterval = spawnInterval;
         this.type = type;
-        this.bloonQuantity = bloonQuantity;
         this.spawnTime = spawnTime;
         this.timeToNextSpawn = timeToNextSpawn;
     }

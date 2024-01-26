@@ -12,7 +12,6 @@ import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
 public class SuperMonkey extends Tower implements ITower{
@@ -41,9 +40,7 @@ public class SuperMonkey extends Tower implements ITower{
 
     @Override
     public void upgrade(Upgrade currentUpgrade){
-        switch(currentUpgrade.nextUpgrade){
-            
-        }
+        // no upgrades
     }
 
     @Override

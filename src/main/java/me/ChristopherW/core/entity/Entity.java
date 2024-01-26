@@ -3,11 +3,9 @@ package me.ChristopherW.core.entity;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Quaternion;
 
-import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.core.utils.Utils;
 import me.ChristopherW.process.Game;
 
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class Entity {

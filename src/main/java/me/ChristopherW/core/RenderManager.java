@@ -1,6 +1,5 @@
 package me.ChristopherW.core;
 
-import me.ChristopherW.core.entity.Model;
 import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Shaders.DebugShader;
@@ -8,13 +7,10 @@ import me.ChristopherW.core.custom.Shaders.DepthShader;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.utils.GlobalVariables;
-import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
@@ -72,10 +68,13 @@ public class RenderManager {
     }
 
     public void bind(Mesh mesh) {
+        // enable entries in the VAO
         GL30.glBindVertexArray(mesh.getId());
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
+
+        // enable extra rig related entries for animated models
         if(mesh instanceof RiggedMesh) {
             GL20.glEnableVertexAttribArray(3);
             GL20.glEnableVertexAttribArray(4);

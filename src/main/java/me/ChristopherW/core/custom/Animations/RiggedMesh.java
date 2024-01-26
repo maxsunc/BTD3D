@@ -1,13 +1,9 @@
 package me.ChristopherW.core.custom.Animations;
 
-import me.ChristopherW.core.IShader;
 import me.ChristopherW.core.custom.Shaders.AnimatedShader;
-import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Mesh;
 import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.core.utils.Utils;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.joml.Matrix4f;
@@ -94,18 +90,7 @@ public class RiggedMesh extends Mesh {
         return animationList;
     }
 
-    public record AnimatedFrame(Matrix4f[] boneMatrices) {
-    }
+    public record AnimatedFrame(Matrix4f[] boneMatrices) {}
 
-    public record Animation(String name, double duration, List<AnimatedFrame> frames) {
-    }
-
-    private Bone findBone(String nodeName)
-    {
-        for (Bone b : bones)
-            if (b.getName().equals(nodeName))
-                return b;
-
-        return null;
-    }
+    public record Animation(String name, double duration, List<AnimatedFrame> frames) {}
 }

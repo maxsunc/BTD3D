@@ -7,7 +7,6 @@ import org.joml.Vector3f;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.core.entity.primatives.Cube;
 import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 

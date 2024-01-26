@@ -6,8 +6,6 @@ import me.ChristopherW.process.Launcher;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
-import static org.lwjgl.glfw.GLFW.glfwGetTime;
-
 public class EngineManager {
     public static final long NANOSECOND = 1000000000L;
 

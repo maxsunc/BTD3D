@@ -1,7 +1,6 @@
 package me.ChristopherW.core.custom;
 
 import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.process.Game;
 
 public enum BloonType {
 	RED(1,1,1, Assets.RED, 0.5f),
@@ -24,11 +23,11 @@ public enum BloonType {
 	public float size;
 	
 	//RBE is Red Bloon Equivalent 
-	// constructor
+	
 	BloonType(int health, int RBE, float speed, Texture color, float size) {
 		this.health = health;
 		this.RBE = RBE;
-		this.speed = speed * 0.91f;
+		this.speed = speed * 0.91f; // lower the movement speed of the bloons because it's too dificult
 		this.color = color;
 		this.size = size;
 	}

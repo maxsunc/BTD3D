@@ -58,6 +58,8 @@ public class SniperMonkey extends Tower implements ITower {
             case SM_DEADLY_PRECISION:
                 this.setDamage(this.getDamage() + 13);
                 break;
+            default:
+                break;
         }
     }
 

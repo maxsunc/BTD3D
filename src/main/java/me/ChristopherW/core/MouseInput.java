@@ -16,7 +16,7 @@ public class MouseInput {
 
     private final Vector2f displVec;
 
-    private boolean inWindow = false, leftButtonPress = false, rightButtonPress = false;
+    private boolean leftButtonPress = false, rightButtonPress = false;
 
     private long cursor;
     private long cursorDown;
@@ -47,7 +47,6 @@ public class MouseInput {
 
         // set the callback for whent he mouse enters the window
         GLFW.glfwSetCursorEnterCallback(Launcher.getWindow().getWindow(), (window, entered) -> {
-            this.inWindow = entered;
         });
 
         ObjectLoader loader = new ObjectLoader();

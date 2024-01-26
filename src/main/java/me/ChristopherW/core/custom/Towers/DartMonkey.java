@@ -12,7 +12,6 @@ import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
 public class DartMonkey extends Tower implements ITower{
@@ -50,6 +49,8 @@ public class DartMonkey extends Tower implements ITower{
                 break;
             case DM_TRIPLE_SHOT:
                 // die
+                break;
+            default:
                 break;
         }
     }

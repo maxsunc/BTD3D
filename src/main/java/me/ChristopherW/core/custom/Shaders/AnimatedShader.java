@@ -1,7 +1,5 @@
 package me.ChristopherW.core.custom.Shaders;
 
-import java.util.Arrays;
-
 import org.joml.Matrix4f;
 
 import me.ChristopherW.core.Camera;

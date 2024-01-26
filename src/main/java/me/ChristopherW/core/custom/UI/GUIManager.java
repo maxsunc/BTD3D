@@ -1,25 +1,14 @@
 package me.ChristopherW.core.custom.UI;
 
-import java.awt.List;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.lwjgl.glfw.GLFW;
-
 import imgui.*;
-import imgui.flag.ImGuiBackendFlags;
 import imgui.flag.ImGuiConfigFlags;
-import imgui.flag.ImGuiDataType;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
-import imgui.type.ImInt;
-import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.WindowManager;
 import me.ChristopherW.core.custom.UI.UIScreens.GameoverScreen;
 import me.ChristopherW.core.custom.UI.UIScreens.GameplayScreen;
-import me.ChristopherW.core.custom.UI.UIScreens.MainMenu;
-import me.ChristopherW.core.entity.Texture;
-import me.ChristopherW.core.utils.GlobalVariables;
 import me.ChristopherW.process.Launcher;
 
 public class GUIManager {
