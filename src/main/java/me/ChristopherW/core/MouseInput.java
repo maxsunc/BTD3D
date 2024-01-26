@@ -62,6 +62,15 @@ public class MouseInput {
             Launcher.getGame().mouseDown(window, button, action, mods, this);
             this.leftButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS;
             this.rightButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_2 && action == GLFW.GLFW_PRESS;
+
+            if(GlobalVariables.USE_CUSTOM_CURSOR) {
+                if(isLeftButtonPress()) {
+                    GLFW.glfwSetCursor(window, cursorDown);
+                } else {
+                    GLFW.glfwSetCursor(window, cursor);
+                }
+            }
+            
         });
     }
 

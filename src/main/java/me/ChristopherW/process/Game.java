@@ -385,6 +385,9 @@ public class Game implements ILogic {
         range.setEnabled(false);
 
         music = playRandom(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
+
+        if(GlobalVariables.USE_CUSTOM_CURSOR)
+            GLFW.glfwSetCursor(window.getWindow(), window.getInput().getCursor());
     }
 
     int i = 0;

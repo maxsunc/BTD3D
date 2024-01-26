@@ -7,6 +7,8 @@ import java.util.HashMap;
 import org.lwjgl.glfw.GLFW;
 
 import imgui.*;
+import imgui.flag.ImGuiBackendFlags;
+import imgui.flag.ImGuiConfigFlags;
 import imgui.flag.ImGuiDataType;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
@@ -57,6 +59,7 @@ public class GUIManager {
         // bunch of font loading stuff
         fontConfig = new ImFontConfig();
         io = ImGui.getIO();
+        io.addConfigFlags(ImGuiConfigFlags.NoMouseCursorChange);
         fontAtlas = io.getFonts();
         fontConfig.setGlyphRanges(fontAtlas.getGlyphRangesDefault());
         fontConfig.setPixelSnapH(true);

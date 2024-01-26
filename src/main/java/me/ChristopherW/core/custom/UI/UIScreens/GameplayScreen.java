@@ -104,7 +104,7 @@ public class GameplayScreen implements IGUIScreen {
         float panelHeight = gm.window.getHeight();
 
         if(game.monkeyMode > 0) {
-            ImGui.setNextWindowPos((int)gm.window.getInput().getCurrentPos().x,(int)gm.window.getInput().getCurrentPos().y, 0, 1,0);
+            ImGui.setNextWindowPos((int)gm.window.getInput().getCurrentPos().x - 15,(int)gm.window.getInput().getCurrentPos().y, 0, 1,0);
             if (ImGui.begin("gameplay_mouse", p_open, gm.window_flags)) {
                 ImGui.pushFont(gm.monkeyFontMedium);
                 //ImGui.image(panel.getId(), 71, 32);

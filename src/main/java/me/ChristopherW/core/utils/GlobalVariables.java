@@ -7,6 +7,7 @@ public class GlobalVariables {
     public static final String TITLE = "BTD3D";
     public static final String ICON_PATH = "assets/textures/icons/icon.png";
     public static final Vector4f BG_COLOR = new Vector4f(168f/255f, 255/255f, 249/255f, 0f);
+    public static final boolean USE_CUSTOM_CURSOR = true;
 
     public static final float GRAVITY = -9.8f;
     public static boolean FULLSCREEN = false;
