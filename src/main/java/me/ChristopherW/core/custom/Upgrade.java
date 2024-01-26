@@ -22,7 +22,7 @@ public enum Upgrade {
 	DM_TRIPLE_SHOT("Triple Shot", "Throws 3 darts at a time instead of 1", null, 400),
 	DM_VERY_QUICK_SHOTS("Very Quick Shots", "Shoots 33% faster!", DM_TRIPLE_SHOT, 190),
 	DM_QUICK_SHOTS("Quick Shots", "Shoots 15% faster", DM_VERY_QUICK_SHOTS, 100),
-	DM_ENCHANCED_EYESIGHT("Enchanced Eyesight", "Shoots even furthur", null, 200),
+	DM_ENCHANCED_EYESIGHT("Enhanced Eyesight", "Shoots even furthur", null, 200),
 	DM_LONG_RANGE("Long Range Darts", "Makes the Dart Monkey shoot furthur than normal.", DM_ENCHANCED_EYESIGHT, 90),
 	DM_BASE_RANGE("","", DM_LONG_RANGE, 0),
 	DM_BASE_RATE("","", DM_QUICK_SHOTS, 0),

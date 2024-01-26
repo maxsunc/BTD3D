@@ -546,7 +546,6 @@ public class Game implements ILogic {
                 if(currentTowerInspecting.getPath2().nextUpgrade != null)
                     if(currentTowerInspecting.getPath2().nextUpgrade.cost <= player.getMoney()){
                     player.removeMoney(currentTowerInspecting.getPath2().nextUpgrade.cost);
-                    System.out.println("bought " + currentTowerInspecting.getPath2().nextUpgrade.name);
                     currentTowerInspecting.upgradePath(2);
                     audioSources.get("upgrade").play();
                     }
@@ -643,7 +642,7 @@ public class Game implements ILogic {
         }
         zoom = Utils.clamp(zoom, 0.75f, 1.75f);
 
-        float moveSpeed = 0.125f/2;
+        float moveSpeed = 10;
         Vector3f panVec = new Vector3f(0);
         if(window.isKeyPressed(GLFW.GLFW_KEY_W)) {
             panVec.add(cameraPos.getFoward().mul(-moveSpeed));
@@ -664,7 +663,7 @@ public class Game implements ILogic {
             }
         }
         
-        Vector3f normalized = panVec.normalize().mul(moveSpeed * (180/EngineManager.getFps()));
+        Vector3f normalized = panVec.normalize().mul((float) (moveSpeed * deltaTime));
         
         if(player.getLives() > 0)
             cameraPos.translate(normalized.isFinite() ? panVec : new Vector3f());
@@ -894,12 +893,10 @@ public class Game implements ILogic {
                   case "R":
                     // end round
                     runRound = false;
-                    System.out.println(runRound);
                     break;
                   case "C":
                     int bloonQuantity = Integer.parseInt(elements[2]);
                     float spawnTime = Integer.parseInt(elements[3]);
-                    System.out.println(elements.length);
                     float timeToNextSpawn = elements.length > 4 ? Integer.parseInt(elements[4]) : Integer.parseInt(elements[3]);
                     Spawner spawner = new Spawner(determineBloonType(elements[1]), bloonQuantity, spawnTime, timeToNextSpawn);
                     spawners.add(spawner);
@@ -913,7 +910,6 @@ public class Game implements ILogic {
         if (!runRound) {
             //check if all bloons are gone
             if (bloons.size() <= 0 && roundIsRunning) {
-                System.out.println("Round Ended");
                 roundIsRunning = false;
                 runRound = true;
                 // add round money

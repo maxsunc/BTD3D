@@ -51,8 +51,6 @@ public class DartMonkey extends Tower implements ITower{
                 // die
                 break;
         }
-        System.out.println(this.getRange());
-        System.out.println("RATE: " + this.getRate());
     }
 
     @Override

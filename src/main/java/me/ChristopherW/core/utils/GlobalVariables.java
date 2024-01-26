@@ -11,8 +11,8 @@ public class GlobalVariables {
     public static final float GRAVITY = -9.8f;
     public static boolean FULLSCREEN = false;
     public static int WIDTH = 1280, HEIGHT = 720;
-    public static float MAX_FRAMERATE = 180;
-    public static float FRAMERATE = 180;
+    public static float MAX_FRAMERATE = 999f;
+    public static float FRAMERATE = 999;
     public static boolean SHOW_FPS = false;
     public static boolean VSYNC = false;
     public static int SHADOW_RES = 2048;

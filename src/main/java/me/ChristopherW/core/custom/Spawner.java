@@ -13,7 +13,6 @@ public class Spawner {
     // takes in bloonAttribute to spawn, amount of bloons to spawn and time to spawn all the bloons
     public Spawner(BloonType type, int bloonQuantity, float spawnTime, float timeToNextSpawn){
         spawnInterval = spawnTime / bloonQuantity;
-        System.out.println("Spawn ever " + spawnInterval + " SECONDS");
         nextSpawnInterval = spawnInterval;
         this.type = type;
         this.bloonQuantity = bloonQuantity;
@@ -40,7 +39,6 @@ public class Spawner {
         if(nextSpawnInterval <= timeElapsed){
             // get nextSpawnInterval
             nextSpawnInterval += spawnInterval;
-            System.out.println(nextSpawnInterval);
             return true;
         }
         return false;
