@@ -1,6 +1,5 @@
 package me.ChristopherW.core;
 
-import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.utils.Utils;
 import me.ChristopherW.lighting.DirectionalLight;
 import me.ChristopherW.lighting.PointLight;

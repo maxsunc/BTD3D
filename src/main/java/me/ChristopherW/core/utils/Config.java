@@ -3,17 +3,22 @@ package me.ChristopherW.core.utils;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class GlobalVariables {
-    public static final String TITLE = "BTD3D";
+public class Config {
+    public static enum GraphicsTier {
+        LOW, MEDIUM, HIGH
+    };
+    
+    public static final String TITLE = "Bloons TD 3D";
     public static final String ICON_PATH = "assets/textures/icons/icon.png";
     public static final Vector4f BG_COLOR = new Vector4f(168f/255f, 255/255f, 249/255f, 0f);
+    public static final GraphicsTier GRAPHICS_MODE = GraphicsTier.HIGH;
     public static final boolean USE_CUSTOM_CURSOR = true;
 
     public static final float GRAVITY = -9.8f;
     public static boolean FULLSCREEN = false;
     public static int WIDTH = 1280, HEIGHT = 720;
     public static float MAX_FRAMERATE = 999f;
-    public static float FRAMERATE = 999;
+    public static float FRAMERATE = 9999;
     public static boolean SHOW_FPS = false;
     public static boolean VSYNC = false;
     public static int SHADOW_RES = 2048;

@@ -23,9 +23,13 @@ uniform sampler2D textureSampler;
 uniform sampler2D shadowMap;
 uniform vec4 skyColor; 
 uniform vec3 sunPos;
+uniform int shadowsEnabled;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
+    if(shadowsEnabled == 0)
+        return 0.0;
+
     // perform perspective divide
     vec3 lightCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     

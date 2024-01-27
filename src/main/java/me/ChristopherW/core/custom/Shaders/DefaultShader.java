@@ -8,7 +8,7 @@ import me.ChristopherW.core.ShaderManager;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Mesh;
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.core.utils.Transformation;
 
 public class DefaultShader extends ShaderManager implements IShader {
@@ -51,6 +51,7 @@ public class DefaultShader extends ShaderManager implements IShader {
             this.createUniform("sunPos");
             this.createUniform("showFog");
             this.createMaterialUniform("material");
+            this.createUniform("shadowsEnabled");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,10 +66,11 @@ public class DefaultShader extends ShaderManager implements IShader {
         this.setUniform("viewMatrix", Transformation.createViewMatrix(camera));
         this.setUniform("m3x3InvTrans", Transformation.createInvTransMatrix(modelMatrix));
         this.setUniform("lightSpaceMatrix", camera.getLightSpaceMatrix());
-        this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING ? 1 : 0);
+        this.setUniform("shadowFiltering", Config.SHADOW_FILTERING ? 1 : 0);
         this.setUniform("material", mesh.getMaterial());
-        this.setUniform("skyColor", GlobalVariables.BG_COLOR);
-        this.setUniform("showFog", GlobalVariables.FOG ? 1 : 0);
-        this.setUniform("sunPos", GlobalVariables.SUN_POS);
+        this.setUniform("skyColor", Config.BG_COLOR);
+        this.setUniform("showFog", Config.FOG ? 1 : 0);
+        this.setUniform("sunPos", Config.SUN_POS);
+        this.setUniform("shadowsEnabled", Config.SHADOW_RES > 0 ? 1 : 0);
     }
 }

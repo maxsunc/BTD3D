@@ -1,19 +1,16 @@
 package me.ChristopherW.core;
 
-import me.ChristopherW.core.entity.Model;
+import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.custom.Shaders.DebugShader;
 import me.ChristopherW.core.custom.Shaders.DepthShader;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Mesh;
-import me.ChristopherW.core.utils.GlobalVariables;
-import me.ChristopherW.process.Game;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.process.Launcher;
 
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
@@ -43,7 +40,7 @@ public class RenderManager {
         depthFBO = GL30.glGenFramebuffers();
         depthMap = GL30.glGenTextures();
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, depthMap);
-        GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_DEPTH_COMPONENT, GlobalVariables.SHADOW_RES, GlobalVariables.SHADOW_RES, 0, GL30.GL_DEPTH_COMPONENT, GL30.GL_FLOAT, MemoryUtil.NULL);
+        GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_DEPTH_COMPONENT, Config.SHADOW_RES, Config.SHADOW_RES, 0, GL30.GL_DEPTH_COMPONENT, GL30.GL_FLOAT, MemoryUtil.NULL);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
         GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_BORDER); 
@@ -71,10 +68,13 @@ public class RenderManager {
     }
 
     public void bind(Mesh mesh) {
+        // enable entries in the VAO
         GL30.glBindVertexArray(mesh.getId());
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
+
+        // enable extra rig related entries for animated models
         if(mesh instanceof RiggedMesh) {
             GL20.glEnableVertexAttribArray(3);
             GL20.glEnableVertexAttribArray(4);
@@ -88,7 +88,7 @@ public class RenderManager {
         } 
         // or use the default texture if none specified
         else {
-            GL11.glBindTexture(GL30.GL_TEXTURE_2D, Game.defaultTexture.getId());
+            GL11.glBindTexture(GL30.GL_TEXTURE_2D, Assets.defaultTexture.getId());
         }
         GL13.glActiveTexture(GL30.GL_TEXTURE0 + 1);
         GL30.glBindTexture(GL30.GL_TEXTURE_2D, depthMap);
@@ -223,7 +223,7 @@ public class RenderManager {
     }
 
     public void render(Camera camera) {
-        GL30.glViewport(0, 0, GlobalVariables.SHADOW_RES, GlobalVariables.SHADOW_RES);
+        GL30.glViewport(0, 0, Config.SHADOW_RES, Config.SHADOW_RES);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, depthFBO);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
@@ -232,7 +232,7 @@ public class RenderManager {
 
         GL11.glViewport(0,0, window.getWidth(), window.getHeight());
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-        if(GlobalVariables.DEBUG_SHADOWS)
+        if(Config.DEBUG_SHADOWS)
             renderQuad();
         else
             renderScene(camera);

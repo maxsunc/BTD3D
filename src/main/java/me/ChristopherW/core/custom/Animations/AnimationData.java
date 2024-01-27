@@ -4,11 +4,11 @@ import java.util.Arrays;
 
 import org.joml.Matrix4f;
 
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 
 public class AnimationData {
 
-    public static final Matrix4f[] DEFAULT_BONES_MATRICES = new Matrix4f[GlobalVariables.MAX_BONES];
+    public static final Matrix4f[] DEFAULT_BONES_MATRICES = new Matrix4f[Config.MAX_BONES];
 
     static {
         Matrix4f zeroMatrix = new Matrix4f().zero();

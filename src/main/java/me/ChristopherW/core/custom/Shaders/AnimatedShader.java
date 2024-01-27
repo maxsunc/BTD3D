@@ -1,7 +1,5 @@
 package me.ChristopherW.core.custom.Shaders;
 
-import java.util.Arrays;
-
 import org.joml.Matrix4f;
 
 import me.ChristopherW.core.Camera;
@@ -13,7 +11,7 @@ import me.ChristopherW.core.custom.Animations.RiggedMesh;
 import me.ChristopherW.core.entity.Entity;
 import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Mesh;
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.core.utils.Transformation;
 
 public class AnimatedShader extends ShaderManager implements IShader {
@@ -57,6 +55,7 @@ public class AnimatedShader extends ShaderManager implements IShader {
             this.createUniform("showFog");
             this.createUniform("sunPos");
             this.createMaterialUniform("material");
+            this.createUniform("shadowsEnabled");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -78,10 +77,11 @@ public class AnimatedShader extends ShaderManager implements IShader {
             AnimatedEntity ae = (AnimatedEntity)entity;
             this.setUniform("bones", ae.getCurrentFrame((RiggedMesh)mesh).boneMatrices());
         }
-        this.setUniform("shadowFiltering", GlobalVariables.SHADOW_FILTERING ? 1 : 0);
+        this.setUniform("shadowFiltering", Config.SHADOW_FILTERING ? 1 : 0);
         this.setUniform("material", mesh.getMaterial());
-        this.setUniform("skyColor", GlobalVariables.BG_COLOR);
-        this.setUniform("showFog", GlobalVariables.FOG ? 1 : 0);
-        this.setUniform("sunPos", GlobalVariables.SUN_POS);
+        this.setUniform("skyColor", Config.BG_COLOR);
+        this.setUniform("showFog", Config.FOG ? 1 : 0);
+        this.setUniform("sunPos", Config.SUN_POS);
+        this.setUniform("shadowsEnabled", Config.SHADOW_RES > 0 ? 1 : 0);
     }
 }

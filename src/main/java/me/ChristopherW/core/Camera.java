@@ -2,7 +2,7 @@ package me.ChristopherW.core;
 
 import org.joml.Vector3f;
 
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 
 import org.joml.Matrix4f;
 
@@ -17,12 +17,14 @@ public class Camera {
         this.position = pos;
         this.rotation = rot;
 
+        // create orthographic camera for shadow casting
         Matrix4f lightProjection = new Matrix4f();
         lightProjection.ortho(-20, 20, -20, 20, 5f, 100);
 
+        // sets the light source to look at the world origin
         Matrix4f lightView = new Matrix4f();
         lightView.lookAt(
-            GlobalVariables.SUN_POS,
+            Config.SUN_POS,
             new Vector3f(0.0f, 0.0f, 0.0f),
             new Vector3f(0.0f, 1.0f, 0.0f)
         );

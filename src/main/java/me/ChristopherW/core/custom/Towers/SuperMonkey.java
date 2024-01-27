@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
+import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.Projectile;
 import me.ChristopherW.core.custom.Tower;
@@ -11,7 +12,6 @@ import me.ChristopherW.core.custom.TowerType;
 import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.process.Game;
 import me.ChristopherW.process.Launcher;
 
 public class SuperMonkey extends Tower implements ITower{
@@ -31,7 +31,7 @@ public class SuperMonkey extends Tower implements ITower{
 
     @Override
     public Projectile spawnProjectile() {
-        return new Projectile("dart", Model.copy(Game.dartModel), 
+        return new Projectile("dart", Model.copy(Assets.dartModel), 
             new Vector3f(this.getPosition().x, this.getPosition().y + 0.6f, this.getPosition().z).add(this.getRight().div(-3)), 
             new Vector3f(), 
             new Vector3f(0.1f), getDamage()
@@ -40,9 +40,7 @@ public class SuperMonkey extends Tower implements ITower{
 
     @Override
     public void upgrade(Upgrade currentUpgrade){
-        switch(currentUpgrade.nextUpgrade){
-            
-        }
+        // no upgrades
     }
 
     @Override

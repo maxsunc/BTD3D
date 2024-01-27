@@ -1,6 +1,5 @@
 package me.ChristopherW.process;
 
-import java.awt.Color;
 import java.io.File;
 import java.util.Scanner;
 import java.nio.FloatBuffer;
@@ -24,12 +23,12 @@ import com.jme3.bullet.PhysicsSpace;
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 import me.ChristopherW.core.Camera;
-import me.ChristopherW.core.EngineManager;
 import me.ChristopherW.core.ILogic;
 import me.ChristopherW.core.MouseInput;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.RenderManager;
 import me.ChristopherW.core.WindowManager;
+import me.ChristopherW.core.custom.Assets;
 import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.BloonType;
 import me.ChristopherW.core.custom.Bomb;
@@ -38,7 +37,6 @@ import me.ChristopherW.core.custom.Projectile;
 import me.ChristopherW.core.custom.Spawner;
 import me.ChristopherW.core.custom.Tower;
 import me.ChristopherW.core.custom.TowerType;
-import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.Animations.AnimatedEntity;
 import me.ChristopherW.core.custom.Animations.RiggedModel;
 import me.ChristopherW.core.custom.Towers.BombTower;
@@ -48,13 +46,11 @@ import me.ChristopherW.core.custom.Towers.SniperMonkey;
 import me.ChristopherW.core.custom.Towers.SuperMonkey;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.entity.Entity;
-import me.ChristopherW.core.entity.Material;
 import me.ChristopherW.core.entity.Model;
-import me.ChristopherW.core.entity.Texture;
 import me.ChristopherW.core.sound.SoundListener;
 import me.ChristopherW.core.sound.SoundManager;
 import me.ChristopherW.core.sound.SoundSource;
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.core.utils.Transformation;
 import me.ChristopherW.core.utils.Utils;
 
@@ -65,68 +61,45 @@ public class Game implements ILogic {
     private final SoundManager soundManager;
     public static HashMap<String, SoundSource> audioSources = new HashMap<>();
     public Map<String, Entity> entities;
-    
     public FloatBuffer depthBuffer;
-
-    public SoundSource music;
     public static PhysicsSpace physicsSpace;
     private Camera camera;
-    public static Texture defaultTexture;
-    public static Model cube;
-    public static Model sphere;
-    public static Model plane;
-    private Material previewRed;
-    private Material previewWhite;
-    private RiggedModel[] monkeyModels = new RiggedModel[8];
-    public static Model bloonModel;
-    public static Model bombModel;
-    public static Model dartModel;
-    private Model moabModel;
-
-    public static Texture RED;
-    public static Texture BLUE;
-    public static Texture GREEN;
-    public static Texture YELLOW;
-    public static Texture PINK;
-    public static Texture BLACK;
-    public static Texture WHITE;
-    public static Texture LEAD;
-    public static Texture ZEBRA;
-    public static Texture RAINBOW;
-    public static Texture CERAMIC;
-    public static Texture MOAB;
-    public static Texture MOAB_1;
-    public static Texture MOAB_2;
-    public static Texture MOAB_3;
-    public static Texture MOAB_4;
-
-    public static Texture[] upgradeTextures;
-
+    public SoundSource music;
     private Vector3f mouseWorldPos = new Vector3f(0, 0, 0);
-    public ArrayList<Bloon> bloons = new ArrayList<Bloon>();
-    public ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
-    public ArrayList<Tower> monkeys = new ArrayList<Tower>();
-    public Vector3f[] bloonNodes;
-    private String[] previewKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower", "preview_super_monkey"};
-    private ArrayList<Spawner> spawners = new ArrayList<Spawner>();
-    
 
-    // temp
-    //private Entity[] nodes = new Entity[5];
+    /*
+     * INSTANCE VARIABLES
+     */
+    private ArrayList<Bloon> bloons = new ArrayList<Bloon>();
+    private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
+    private ArrayList<Tower> towers = new ArrayList<Tower>();
+    private Vector3f[] bloonNodes;
+    private String[] previewTowerKeys = {"preview_monkey", "preview_sniper_monkey", "preview_bomb_tower", "preview_super_monkey"};
+    private ArrayList<Spawner> spawners = new ArrayList<Spawner>();
     private float sphereRadius = 1.2f;
-    public Tower currentTowerInspecting;
-    public float gameSpeed = 1.0f;
-    public Player player;
-    public int bloonCounter = 0;    
-    public int monkeyMode = 0;
-    public boolean autoStart = false;
-    public boolean isInvalid = false;
+    private Tower currentTowerInspecting;
+    private float gameSpeed = 1.0f;
+    private Player player;
+    private int bloonCounter = 0;    
+    private int placingMonkeyId = 0;
+    private boolean autoStart = false;
+    private boolean isInvalid = false;
     private Spawner currentSpawnerTimer;
-    public Scanner roundScanner;
-    public boolean roundIsRunning;
-    public Entity range;
+    private Scanner roundScanner;
+    private boolean roundIsRunning;
+    private boolean roundShouldRun = true;
+    private Entity range;
     private int roundNumber = 1;
-    public boolean gameSpeedToggled = false;
+    private boolean fastForwardToggled = false;
+    private float defaultCameraOrbitRadius = 20f;
+    private Random random = new Random();
+    private Entity cameraPos = new Entity(null, new Vector3f(), new Vector3f(), new Vector3f());
+    private Vector2d dMouse = new Vector2d();
+    private int spawnNewBloonOnNextTick = -1;
+    private boolean secondBloonRow = false;
+    private float cameraRotationX = 45;
+    private float cameraRotationY = 45;
+    private float cameraZoom = 2;
 
     public Game() throws Exception {
         // create new instances for these things
@@ -144,158 +117,24 @@ public class Game implements ILogic {
 
         physicsSpace = new PhysicsSpace(PhysicsSpace.BroadphaseType.DBVT);
         physicsSpace.getSolverInfo().setSplitImpulseEnabled(true);
-        physicsSpace.setGravity(new com.jme3.math.Vector3f(0, GlobalVariables.GRAVITY, 0));
+        physicsSpace.setGravity(new com.jme3.math.Vector3f(0, Config.GRAVITY, 0));
         
         // set setup the sound listener to be at the world origin and load the audio sounds
         soundManager.setListener(new SoundListener(new Vector3f(0, 0, 0)));
-        loadSounds();
-    }
-   
-    
-    //Plays a random sound given an array of String keys and returns it.
-    public SoundSource playRandom(String[] keys) {
-        int randomNumber = random.nextInt(keys.length);
-        audioSources.get(keys[randomNumber]).play();
-        return audioSources.get(keys[randomNumber]);
-    }
-    // gets and returns a random sound in a hashmap using keys
-    public SoundSource getRandom(String[] keys) {
-        int randomNumber = random.nextInt(keys.length);
-        return audioSources.get(keys[randomNumber]);
+        Assets.loadSounds(audioSources, soundManager);
     }
 
-    void loadSounds() {
-        try {
-            // load the sound file to a buffer, then create a new audio source at the world origin with the buffer attached
-            // store that sound source to a map of sounds
-            // repeat this for each sound file
-            SoundSource jazz = soundManager.createSound("jazz", "assets/sounds/jazz.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("jazz", jazz);
-            SoundSource jazzHD = soundManager.createSound("jazzHD", "assets/sounds/MusicBTD5JazzA.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("jazzHD", jazzHD);
-            SoundSource upbeat1 = soundManager.createSound("upbeat1", "assets/sounds/MusicUpbeat1A.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("upbeat1", upbeat1);
-            SoundSource upbeat2 = soundManager.createSound("upbeat2", "assets/sounds/MusicUpbeat2A.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("upbeat2", upbeat2);
-            SoundSource upbeat3 = soundManager.createSound("upbeat3", "assets/sounds/MusicUpbeat3A.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("upbeat3", upbeat3);
-            SoundSource musicBMC = soundManager.createSound("musicBMC", "assets/sounds/MusicBMCStreetParty.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("musicBMC", musicBMC);
-            SoundSource sailsAgain = soundManager.createSound("sailsAgain", "assets/sounds/MusicSailsAgain.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("sailsAgain", sailsAgain);
 
-            SoundSource tower_place_1 = soundManager.createSound("tower_place_1", "assets/sounds/PlaceTowerMonkey01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("tower_place_1", tower_place_1);
-            SoundSource tower_place_2 = soundManager.createSound("tower_place_2", "assets/sounds/PlaceTowerMonkey02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("tower_place_2", tower_place_2);
-            
-            SoundSource pop1 = soundManager.createSound("pop1", "assets/sounds/Pop01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop_1", pop1);
-            SoundSource pop2 = soundManager.createSound("pop2", "assets/sounds/Pop02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop_2", pop2);
-            SoundSource pop3 = soundManager.createSound("pop3", "assets/sounds/Pop03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop_3", pop3);
-            SoundSource pop4 = soundManager.createSound("pop4", "assets/sounds/Pop04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("pop_4", pop4);
-
-            SoundSource explosion_1 = soundManager.createSound("explosion_1", "assets/sounds/Explosion01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("explosion_1", explosion_1);
-            SoundSource explosion_2 = soundManager.createSound("explosion_2", "assets/sounds/Explosion02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("explosion_2", explosion_2);
-            SoundSource explosion_3 = soundManager.createSound("explosion_3", "assets/sounds/Explosion03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("explosion_3", explosion_3);
-            SoundSource explosion_4 = soundManager.createSound("explosion_4", "assets/sounds/Explosion04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("explosion_4", explosion_4);
-            SoundSource explosion_5 = soundManager.createSound("explosion_5", "assets/sounds/Explosion05.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("explosion_5", explosion_5);
-
-            SoundSource moab_damage_1 = soundManager.createSound("moab_damage_1", "assets/sounds/HitMoab01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("moab_damage_1", moab_damage_1);
-            SoundSource moab_damage_2 = soundManager.createSound("moab_damage_2", "assets/sounds/HitMoab02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("moab_damage_2", moab_damage_2);
-            SoundSource moab_damage_3 = soundManager.createSound("moab_damage_3", "assets/sounds/HitMoab03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("moab_damage_3", moab_damage_3);
-            SoundSource moab_damage_4 = soundManager.createSound("moab_damage_4", "assets/sounds/HitMoab04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("moab_damage_4", moab_damage_4);
-
-
-            SoundSource moab_destroyed = soundManager.createSound("moab_destroyed", "assets/sounds/MoabDestroyed03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("moab_destroyed", moab_destroyed);
-
-            SoundSource ceramic_destroy_1 = soundManager.createSound("ceramic_destroy_1", "assets/sounds/CeramicDestroyed01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(ceramic_destroy_1.getName(), ceramic_destroy_1);
-            SoundSource ceramic_destroy_2 = soundManager.createSound("ceramic_destroy_2", "assets/sounds/CeramicDestroyed02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(ceramic_destroy_2.getName(), ceramic_destroy_2);
-            SoundSource ceramic_destroy_3 = soundManager.createSound("ceramic_destroy_3", "assets/sounds/CeramicDestroyed04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(ceramic_destroy_3.getName(), ceramic_destroy_3);
-
-            SoundSource ceramic_hit_1 = soundManager.createSound("ceramic_hit_1", "assets/sounds/HitCeramic01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(ceramic_hit_1.getName(), ceramic_hit_1);
-            SoundSource ceramic_hit_2 = soundManager.createSound("ceramic_hit_2", "assets/sounds/HitCeramic02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(ceramic_hit_2.getName(), ceramic_hit_2);
-            SoundSource ceramic_hit_3 = soundManager.createSound("ceramic_hit_3", "assets/sounds/HitCeramic03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(ceramic_hit_3.getName(), ceramic_hit_3);
-            SoundSource ceramic_hit_4 = soundManager.createSound("ceramic_hit_4", "assets/sounds/HitCeramic04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(ceramic_hit_4.getName(), ceramic_hit_4);
-
-            SoundSource metal_hit_1 = soundManager.createSound("metal_hit_1", "assets/sounds/HitMetal01.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(metal_hit_1.getName(), metal_hit_1);
-            SoundSource metal_hit_2 = soundManager.createSound("metal_hit_2", "assets/sounds/HitMetal02.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(metal_hit_2.getName(), metal_hit_2);
-            SoundSource metal_hit_3 = soundManager.createSound("metal_hit_3", "assets/sounds/HitMetal03.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(metal_hit_3.getName(), metal_hit_3);
-            SoundSource metal_hit_4 = soundManager.createSound("metal_hit_4", "assets/sounds/HitMetal04.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put(metal_hit_4.getName(), metal_hit_4);
-
-            SoundSource upgrade = soundManager.createSound("upgrade", "assets/sounds/upgrade_hd.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("upgrade", upgrade);
-            SoundSource sell = soundManager.createSound("sell", "assets/sounds/UIGetGold.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("sell", sell);
-            SoundSource defeat = soundManager.createSound("defeat", "assets/sounds/UIDefeat.ogg", new Vector3f(0,0,0), false, false, 0.4f);
-            audioSources.put("defeat", defeat);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    Entity cameraPos = new Entity(null, new Vector3f(), new Vector3f(), new Vector3f());
     @Override
     public void init() throws Exception {
 
         renderer.init();
-
-        // load all the textures
-        defaultTexture = new Texture(loader.loadTexture("assets/textures/DefaultTexture.png"));
-        RED = loader.createTextureColor(Color.decode("#ed1f1f"));
-        BLUE = loader.createTextureColor(Color.decode("#2F9CE4"));
-        GREEN = loader.createTextureColor(Color.decode("#70A204"));
-        YELLOW = loader.createTextureColor(Color.decode("#FFD514"));
-        PINK = loader.createTextureColor(Color.PINK);
-        BLACK = loader.createTextureColor(Color.decode("#262626"));
-        WHITE = loader.createTextureColor(Color.decode("#E3E3E3"));
-        LEAD = loader.createTexture("assets/textures/materials/Lead.png");
-        ZEBRA = loader.createTexture("assets/textures/materials/Zebra.png");
-        RAINBOW = loader.createTexture("assets/textures/materials/Rainbow.png");
-        CERAMIC = loader.createTexture("assets/textures/materials/Ceramic.png");
-        MOAB = loader.createTexture("assets/textures/materials/MoabStandardDiffuse.png");
-        MOAB_1 = loader.createTexture("assets/textures/materials/MoabDamage1Diffuse.png");
-        MOAB_2 = loader.createTexture("assets/textures/materials/MoabDamage2Diffuse.png");
-        MOAB_3 = loader.createTexture("assets/textures/materials/MoabDamage3Diffuse.png");
-        MOAB_4 = loader.createTexture("assets/textures/materials/MoabDamage4Diffuse.png");
-        upgradeTextures = new Texture[32];
-        for(int i = 0; i < Upgrade.values().length; i++) {
-            upgradeTextures[i] = loader.createTexture("assets/textures/Upgrades/" + (i) + ".png");
-        }
+        Assets.init();
 
         player = new Player();
 
         // initialize entities map
         entities = new HashMap<>();
-
-        sphere = loader.loadModel("assets/models/primatives/sphere.obj");
-        cube = loader.loadModel("assets/models/primatives/cube.obj");
-        plane = loader.loadModel("assets/models/primatives/plane.obj");
 
         // init static objects
         Model mapModel = loader.loadModel("assets/models/map.dae");
@@ -305,10 +144,6 @@ public class Game implements ILogic {
             new Vector3f(1f,1f,1f)
         );
         entities.put("map", map);
-
-        bombModel = loader.loadModel("assets/models/bomb.fbx");
-        dartModel = loader.loadModel("assets/models/dart.fbx");
-        bloonModel = loader.loadModel("assets/models/bloon.dae");
 
 
         // load can map.txt node positions
@@ -335,45 +170,29 @@ public class Game implements ILogic {
             b.setName("bloon" + bloonCounter);
         }
 
-        monkeyModels[0] = loader.loadRiggedModel("assets/models/monkey.fbx");
-        monkeyModels[1] = loader.loadRiggedModel("assets/models/sniper_monkey.fbx");
-        monkeyModels[2] = loader.loadRiggedModel("assets/models/bomb_tower.fbx");
-        monkeyModels[3] = loader.loadRiggedModel("assets/models/super_monkey.fbx");
-
-        monkeyModels[0].getMeshes().remove("Scene.003");
-
-        AnimatedEntity super_monkey = new AnimatedEntity(RiggedModel.copy(monkeyModels[3]), 
+        AnimatedEntity super_monkey = new AnimatedEntity(RiggedModel.copy(Assets.monkeyModels[3]), 
             new Vector3f(), new Vector3f(), new Vector3f(0.1f));
             super_monkey.setAnimationId(1);
             super_monkey.setEnabled(false);
         entities.put("preview_super_monkey", super_monkey);
 
 
-        AnimatedEntity bomb_tower = new AnimatedEntity(RiggedModel.copy(monkeyModels[2]), 
+        AnimatedEntity bomb_tower = new AnimatedEntity(RiggedModel.copy(Assets.monkeyModels[2]), 
             new Vector3f(), new Vector3f(), new Vector3f(0.1f));
         bomb_tower.setAnimationId(1);
         bomb_tower.setEnabled(false);
         entities.put("preview_bomb_tower", bomb_tower);
 
-        AnimatedEntity monkey = new AnimatedEntity(RiggedModel.copy(monkeyModels[0]), 
+        AnimatedEntity monkey = new AnimatedEntity(RiggedModel.copy(Assets.monkeyModels[0]), 
             new Vector3f(), new Vector3f(), new Vector3f(0.1f));
         monkey.setEnabled(false);
         monkey.setAnimationId(2);
         entities.put("preview_monkey", monkey);
-        AnimatedEntity sniper_monkey = new AnimatedEntity(RiggedModel.copy(monkeyModels[1]), 
+        AnimatedEntity sniper_monkey = new AnimatedEntity(RiggedModel.copy(Assets.monkeyModels[1]), 
             new Vector3f(), new Vector3f(), new Vector3f(0.1f));
         sniper_monkey.setEnabled(false);
         sniper_monkey.setAnimationId(2);
         entities.put("preview_sniper_monkey", sniper_monkey);
-
-        moabModel = loader.loadModel("assets/models/moab.fbx");
-        // Entity moab = new Entity(Model.copy(moabModel), 
-        //     new Vector3f(0,5,0), new Vector3f(), new Vector3f(0.075f));
-        // //moab.setAnimationId(0);
-        // moab.setName("moab");
-
-        previewRed = new Material(loader.createTextureColor(Color.RED));
-        previewWhite = new Material(loader.createTextureColor(Color.WHITE));
         
         Model circle = loader.loadModel("assets/models/circle.fbx");
         range = new Entity("range", circle,
@@ -387,19 +206,17 @@ public class Game implements ILogic {
 
         music = playRandom(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
 
-        if(GlobalVariables.USE_CUSTOM_CURSOR)
+        if(Config.USE_CUSTOM_CURSOR)
             GLFW.glfwSetCursor(window.getWindow(), window.getInput().getCursor());
     }
 
-    int i = 0;
-    Vector2d dMouse = new Vector2d();
     public void mouseDown(long window, int button, int action, int mods, MouseInput input) {
         if(button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             if(action == GLFW.GLFW_PRESS) {
                 dMouse = new Vector2d(input.getCurrentPos());
             } else if (action == GLFW.GLFW_RELEASE) {
-                if(monkeyMode == 0){
-                    if(monkeys.size() < 1){
+                if(placingMonkeyId == 0){
+                    if(towers.size() < 1){
                         return;
                     }
 
@@ -416,12 +233,12 @@ public class Game implements ILogic {
                     currentTowerInspecting = null;
                     range.setEnabled(false);
                     float shortestDistance = Float.MAX_VALUE;
-                    Tower closestTower = monkeys.get(0);
-                    for(int i = 0; i < monkeys.size(); i++){
-                        monkeys.get(i).getModel().setAllColorBlending(0f);
-                        float distance = mouseWorldPos.distance(monkeys.get(i).getPosition());
+                    Tower closestTower = towers.get(0);
+                    for(int i = 0; i < towers.size(); i++){
+                        towers.get(i).getModel().setAllColorBlending(0f);
+                        float distance = mouseWorldPos.distance(towers.get(i).getPosition());
                         if(shortestDistance > distance){
-                            closestTower = monkeys.get(i);
+                            closestTower = towers.get(i);
                             shortestDistance = distance;
                         }
                     }
@@ -440,11 +257,11 @@ public class Game implements ILogic {
                         return;
 
                     Tower monkey;
-                    TowerType type = TowerType.values()[monkeyMode - 1];
+                    TowerType type = TowerType.values()[placingMonkeyId - 1];
 
                     switch (type) {
                         case BOMB_TOWER:
-                            monkey = new BombTower("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new BombTower("monkey" + Utils.generateHash(8), RiggedModel.copy(Assets.monkeyModels[placingMonkeyId - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -452,7 +269,7 @@ public class Game implements ILogic {
                             );
                             break;
                         case DART_MONKEY:
-                            monkey = new DartMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new DartMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(Assets.monkeyModels[placingMonkeyId - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -460,7 +277,7 @@ public class Game implements ILogic {
                             );
                             break;
                         case SNIPER_MONKEY:
-                            monkey = new SniperMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new SniperMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(Assets.monkeyModels[placingMonkeyId - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -468,7 +285,7 @@ public class Game implements ILogic {
                             );
                             break;
                         case SUPER_MONKEY:
-                            monkey = new SuperMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new SuperMonkey("monkey" + Utils.generateHash(8), RiggedModel.copy(Assets.monkeyModels[placingMonkeyId - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -476,7 +293,7 @@ public class Game implements ILogic {
                             );
                             break;
                         default:
-                            monkey = new Tower("monkey" + Utils.generateHash(8), RiggedModel.copy(monkeyModels[monkeyMode - 1]), 
+                            monkey = new Tower("monkey" + Utils.generateHash(8), RiggedModel.copy(Assets.monkeyModels[placingMonkeyId - 1]), 
                                 mouseWorldPos, 
                                 new Vector3f(), 
                                 new Vector3f(0.1f,0.1f,0.1f),
@@ -486,20 +303,17 @@ public class Game implements ILogic {
                     }
 
 
-                    monkeys.add(monkey);
+                    towers.add(monkey);
                     monkey.setAnimationId(monkey.getSpawnAnimationId());
                     entities.put(monkey.getName(), monkey);
                     playRandom(new String[]{"tower_place_1", "tower_place_2"});
                     player.removeMoney(monkey.getValue());
-                    monkeyMode = 0;
+                    placingMonkeyId = 0;
                     range.setEnabled(false);
                 }
             }
         }
     }
-
-    int spawnNewBloonOnNextTick = -1;
-    boolean secondBloonRow = false;
 
     public void keyDown(long window, int key, int scancode, int action, int mods) {
         if(action == GLFW.GLFW_PRESS) {
@@ -531,7 +345,7 @@ public class Game implements ILogic {
             }
             if(key ==GLFW.GLFW_KEY_ESCAPE) {
                 // sets monkey mode to 0 which gets rid of selected monkeys
-                monkeyMode = 0;
+                placingMonkeyId = 0;
             }
             // check for key presses Q and E, checking for E uses basically the same code but for the other path 
             if(key == GLFW.GLFW_KEY_Q){
@@ -564,22 +378,16 @@ public class Game implements ILogic {
         }
     }
 
-    float rotX = 45;
-    float rotY = 45;
-    float zoom = 2;
-    float panX = 0;
-    float panZ = 0;
-
     private boolean checkPlacementValidity(Entity previewMonkey) {
 
-        if(player.getMoney() < TowerType.values()[monkeyMode - 1].cost)
+        if(player.getMoney() < TowerType.values()[placingMonkeyId - 1].cost)
             return false;
 
         if(previewMonkey.getPosition().distance(0,0,0) > 50)
             return false;
 
 
-        for(Tower monkey : monkeys) {
+        for(Tower monkey : towers) {
             Vector3f monkeyPos = monkey.getPosition();
             if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
                 return false;
@@ -628,26 +436,26 @@ public class Game implements ILogic {
     @Override
     public void input(MouseInput input, double deltaTime, int frame) {
 
-        if(monkeyMode > 0) {
+        if(placingMonkeyId > 0) {
             currentTowerInspecting = null;
-            Entity previewMonkey = entities.get(previewKeys[monkeyMode - 1]);
+            Entity previewMonkey = entities.get(previewTowerKeys[placingMonkeyId - 1]);
             previewMonkey.setPosition(new Vector3f(mouseWorldPos));
             isInvalid = !checkPlacementValidity(previewMonkey);
             if(isInvalid) {
-                previewMonkey.getModel().setAllMaterials(previewRed);
+                previewMonkey.getModel().setAllMaterials(Assets.previewRed);
             } else {
-                previewMonkey.getModel().setAllMaterials(previewWhite);
+                previewMonkey.getModel().setAllMaterials(Assets.previewWhite);
             }
         }
 
         if(input.isLeftButtonPress() && player.getLives() > 0) {
             if(GUIManager.currentScreen == "MainMenu")
                 return;
-            rotX += input.getDisplVec().y * GlobalVariables.MOUSE_SENSITIVITY_X;
-            rotY += input.getDisplVec().x * GlobalVariables.MOUSE_SENSITIVITY_X;
-            rotY = Utils.clamp(rotY, 10, 90);
+            cameraRotationX += input.getDisplVec().y * Config.MOUSE_SENSITIVITY_X;
+            cameraRotationY += input.getDisplVec().x * Config.MOUSE_SENSITIVITY_X;
+            cameraRotationY = Utils.clamp(cameraRotationY, 10, 90);
         }
-        zoom = Utils.clamp(zoom, 0.75f, 1.75f);
+        cameraZoom = Utils.clamp(cameraZoom, 0.75f, 1.75f);
 
         float moveSpeed = 10;
         Vector3f panVec = new Vector3f(0);
@@ -666,7 +474,7 @@ public class Game implements ILogic {
         if(window.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
             if(bloons.size() < 1){
                 roundIsRunning = true;
-                runRound = true;
+                roundShouldRun = true;
             }
         }
         
@@ -678,12 +486,9 @@ public class Game implements ILogic {
 
     public void onScroll(double dy) {
         if(player.getLives() > 0)
-            zoom -= dy/4;
+            cameraZoom -= dy/4;
     }
 
-    float defaultRadius = 20f;
-    Random random = new Random();
-    public boolean runRound = true;
     @Override
     public void update(float interval, MouseInput mouseInput) {
         
@@ -692,7 +497,7 @@ public class Game implements ILogic {
             BloonType type = BloonType.values()[Math.min(spawnNewBloonOnNextTick + (secondBloonRow ? 10 : 0), BloonType.values().length - 1)];
             // create new bloon based on the type selected
             Bloon b = new Bloon("bloon", type,
-                (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
+                (type == BloonType.MOAB) ? Model.copy(Assets.moabModel) : Model.copy(Assets.bloonModel), 
                 new Vector3f(bloonNodes[0]), 
                 new Vector3f(),
                 new Vector3f(type.size)
@@ -715,19 +520,19 @@ public class Game implements ILogic {
                 range.setScale(currentTowerInspecting.getRange());
         }
 
-        float radius = defaultRadius * zoom;
+        float radius = defaultCameraOrbitRadius * cameraZoom;
 
         int minPan = -20, maxPan = 20;
         cameraPos.setPosition(Utils.clamp(cameraPos.getPosition().x,minPan, maxPan),0,Utils.clamp(cameraPos.getPosition().z, minPan, maxPan));
 
         // orbit the camera around the active ball
         Vector3f orbitVec = new Vector3f();
-        orbitVec.x = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.cos(Math.toRadians(rotX))) + cameraPos.getPosition().x;
-        orbitVec.y = (float) (radius * Math.sin(Math.toRadians(rotY))) + 1;
-        orbitVec.z = (float) (Math.abs(radius * Math.cos(Math.toRadians(rotY))) * Math.sin(Math.toRadians(rotX))) + cameraPos.getPosition().z;
+        orbitVec.x = (float) (Math.abs(radius * Math.cos(Math.toRadians(cameraRotationY))) * Math.cos(Math.toRadians(cameraRotationX))) + cameraPos.getPosition().x;
+        orbitVec.y = (float) (radius * Math.sin(Math.toRadians(cameraRotationY))) + 1;
+        orbitVec.z = (float) (Math.abs(radius * Math.cos(Math.toRadians(cameraRotationY))) * Math.sin(Math.toRadians(cameraRotationX))) + cameraPos.getPosition().z;
 
         camera.setPosition(orbitVec);
-        camera.setRotation(rotY, rotX-90, camera.getRotation().z);
+        camera.setRotation(cameraRotationY, cameraRotationX-90, camera.getRotation().z);
         cameraPos.setRotation(0, -camera.getRotation().y,0);  
 
         // contains all of the bloons targetted by monkeys 
@@ -799,19 +604,18 @@ public class Game implements ILogic {
                 }
                 // finally make the bloon look at the node Position (on the y rotation only)
                 Vector3f difference = new Vector3f();
-                    nodePos.sub(bloon.getPosition(), difference);
-                    difference.normalize();
-                    // sets the direction of motion to go
-                    bloon.setCurrentHeading(difference);
-                    bloon.lookAtY(nodePos);
-                    // translate it forward
+                nodePos.sub(bloon.getPosition(), difference);
+                difference.normalize();
+                // sets the direction of motion to go
+                bloon.setCurrentHeading(difference);
+                bloon.lookAtY(nodePos);
+                // translate it forward
                 bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(gameSpeed * 2 * bloon.getSpeed() * interval));
             }
             // checks if the entity is a tower
             if(entity instanceof Tower) {
                 // set the entity to a Tower so we can access tower stuff
                 Tower tower = (Tower) entity;
-                //System.out.printf("%.2f/%.2f\n", monkey.getTick(), monkey.getRate());
                 if(tower.getTick() >= tower.getRate()/gameSpeed) {
                     ((ITower)tower).shoot(bloons, projectiles, targeted);
                 }
@@ -876,7 +680,7 @@ public class Game implements ILogic {
                                 playRandom(new String[]{"explosion_1", "explosion_2", "explosion_3", "explosion_4", "explosion_5"});
                                 for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
                                     Bloon bl = bloons.get(bloonId);
-                                    if(bl.getPosition().distance(dart.getPosition()) < 2) {
+                                    if(bl.getPosition().distance(dart.getPosition()) < 3f) {
                                         int r = bl.damage(1);
                                         if(r >= 0) {
                                             playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
@@ -914,7 +718,7 @@ public class Game implements ILogic {
         // if there is no spawner or time left for next Spawner is done
         if(currentSpawnerTimer == null || currentSpawnerTimer.canSpawnNext(interval * gameSpeed)){
             // go the next line (spawner or new round)
-            if (roundScanner.hasNext() && roundIsRunning && runRound) {
+            if (roundScanner.hasNext() && roundIsRunning && roundShouldRun) {
                 String line = roundScanner.nextLine();
                 // 2nd char and 3rd char are constructors for either client or waitClient
                 String[] elements = line.split(" ");
@@ -922,7 +726,7 @@ public class Game implements ILogic {
                 switch (elements[0]) {
                   case "R":
                     // end round
-                    runRound = false;
+                    roundShouldRun = false;
                     break;
                   case "C":
                     int bloonQuantity = Integer.parseInt(elements[2]);
@@ -937,11 +741,11 @@ public class Game implements ILogic {
               }
         }
 
-        if (!runRound) {
+        if (!roundShouldRun) {
             //check if all bloons are gone
             if (bloons.size() <= 0 && roundIsRunning) {
                 roundIsRunning = false;
-                runRound = true;
+                roundShouldRun = true;
                 // add round money
                 player.addMoney(99 + roundNumber);
                 // onlychangein the next round when all bloons are gone
@@ -959,7 +763,7 @@ public class Game implements ILogic {
             if (spawner.checkSpawn(interval  * gameSpeed)) {
                 BloonType type = spawner.getType();
                 Bloon bloon  = new Bloon("bloon", type,
-                    (type == BloonType.MOAB) ? Model.copy(moabModel) : Model.copy(bloonModel), 
+                    (type == BloonType.MOAB) ? Model.copy(Assets.moabModel) : Model.copy(Assets.bloonModel), 
                     new Vector3f(bloonNodes[0]), 
                     new Vector3f(),
                     new Vector3f(type.size)
@@ -978,7 +782,7 @@ public class Game implements ILogic {
             float gain = music.getGain();
             SoundSource soundSource = music;
             do {
-                soundSource = getRandom(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
+                soundSource = getRandomSound(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
             }  while(soundSource.getName().equals(music.getName()));
             music = soundSource;
             music.play();
@@ -986,7 +790,7 @@ public class Game implements ILogic {
         }
        
         // update the physics world
-        physicsSpace.update(1/GlobalVariables.FRAMERATE, 2, false, true, false);
+        physicsSpace.update(1/Config.FRAMERATE, 2, false, true, false);
 
         // for each visible entity in the world, process its data before rendered
         for(Entity entity : entities.values()) {
@@ -1040,7 +844,7 @@ public class Game implements ILogic {
         break;
     }
     return bloonType;
-  }
+}
 
 
     
@@ -1053,7 +857,7 @@ public class Game implements ILogic {
         }
 
         // set the clear color to the sky color
-        GL11.glClearColor(GlobalVariables.BG_COLOR.x, GlobalVariables.BG_COLOR.y, GlobalVariables.BG_COLOR.z, GlobalVariables.BG_COLOR.w);
+        GL11.glClearColor(Config.BG_COLOR.x, Config.BG_COLOR.y, Config.BG_COLOR.z, Config.BG_COLOR.w);
         
         // render to the OpenGL viewport from the perspective of the camera
         renderer.render(camera);
@@ -1103,14 +907,14 @@ public class Game implements ILogic {
             System.out.println("Error. Out of Memory. Skipping depth check");
         }
 
-        if(monkeyMode > 0) {
-            Entity preview = entities.get(previewKeys[monkeyMode - 1]);
+        if(placingMonkeyId > 0) {
+            Entity preview = entities.get(previewTowerKeys[placingMonkeyId - 1]);
             preview.setEnabled(true);
             renderer.forceRender(preview, camera);
             preview.setEnabled(false);
 
             range.setEnabled(true);
-            float scale = (TowerType.values()[monkeyMode - 1] == TowerType.SNIPER_MONKEY) ? 1.0f : TowerType.values()[monkeyMode - 1].range;
+            float scale = (TowerType.values()[placingMonkeyId - 1] == TowerType.SNIPER_MONKEY) ? 1.0f : TowerType.values()[placingMonkeyId - 1].range;
             range.setScale(scale);
             range.setPosition(preview.getPosition().x, 0.05f, preview.getPosition().z);
         }
@@ -1139,11 +943,120 @@ public class Game implements ILogic {
         loader.cleanup();
     }
 
+
+    //Plays a random sound given an array of String keys and returns it.
+    public SoundSource playRandom(String[] keys) {
+        int randomNumber = random.nextInt(keys.length);
+        audioSources.get(keys[randomNumber]).play();
+        return audioSources.get(keys[randomNumber]);
+    }
+    // gets and returns a random sound in a hashmap using keys
+    public SoundSource getRandomSound(String[] keys) {
+        int randomNumber = random.nextInt(keys.length);
+        return audioSources.get(keys[randomNumber]);
+    }
+
+    /*
+     * GETTERS AND SETTERS
+     */
+
     public int getRoundNumber() {
         return roundNumber;
     }
 
-    public void setRoundNumber(int number) {
-        this.roundNumber = number;
+    public ArrayList<Bloon> getBloons() {
+        return bloons;
+    }
+
+    public boolean isRoundRunning() {
+        return roundIsRunning;
+    }
+
+    public void setRoundRunning(boolean value) {
+        this.roundIsRunning = value;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public int getBloonCount() {
+        return bloonCounter;
+    }
+
+    public void addBloonCount(int amount) {
+        this.bloonCounter += amount;
+    }
+
+    public Vector3f[] getMapNodes() {
+        return bloonNodes;
+    }
+
+    public int getMonkeyPlacingId() {
+        return placingMonkeyId;
+    }
+
+    public void setMonkeyPlacingId(int value) {
+        this.placingMonkeyId = value;
+    }
+
+    public boolean isAutoStart() {
+        return autoStart;
+    }
+
+    public void setAutoStart(boolean value) {
+        this.autoStart = value;
+    }
+
+    public Tower getCurrentTower() {
+        return currentTowerInspecting;
+    }
+
+    public void setCurrentTower(Tower tower) {
+        this.currentTowerInspecting = tower;
+    }
+
+    public ArrayList<Tower> getTowers() {
+        return towers;
+    }
+
+    public Entity getRange() {
+        return range;
+    }
+
+    public void setRoundShouldRun(boolean value) {
+        this.roundShouldRun = value;
+    }
+
+    public boolean getRoundShouldRun() {
+        return roundShouldRun;
+    }
+
+    public void setGameSpeed(float value) {
+        this.gameSpeed = value;
+    }
+
+    public float getGameSpeed() {
+        return gameSpeed;
+    }
+
+    public void toggleFastForward() {
+        this.fastForwardToggled = !fastForwardToggled;
+    }
+
+    public boolean isFastForward() {
+        return fastForwardToggled;
+    }
+
+    public ArrayList<Projectile> getProjectiles() {
+        return projectiles;
+    }
+
+    public void setRoundNumber(int value) {
+        this.roundNumber = value;
+    }
+
+    public void setRoundScanner(Scanner scanner) {
+        this.roundScanner = scanner;
     }
 }

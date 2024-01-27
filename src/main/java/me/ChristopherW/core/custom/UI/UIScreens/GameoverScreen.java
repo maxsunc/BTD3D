@@ -1,24 +1,18 @@
 package me.ChristopherW.core.custom.UI.UIScreens;
 
 import imgui.ImGui;
-import imgui.ImGuiStyle;
 import imgui.ImVec2;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiColorEditFlags;
-import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
-import imgui.type.ImInt;
 import me.ChristopherW.core.ObjectLoader;
 import me.ChristopherW.core.custom.Bloon;
 import me.ChristopherW.core.custom.Projectile;
 import me.ChristopherW.core.custom.Tower;
-import me.ChristopherW.core.custom.TowerType;
-import me.ChristopherW.core.custom.Upgrade;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.custom.UI.IGUIScreen;
 import me.ChristopherW.core.entity.Texture;
@@ -97,29 +91,29 @@ public class GameoverScreen implements IGUIScreen {
             float imageSize = gm.window.getHeight() * 0.1388f / 1.25f;
             ImGui.setCursorPos(gm.window.getWidth()/2 - imageSize/2, gm.window.getHeight()/2 + panelWidth/12 - imageSize/3);
             if(ImGui.imageButton(restartButton.getId(), imageSize, imageSize)) {
-                for(Tower t : game.monkeys) {
+                for(Tower t : game.getTowers()) {
                     game.entities.remove(t.getName());
                 }
-                game.monkeys.clear();
-                for(Bloon b : game.bloons) {
+                game.getTowers().clear();
+                for(Bloon b : game.getBloons()) {
                     game.entities.remove(b.getName());
                 }
-                game.bloons.clear();
-                for(Projectile p : game.projectiles) {
+                game.getBloons().clear();
+                for(Projectile p : game.getProjectiles()) {
                     game.entities.remove(p.getName());
                 }
-                game.projectiles.clear();
+                game.getProjectiles().clear();
 
-                game.player.setLives(200);
-                game.player.setMoney(650);
+                game.getPlayer().setLives(200);
+                game.getPlayer().setMoney(650);
                 game.setRoundNumber(1);
-                game.roundIsRunning = false;
-                game.runRound = true;
-                game.gameSpeed = (game.gameSpeedToggled) ? 3f : 1f;
-                game.currentTowerInspecting = null;
-                game.range.setEnabled(false);
+                game.setRoundRunning(false);
+                game.setRoundShouldRun(true);
+                game.setGameSpeed((game.isFastForward()) ? 3f : 1f);
+                game.setCurrentTower(null);
+                game.getRange().setEnabled(false);
                 try {
-                    game.roundScanner = new Scanner(new File("assets/rounds.txt"));
+                    game.setRoundScanner(new Scanner(new File("assets/rounds.txt")));
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }

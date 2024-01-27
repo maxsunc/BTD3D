@@ -5,13 +5,10 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
 import me.ChristopherW.core.custom.UI.GUIManager;
 import me.ChristopherW.core.custom.UI.UIScreens.Resolution;
-import me.ChristopherW.core.utils.GlobalVariables;
+import me.ChristopherW.core.utils.Config;
 import me.ChristopherW.process.Launcher;
 
 import java.nio.IntBuffer;
-import java.util.prefs.Preferences;
-
-import javax.swing.event.MouseInputListener;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
@@ -95,7 +92,7 @@ public class WindowManager {
         monitorRefreshRate = mode.refreshRate();
 
         // if the game should be fullscreen, make it fill the monitor
-        if(GlobalVariables.FULLSCREEN) {
+        if(Config.FULLSCREEN) {
             // set fullscreen-specific window parameters
             GLFW.glfwWindowHint(GLFW.GLFW_MAXIMIZED, GLFW.GLFW_TRUE);
             GLFW.glfwWindowHint(GLFW.GLFW_RED_BITS, mode.redBits());
@@ -108,7 +105,7 @@ public class WindowManager {
             // center the window
             GLFW.glfwSetWindowPos(window, (mode.width() - width) / 2, (mode.height() - height) / 2);
             // save the window dimensions and position
-            winSize = new Vector2i(GlobalVariables.WIDTH, GlobalVariables.HEIGHT);
+            winSize = new Vector2i(Config.WIDTH, Config.HEIGHT);
             IntBuffer xbuf = BufferUtils.createIntBuffer(1);
             IntBuffer ybuf = BufferUtils.createIntBuffer(1);
             GLFW.glfwGetWindowPos(window, xbuf, ybuf);
@@ -141,7 +138,7 @@ public class WindowManager {
         // allocate memory for the image icon buffer
         GLFWImage.Buffer imagebf = GLFWImage.malloc(1);
         // load the image icon into the buffer
-        imagebf.put(0, loader.loadtextureBuffer(GlobalVariables.ICON_PATH));
+        imagebf.put(0, loader.loadtextureBuffer(Config.ICON_PATH));
         // set the window icon
         GLFW.glfwSetWindowIcon(window, imagebf);
 
@@ -151,7 +148,7 @@ public class WindowManager {
         // if vSync is enabled set the frame swap interval to 1 and cap the framerate to the monitor's refresh rate
         if(vSync) {
             GLFW.glfwSwapInterval(1);
-            GlobalVariables.FRAMERATE = mode.refreshRate();
+            Config.FRAMERATE = mode.refreshRate();
         }
 
         // set a keyboard press callback
@@ -276,12 +273,12 @@ public class WindowManager {
 
     public Matrix4f updateProjectionMatrix() {
         float aspectRatio = (float) width / height;
-        return projectionMatrix.setPerspective(GlobalVariables.FOV, aspectRatio, GlobalVariables.Z_NEAR, GlobalVariables.Z_FAR);
+        return projectionMatrix.setPerspective(Config.FOV, aspectRatio, Config.Z_NEAR, Config.Z_FAR);
     }
 
     public Matrix4f updateProjectionMatrix(Matrix4f matrix, int width, int height) {
         float aspectRatio = (float) width / height;
-        return matrix.setPerspective(GlobalVariables.FOV, aspectRatio, GlobalVariables.Z_NEAR, GlobalVariables.Z_FAR);
+        return matrix.setPerspective(Config.FOV, aspectRatio, Config.Z_NEAR, Config.Z_FAR);
     }
 
     private MouseInput mouseInput;
