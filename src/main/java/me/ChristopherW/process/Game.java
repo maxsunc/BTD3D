@@ -549,15 +549,21 @@ public class Game implements ILogic {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
                 // animate the tower scaled to the game speed
                 if(animatedEntity.getAnimationTick() >= (1f/(gameSpeed * 60f))) {
+
                     boolean loopComplete = animatedEntity.nextFrame();
                     animatedEntity.setAnimationTick(0);
-
+                    
+                    // if the animation has reached the end, check if it's a tower
                     if(loopComplete) {
                         if(animatedEntity instanceof Tower) {
                             Tower tower = (Tower)animatedEntity;
+                            
+                            // If attack animation has finished, swithch to "Post Attack" animation
                             if(animatedEntity.getAnimationId() == tower.getAttackAnimationId()) {
                                 tower.setAnimationId(tower.getPostAttackAnimationId());
                             }
+
+                            // 1/3 random chance of the special idle animation to happen (e.g. monkey scratching butt)
                             int randomNumber = random.nextInt(6) + 1;
                             if(randomNumber == 6)
                                 tower.setAnimationId(tower.getIdle2AnimationId());
