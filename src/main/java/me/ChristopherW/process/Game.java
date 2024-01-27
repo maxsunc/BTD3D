@@ -562,7 +562,7 @@ public class Game implements ILogic {
                         if(animatedEntity instanceof Tower) {
                             Tower tower = (Tower)animatedEntity;
                             
-                            // If attack animation has finished, swithch to "Post Attack" animation
+                            // If attack animation has finished, switch to "Post Attack" animation
                             if(animatedEntity.getAnimationId() == tower.getAttackAnimationId()) {
                                 tower.setAnimationId(tower.getPostAttackAnimationId());
                             }
