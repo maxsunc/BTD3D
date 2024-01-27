@@ -48,7 +48,7 @@ public class DartMonkey extends Tower implements ITower{
                 this.setRate(this.getRate() * 0.75f);
                 break;
             case DM_TRIPLE_SHOT:
-                // die
+                
                 break;
         }
     }

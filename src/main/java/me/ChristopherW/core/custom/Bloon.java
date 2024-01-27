@@ -74,7 +74,11 @@ public class Bloon extends Entity{
     public void setHealth(int health) {
         this.health = health;
     }
-    
+    /**
+     * 
+     * @param amount
+     * @return either -1 if the health of the bloon is less than or equal to 0, 0 if , 1 if the bloon type is RED
+     */
     public int damage(int amount){
         Game game = Launcher.getGame();
 

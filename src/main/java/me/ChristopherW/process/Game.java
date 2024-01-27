@@ -555,7 +555,7 @@ public class Game implements ILogic {
                     player.removeMoney(currentTowerInspecting.getPath2().nextUpgrade.cost);
                     currentTowerInspecting.upgradePath(2);
                     audioSources.get("upgrade").play();
-                    }
+                }
             }
         }
         if(action == GLFW.GLFW_RELEASE) {
@@ -742,7 +742,7 @@ public class Game implements ILogic {
             }
             if(entity instanceof AnimatedEntity) {
                 AnimatedEntity animatedEntity = (AnimatedEntity)entity;
-                // animate the tower
+                // animate the tower scaled to the game speed
                 if(animatedEntity.getAnimationTick() >= (1f/(gameSpeed * 60f))) {
                     boolean loopComplete = animatedEntity.nextFrame();
                     animatedEntity.setAnimationTick(0);
@@ -767,8 +767,9 @@ public class Game implements ILogic {
 
                 animatedEntity.tick(interval);
             }
-
+            // checks if the entity is a bloon (bloon inherits from entity)
             if(entity instanceof Bloon) {
+                // change the entity to Bloon instace so we can do bloon things.
                 Bloon bloon = (Bloon) entity;
 
                 // save the position of the next node the bloon should get to
@@ -806,33 +807,42 @@ public class Game implements ILogic {
                     // translate it forward
                 bloon.translate(new Vector3f(bloon.getCurrentHeading()).mul(gameSpeed * 2 * bloon.getSpeed() * interval));
             }
-
+            // checks if the entity is a tower
             if(entity instanceof Tower) {
-                Tower monkey = (Tower) entity;
+                // set the entity to a Tower so we can access tower stuff
+                Tower tower = (Tower) entity;
                 //System.out.printf("%.2f/%.2f\n", monkey.getTick(), monkey.getRate());
-                if(monkey.getTick() >= monkey.getRate()/gameSpeed) {
-                    ((ITower)monkey).shoot(bloons, projectiles, targeted);
+                if(tower.getTick() >= tower.getRate()/gameSpeed) {
+                    ((ITower)tower).shoot(bloons, projectiles, targeted);
                 }
-
-                monkey.addTick(interval);
+                // add a tick to the tower shooting according to how many seconds passed to get to next frame (interval)
+                tower.addTick(interval);
             }
-
+            // checks if the entity is a Projectile
             if(entity instanceof Projectile) {
+                // set the entity to a Proojectile so we can access projectile stuff
                 Projectile dart = (Projectile) entity;
-                
+                // loop through the bloons array
                 for(int b = 0; b < bloons.size(); b++) {
                     Bloon bloon = bloons.get(b);
                     if(bloon != null) {
+                        // checks if the bloon is popped 
                         if(bloon.isPopped()) {
+                            // we set its target to null since the bloon is popped
                             dart.setTarget(null);
-                        } else if(dart.getPosition().distance(bloon.getPosition()) < 1.25f) {
-
+                        }//  checks the distance between the dart to the bloon to see if it hit it or not
+                        else if(dart.getPosition().distance(bloon.getPosition()) < 1.25f) {
+                            // check if the bloon is of a special type 
                             if(bloon.getType() == BloonType.LEAD) {
+                                // the projectile (dart) can only damage the lead bloon if it's a bomb
                                 if(dart instanceof Bomb) {
+                                    // save the damage of the bloom
                                     int result = bloon.damage(dart.getDamage());
+                                    // check if the bloons health has gone down to 0 or lower
                                     if(result >= 0) {
+                                        // play a popping sound
                                         playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
-                                        
+                                        // add monkey for the pop
                                         player.addMoney(1);
                                         if(result > 0) {
                                             entities.remove(bloon.getName());
