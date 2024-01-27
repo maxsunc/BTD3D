@@ -362,6 +362,7 @@ public class Game implements ILogic {
                     }
                 }
             }
+            // same code as for Q but only for a different path
             if(key == GLFW.GLFW_KEY_E){
                 if(currentTowerInspecting != null)
                 if(currentTowerInspecting.getPath2().nextUpgrade != null)
@@ -379,37 +380,38 @@ public class Game implements ILogic {
     }
 
     private boolean checkPlacementValidity(Entity previewMonkey) {
-
+        // check if we can afford the tower
         if(player.getMoney() < TowerType.values()[placingMonkeyId - 1].cost)
             return false;
-
+        // can only place within distance of 50 from the center
         if(previewMonkey.getPosition().distance(0,0,0) > 50)
             return false;
 
-
+        
         for(Tower monkey : towers) {
+            // checks if the monkey is close to other monkeys/towers
             Vector3f monkeyPos = monkey.getPosition();
             if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
                 return false;
             }
         }
 
-        // also check if it's place on a path
-
+        // also check if it's trying place on a path (or near it)
         int nodeIndex = 0;
         float leastDistance = Float.MAX_VALUE;
         
-        // get the 2 closest nodes
+        // get the closest node
         for(int i = 0; i < bloonNodes.length; i++){
             if(mouseWorldPos.distance(bloonNodes[i]) < leastDistance){
                 nodeIndex = i;
                 leastDistance = mouseWorldPos.distance(bloonNodes[i]);
             }
         }
+        // save the closest node and the preceding and following nodes
         Vector3f closestNode = bloonNodes[nodeIndex];
         Vector3f backNode = bloonNodes[Math.max(nodeIndex-1,0)];
         Vector3f frontNode = bloonNodes[Math.min(nodeIndex+1, bloonNodes.length - 1)];
-
+        //perform averaging maths to make two new nodes in between the 3 nodes
         Vector3f averageVector1 = new Vector3f();
         closestNode.add(backNode, averageVector1);
         averageVector1.div(2);
@@ -418,18 +420,20 @@ public class Game implements ILogic {
         averageVector2.div(2);
         
             Vector3f[] vectorsToCompare = {closestNode, backNode, frontNode, averageVector1, averageVector2};
-            // check all vectors
+            // check all vectors and their distance to the monkey trying to place
 
             float smallestDist = Float.MAX_VALUE;
             for(Vector3f v : vectorsToCompare){
+                // make a new vector with the same y pos so distance calc isnt messed up
                 v = new Vector3f(v.x, mouseWorldPos.y, v.z);
+                // find distance from mouseWorldPos to the vector and return false if it's less than sphereRadius
                 float dist = v.distance(mouseWorldPos);
                 smallestDist = Math.min(dist, smallestDist);
                 if(dist < sphereRadius){
                     return false;
                 }
             }
-
+            // return true if all of these conditions are passed
             return true;
     }
 
@@ -646,9 +650,9 @@ public class Game implements ILogic {
                             if(bloon.getType() == BloonType.LEAD) {
                                 // the projectile (dart) can only damage the lead bloon if it's a bomb
                                 if(dart instanceof Bomb) {
-                                    // save the damage of the bloom
+                                    // saves the result of the damage
                                     int result = bloon.damage(dart.getDamage());
-                                    // check if the bloons health has gone down to 0 or lower
+                                    // checks if the bloon was damaged (1, 0 == damaged)
                                     if(result >= 0) {
                                         // play a popping sound
                                         playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
@@ -660,15 +664,19 @@ public class Game implements ILogic {
                                             bloon.setPopped(true);
                                         }
                                     }
-                                } else {
+                                } else { // the projectile isnt a bomb so just play a sound that indicates that
                                     playRandom(new String[]{"metal_hit_1", "metal_hit_2", "metal_hit_3", "metal_hit_4"});
                                 }
                             } else {
+                                // save result of the damage
                                 int result = bloon.damage(dart.getDamage());
+                                // checks if the bloon was damaged (1, 0 == damaged)
                                 if(result >= 0) {
+                                    // play a random pop sound
                                     playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
-                                    
+                                    // add some money
                                     player.addMoney(1);
+
                                     if(result > 0) {
                                         entities.remove(bloon.getName());
                                         bloons.remove(bloon);
@@ -677,17 +685,20 @@ public class Game implements ILogic {
                                 }
                             }
                             
-                            
+                            // after hitting the bloon disable the dart and get rid of it from porjectiles and entities.
                             dart.setEnabled(false);
                             projectiles.remove(dart);
                             entities.remove(dart.getName());
-
+                            // if the projectile is a bomb, an explosion should be made
                             if(dart instanceof Bomb) {
                                 playRandom(new String[]{"explosion_1", "explosion_2", "explosion_3", "explosion_4", "explosion_5"});
+                                // loop through the bloons array and check if it's within a certain radius then we damage it and play a pop sound
                                 for(int bloonId = 0; bloonId < bloons.size(); bloonId++) {
                                     Bloon bl = bloons.get(bloonId);
                                     if(bl.getPosition().distance(dart.getPosition()) < 3f) {
+                                        // same damage stuff uses result
                                         int r = bl.damage(1);
+                                        // checks if the bloon was popped (0 or 1)
                                         if(r >= 0) {
                                             playRandom(new String[]{"pop_1", "pop_2", "pop_3", "pop_4"});
                                             player.addMoney(1);
@@ -753,7 +764,7 @@ public class Game implements ILogic {
                 roundIsRunning = false;
                 roundShouldRun = true;
                 // add round money
-                player.addMoney(99 + roundNumber);
+                player.addMoney(100 + roundNumber);
                 // onlychangein the next round when all bloons are gone
                 roundNumber++;
 
@@ -765,15 +776,20 @@ public class Game implements ILogic {
 
         // spawn the bloons from the spawners
         for(int i = 0; i < spawners.size(); i++){
+            // save spawners at i to a variable so it can be accessed easily
             Spawner spawner = spawners.get(i);
+            // checkSpawn, not only checks if it's time to spawn but also ticks the time til next spawn(scaled to interval and the speed of the game)
             if (spawner.checkSpawn(interval  * gameSpeed)) {
+                // saves the type of the spawn to a BloonType
                 BloonType type = spawner.getType();
+                // create a new instance of the bloon variable with the type from spawner
                 Bloon bloon  = new Bloon("bloon", type,
                     (type == BloonType.MOAB) ? Model.copy(Assets.moabModel) : Model.copy(Assets.bloonModel), 
                     new Vector3f(bloonNodes[0]), 
                     new Vector3f(),
                     new Vector3f(type.size)
                 );
+                // add it to the arraylist of bloons and into entities so it comes into existence.
                 bloons.add(bloon);
                 bloonCounter++;
                 entities.put("bloon" + bloonCounter, bloon);
@@ -783,13 +799,18 @@ public class Game implements ILogic {
                 spawners.remove(spawner);
             }
         }
+        // checks if the music is done playing
         if(!music.isPlaying()){
+            // stop the music
             music.stop();
+            // save the gain (volume)
             float gain = music.getGain();
+            // create a new soundSource to compare to music in order to generate new random songs
             SoundSource soundSource = music;
             do {
                 soundSource = getRandomSound(new String[]{"upbeat1", "upbeat2", "upbeat3", "musicBMC", "sailsAgain", "jazzHD"});
             }  while(soundSource.getName().equals(music.getName()));
+            // set the music to the random music, play it and set the volume back to the original.
             music = soundSource;
             music.play();
             music.setGain(gain);
@@ -867,7 +888,6 @@ public class Game implements ILogic {
         
         // render to the OpenGL viewport from the perspective of the camera
         renderer.render(camera);
-
         
         try {
             double[] x = new double[1];

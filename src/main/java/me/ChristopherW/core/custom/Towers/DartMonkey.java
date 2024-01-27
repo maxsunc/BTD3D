@@ -34,6 +34,7 @@ public class DartMonkey extends Tower implements ITower{
 
     @Override
     public void upgrade(Upgrade currentUpgrade){
+        // given the current upgrade, upgrade based on the next upgrade we buy.
         switch(currentUpgrade.nextUpgrade){
             case DM_LONG_RANGE:
                 this.setRange(this.getRange() * 1.3f);
@@ -48,7 +49,7 @@ public class DartMonkey extends Tower implements ITower{
                 this.setRate(this.getRate() * 0.75f);
                 break;
             case DM_TRIPLE_SHOT:
-                
+                // do nothing (but our current upgrade is set to triple shot which does something in the shoot method)
                 break;
             default:
                 break;
@@ -57,8 +58,10 @@ public class DartMonkey extends Tower implements ITower{
 
     @Override
     public void shoot(ArrayList<Bloon> bloons, ArrayList<Projectile> projectiles, ArrayList<Bloon> targeted){
+        // if there are no bloons, dont bother
         if(bloons.size() < 1)
             return;
+        // create a Bloon instance which serves as the targetted bloon of this monkey
         Bloon target = null;
         for(int b = 0; b < bloons.size(); b++) {
             Bloon bloon = bloons.get(b);
@@ -84,8 +87,9 @@ public class DartMonkey extends Tower implements ITower{
         d.setTarget(target);
         targeted.add(target);
         bloons.remove(target);
-
+        // if we have triple shot upgrade do code for the triple shot
         if(getPath1() == Upgrade.DM_TRIPLE_SHOT) {
+            // create 2 more additional darts at rotation offset
             for(int i = -1; i < 2; i += 2) {
                 Vector3f offset = new Vector3f();
                 getRight().mul(i,1,1, offset);
