@@ -76,7 +76,7 @@ public class Bloon extends Entity{
     /**
      * 
      * @param amount
-     * @return either -1 if the health of the bloon is less than or equal to 0, 0 if , 1 if the bloon type is RED
+     * @return either -1 if the health of the bloon is less than or equal to 0, 1 if the bloon was popped and a new layer was made, 0 if the bloon type is still the same but only damaged
      */
     public int damage(int amount){
         Game game = Launcher.getGame();
