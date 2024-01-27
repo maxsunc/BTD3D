@@ -803,48 +803,48 @@ public class Game implements ILogic {
     } 
 
     BloonType determineBloonType(String givenType) {
-    BloonType bloonType;
-    // determines bloon type based on String
-    switch (givenType) {
-    case "RED":
-        bloonType = BloonType.RED;
-        break;
-    case "BLUE":
-        bloonType = BloonType.BLUE;
-        break;
-    case "GREEN":
-        bloonType = BloonType.GREEN;
-        break;
-    case "YELLOW":
-        bloonType = BloonType.YELLOW;
-        break;
-    case "PINK":
-        bloonType = BloonType.PINK;
-        break;
-    case "BLACK":
-        bloonType = BloonType.BLACK;
-        break;
-    case "LEAD":
-        bloonType = BloonType.LEAD;
-        break;
-    case "ZEBRA":
-        bloonType = BloonType.ZEBRA;
-        break;
-    case "RAINBOW":
-        bloonType = BloonType.RAINBOW;
-        break;
-    case "CERAMIC":
-        bloonType = BloonType.CERAMIC;
-        break;
-    case "MOAB":
-        bloonType = BloonType.MOAB;
-        break;
-    default:
-        bloonType = BloonType.RED;
-        break;
+        BloonType bloonType;
+        // determines bloon type based on String
+        switch (givenType) {
+        case "RED":
+            bloonType = BloonType.RED;
+            break;
+        case "BLUE":
+            bloonType = BloonType.BLUE;
+            break;
+        case "GREEN":
+            bloonType = BloonType.GREEN;
+            break;
+        case "YELLOW":
+            bloonType = BloonType.YELLOW;
+            break;
+        case "PINK":
+            bloonType = BloonType.PINK;
+            break;
+        case "BLACK":
+            bloonType = BloonType.BLACK;
+            break;
+        case "LEAD":
+            bloonType = BloonType.LEAD;
+            break;
+        case "ZEBRA":
+            bloonType = BloonType.ZEBRA;
+            break;
+        case "RAINBOW":
+            bloonType = BloonType.RAINBOW;
+            break;
+        case "CERAMIC":
+            bloonType = BloonType.CERAMIC;
+            break;
+        case "MOAB":
+            bloonType = BloonType.MOAB;
+            break;
+        default:
+            bloonType = BloonType.RED;
+            break;
+        }
+        return bloonType;
     }
-    return bloonType;
-}
 
 
     
