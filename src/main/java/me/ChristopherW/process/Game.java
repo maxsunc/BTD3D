@@ -362,6 +362,7 @@ public class Game implements ILogic {
                     }
                 }
             }
+            // same code as for Q but only for a different path
             if(key == GLFW.GLFW_KEY_E){
                 if(currentTowerInspecting != null)
                 if(currentTowerInspecting.getPath2().nextUpgrade != null)
@@ -379,37 +380,38 @@ public class Game implements ILogic {
     }
 
     private boolean checkPlacementValidity(Entity previewMonkey) {
-
+        // check if we can afford the tower
         if(player.getMoney() < TowerType.values()[placingMonkeyId - 1].cost)
             return false;
-
+        // can only place within distance of 50 from the center
         if(previewMonkey.getPosition().distance(0,0,0) > 50)
             return false;
 
-
+        
         for(Tower monkey : towers) {
+            // checks if the monkey is close to other monkeys/towers
             Vector3f monkeyPos = monkey.getPosition();
             if(monkeyPos.distance(previewMonkey.getPosition().x, monkeyPos.y, previewMonkey.getPosition().z) < 0.75f) {
                 return false;
             }
         }
 
-        // also check if it's place on a path
-
+        // also check if it's trying place on a path (or near it)
         int nodeIndex = 0;
         float leastDistance = Float.MAX_VALUE;
         
-        // get the 2 closest nodes
+        // get the closest node
         for(int i = 0; i < bloonNodes.length; i++){
             if(mouseWorldPos.distance(bloonNodes[i]) < leastDistance){
                 nodeIndex = i;
                 leastDistance = mouseWorldPos.distance(bloonNodes[i]);
             }
         }
+        // save the closest node and the preceding and following nodes
         Vector3f closestNode = bloonNodes[nodeIndex];
         Vector3f backNode = bloonNodes[Math.max(nodeIndex-1,0)];
         Vector3f frontNode = bloonNodes[Math.min(nodeIndex+1, bloonNodes.length - 1)];
-
+        //perform averaging maths to make two new nodes in between the 3 nodes
         Vector3f averageVector1 = new Vector3f();
         closestNode.add(backNode, averageVector1);
         averageVector1.div(2);
@@ -418,18 +420,20 @@ public class Game implements ILogic {
         averageVector2.div(2);
         
             Vector3f[] vectorsToCompare = {closestNode, backNode, frontNode, averageVector1, averageVector2};
-            // check all vectors
+            // check all vectors and their distance to the monkey trying to place
 
             float smallestDist = Float.MAX_VALUE;
             for(Vector3f v : vectorsToCompare){
+                // make a new vector with the same y pos so distance calc isnt messed up
                 v = new Vector3f(v.x, mouseWorldPos.y, v.z);
+                // find distance from mouseWorldPos to the vector and return false if it's less than sphereRadius
                 float dist = v.distance(mouseWorldPos);
                 smallestDist = Math.min(dist, smallestDist);
                 if(dist < sphereRadius){
                     return false;
                 }
             }
-
+            // return true if all of these conditions are passed
             return true;
     }
 
@@ -754,7 +758,7 @@ public class Game implements ILogic {
                 roundIsRunning = false;
                 roundShouldRun = true;
                 // add round money
-                player.addMoney(99 + roundNumber);
+                player.addMoney(100 + roundNumber);
                 // onlychangein the next round when all bloons are gone
                 roundNumber++;
 
