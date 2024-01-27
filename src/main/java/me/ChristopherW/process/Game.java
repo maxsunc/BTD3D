@@ -832,7 +832,7 @@ public class Game implements ILogic {
             break;
         case "BLUE":
             bloonType = BloonType.BLUE;
-        break;
+            break;
         case "GREEN":
             bloonType = BloonType.GREEN;
             break;
@@ -865,7 +865,7 @@ public class Game implements ILogic {
             break;
         }
         return bloonType;
-}
+    }
 
 
     
