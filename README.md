@@ -45,7 +45,13 @@ The project uses the following key libraries:
 
 2. **Build and run:**
    ```bash
+   # Build the JAR file
    ./gradlew shadowJar
+   
+   # Run the game (Windows PowerShell)
+   java "-Djava.library.path=./natives/" -jar build/libs/BTD3D-1.0-all.jar
+   
+   # Alternative for other shells (Git Bash, Linux, macOS)
    java -Djava.library.path="./natives/" -jar build/libs/BTD3D-1.0-all.jar
    ```
 
@@ -65,11 +71,21 @@ The project uses the following key libraries:
    - **Windows:** Double-click `start.sh` or run in Git Bash
    - **Linux/macOS:** `./start.sh`
 
-### Option 3: Development Mode
+### Option 3: Development Mode (Simplest)
 
 ```bash
 ./gradlew run
 ```
+
+## Troubleshooting
+
+If you encounter issues running the game:
+
+1. **PowerShell command errors:** Use `java "-Djava.library.path=./natives/"` (quotes around entire -D parameter)
+2. **JAR not found:** Check if the file exists: `ls build/libs/` and use the actual filename
+3. **Native library issues:** Try running without library path: `java -jar build/libs/BTD3D-1.0-all.jar`
+4. **Permission errors on Windows:** Use `gradlew.bat` instead of `./gradlew`
+5. **Java not found:** Ensure JDK 8+ is installed and in your PATH
 
 ## Controls
 
