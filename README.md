@@ -31,7 +31,11 @@ A 3D tower defense game built with Java using LWJGL (Lightweight Java Game Libra
 </div>
 
 ### Video Demo
-🎥 **[Sample Recording](assets/pictures/samplerecording.mp4)** - See the game in action!</div>
+🎥 **Click to watch gameplay video:**
+
+[![BTD3D Gameplay Demo](https://img.youtube.com/vi/os39cU27Hi4/maxresdefault.jpg)](https://youtu.be/os39cU27Hi4)
+
+</div>
 
 ## Requirements
 
