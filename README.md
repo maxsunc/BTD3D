@@ -15,7 +15,23 @@ A 3D tower defense game built with Java using LWJGL (Lightweight Java Game Libra
 
 ## Screenshots & Demo
 
-![Game Screenshot](assets/textures/icons/icon.png)
+### Gameplay Screenshots
+
+<div align="center">
+
+![Screenshot 1](assets/pictures/ss1.png)
+*Early game setup - Placing towers and starting defense*
+
+![Screenshot 2](assets/pictures/ss2.png) 
+*Mid-game action - Multiple towers engaging waves of bloons*
+
+![Screenshot 3](assets/pictures/ss3.png)
+*Advanced gameplay - Complex bloon types including MOABs*
+
+</div>
+
+### Video Demo
+🎥 **[Sample Recording](assets/pictures/samplerecording.mp4)** - See the game in action!</div>
 
 ## Requirements
 
